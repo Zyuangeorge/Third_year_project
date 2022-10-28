@@ -5,42 +5,15 @@ import sys
 from PySide6.QtWidgets import *
 from PySide6.QtGui import QIcon
 
-class mainWindow(QTableWidget):
+from BMS_GUI import Ui_MainWindow
+
+class mainWindow(QWidget, Ui_MainWindow):
     """Main window widget for BMS GUI"""
     def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Third  Year Project - Battery Management System GUI")
+        super(mainWindow, self).__init__()
+        self.setupUi(self)
         self.setWindowIcon(QIcon("sheffield_logo.jpg"))
-        self.resize(500,400)
-        self.addMenuBar()
-        self.setDisplayWindow()
-        self.setPortConfigBox()
-
-    def addMenuBar(self):
-        """Menu bar handler-used for showing descriptions"""
-        MenuBar = QMenuBar(self)
-        self.setMenuBar(MenuBar)
-
-        # Setting menu
-        settingMenu = MenuBar.addMenu("&Setting")
-        settingMenu.addAction(self.selectPortAction)
-        settingMenu.addAction(self.connectAction)
-
-        # View menu
-        viewMenu = MenuBar.addMenu("&View")
-        viewMenu.addAction(self.changeDisplayAction)
-        viewMenu.addAction(self.setUnitAction)
-
-        # Info menu
-        InfoMenu = MenuBar.addMenu("&Info")
-        InfoMenu.addAction(self.displayHelpAction)
-        InfoMenu.addAction(self.displayAboutAction)
-
-    def setPortConfigBox(self):
-        """Tool bar handler-used for communication settings"""
-
-
-
+        self.setFixedSize(self.width(), self.height())
 
 # Main
 
