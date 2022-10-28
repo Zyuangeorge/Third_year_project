@@ -22,7 +22,7 @@
    <locale language="English" country="UnitedKingdom"/>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QHBoxLayout" name="centralWidgetLayout">
     <item>
      <layout class="QVBoxLayout" name="leftLayout">
       <item>
@@ -36,7 +36,7 @@
         <property name="title">
          <string>Serial Port Configuration</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
+        <layout class="QVBoxLayout" name="portConfigBoxLayout">
          <item>
           <widget class="QRadioButton" name="portStatusDisplay">
            <property name="focusPolicy">
@@ -318,7 +318,7 @@
         <property name="title">
          <string>Set thresholds</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <layout class="QVBoxLayout" name="thresholdGroupBoxLayout">
          <item>
           <widget class="QLabel" name="voltageThresholdLabel">
            <property name="text">
@@ -422,7 +422,7 @@
       <property name="title">
        <string>Monitoring</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_7">
+      <layout class="QVBoxLayout" name="monitorGroupBoxLayout">
        <item>
         <widget class="QTabWidget" name="monitorWindowTab">
          <property name="currentIndex">
@@ -435,7 +435,7 @@
           <attribute name="title">
            <string>Cell Voltage Data</string>
           </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout_6">
+          <layout class="QVBoxLayout" name="batteryData_1Layout">
            <item>
             <widget class="QTableWidget" name="voltageTable">
              <property name="focusPolicy">
@@ -599,13 +599,13 @@
           <attribute name="title">
            <string>Pack Data and Status</string>
           </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout_4">
+          <layout class="QVBoxLayout" name="batteryData_2Layout">
            <item>
             <widget class="QGroupBox" name="packMonitoringGroupBox">
              <property name="title">
               <string>Pack Monitoring</string>
              </property>
-             <layout class="QGridLayout" name="gridLayout_5">
+             <layout class="QGridLayout" name="packMonitoringGroupBoxLayout">
               <item row="0" column="0" colspan="2">
                <widget class="QLabel" name="packVoltageLabel">
                 <property name="text">
@@ -680,7 +680,7 @@
              <property name="title">
               <string>Status</string>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_3">
+             <layout class="QVBoxLayout" name="statusGroupBoxLayout">
               <item>
                <layout class="QGridLayout" name="batteryStatusLayout">
                 <item row="0" column="0">
