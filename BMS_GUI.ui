@@ -1,0 +1,950 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>599</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Arial</family>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>Third Year Project GUI</string>
+  </property>
+  <property name="locale">
+   <locale language="English" country="UnitedKingdom"/>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <layout class="QVBoxLayout" name="leftLayout">
+      <item>
+       <widget class="QGroupBox" name="portConfigBox">
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="title">
+         <string>Serial Port Configuration</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QRadioButton" name="portStatusDisplay">
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="text">
+            <string>Port Status</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QGridLayout" name="serialPortConfigLayout">
+           <item row="0" column="0" colspan="2">
+            <widget class="QLabel" name="portLabel">
+             <property name="text">
+              <string>COM Port:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2" colspan="3">
+            <spacer name="horizontalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="0" column="5">
+            <widget class="QComboBox" name="portComboBox"/>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QLabel" name="baudRateLabel">
+             <property name="text">
+              <string>Baud Rate:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2" colspan="3">
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="1" column="5">
+            <widget class="QComboBox" name="baudRateComboBox">
+             <item>
+              <property name="text">
+               <string>1200</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>1800</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>2400</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>4800</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>9600</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>19200</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>38400</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>57600</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>115200</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>230400</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>460800</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>500000</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>576000</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>921600</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="2">
+            <widget class="QLabel" name="dataBitsLabel">
+             <property name="text">
+              <string>Data bits:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0" colspan="2">
+            <widget class="QLabel" name="stopBitsLabel">
+             <property name="text">
+              <string>Stop bits:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="5">
+            <widget class="QComboBox" name="parityComboBox">
+             <item>
+              <property name="text">
+               <string>None</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Odd</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Even</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="3" column="5">
+            <widget class="QComboBox" name="dataBitsComboBox">
+             <item>
+              <property name="text">
+               <string>8</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>7</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>6</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>5</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="4" column="5">
+            <widget class="QComboBox" name="stopBitsComboBox">
+             <item>
+              <property name="text">
+               <string>1</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>2</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="3" column="2" colspan="3">
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="4" column="2" colspan="3">
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="2" column="2" colspan="3">
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="2" column="0" colspan="2">
+            <widget class="QLabel" name="parityLabel">
+             <property name="text">
+              <string>Parity:</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QGridLayout" name="serialPortButtonLayout">
+           <item row="0" column="0">
+            <widget class="QPushButton" name="detectPortButton">
+             <property name="text">
+              <string>Detect Port</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QPushButton" name="startButton">
+             <property name="text">
+              <string>Start Monitoring</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QPushButton" name="stopButton">
+             <property name="text">
+              <string>Stop Monitoring</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="thresholdGroupBox">
+        <property name="title">
+         <string>Set thresholds</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QLabel" name="voltageThresholdLabel">
+           <property name="text">
+            <string>Cell voltage threshold:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QGridLayout" name="voltageThresholdLayout">
+           <item row="0" column="1">
+            <widget class="QDoubleSpinBox" name="voltageMiniSpinBox"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="voltageMaxLabel">
+             <property name="text">
+              <string>Maximum:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="voltageMiniLabel">
+             <property name="text">
+              <string>Minimum:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QDoubleSpinBox" name="voltageMaxSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="tempThresholdLabel">
+           <property name="text">
+            <string>IC temperature threshold:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QGridLayout" name="tempThresholdLayout">
+           <item row="1" column="0">
+            <widget class="QLabel" name="tempMaxLabel">
+             <property name="text">
+              <string>Maximum:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QDoubleSpinBox" name="tempMaxSpinBox"/>
+           </item>
+           <item row="0" column="1">
+            <widget class="QDoubleSpinBox" name="tempMiniSpinBox"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="tempMiniLabel">
+             <property name="text">
+              <string>Minimum:</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="currentThresholdLabel">
+           <property name="text">
+            <string>Pack Current threshold:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QGridLayout" name="currentThresholdLayout">
+           <item row="1" column="1">
+            <widget class="QDoubleSpinBox" name="currentMaxSpinBox"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="currentMiniLabel">
+             <property name="text">
+              <string>Minimum:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="currentMaxLabel">
+             <property name="text">
+              <string>Maximum:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QDoubleSpinBox" name="currentMiniSpinBox"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="monitorGroupBox">
+      <property name="title">
+       <string>Monitoring</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_7">
+       <item>
+        <widget class="QTabWidget" name="monitorWindowTab">
+         <property name="currentIndex">
+          <number>1</number>
+         </property>
+         <widget class="QWidget" name="batteryData_1">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <attribute name="title">
+           <string>Cell Voltage Data</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <item>
+            <widget class="QTableWidget" name="voltageTable">
+             <property name="focusPolicy">
+              <enum>Qt::NoFocus</enum>
+             </property>
+             <row>
+              <property name="text">
+               <string>CELL1</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>CELL2</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>CELL3</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>CELL4</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>CELL5</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>CELL6</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>CELL7</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>CELL8</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>CELL9</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>CELL10</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>CELL11</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>CELL12</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>CELL13</string>
+              </property>
+             </row>
+             <row>
+              <property name="text">
+               <string>CELL14</string>
+              </property>
+             </row>
+             <column>
+              <property name="text">
+               <string>Voltage</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Unit</string>
+              </property>
+             </column>
+             <item row="0" column="1">
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </item>
+             <item row="1" column="1">
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </item>
+             <item row="2" column="1">
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </item>
+             <item row="3" column="1">
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </item>
+             <item row="4" column="1">
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </item>
+             <item row="5" column="1">
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </item>
+             <item row="6" column="1">
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </item>
+             <item row="7" column="1">
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </item>
+             <item row="8" column="1">
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </item>
+             <item row="9" column="1">
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </item>
+             <item row="10" column="1">
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </item>
+             <item row="11" column="1">
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </item>
+             <item row="12" column="1">
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </item>
+             <item row="13" column="1">
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="batteryData_2">
+          <attribute name="title">
+           <string>Pack Data and Status</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <item>
+            <widget class="QGroupBox" name="packMonitoringGroupBox">
+             <property name="title">
+              <string>Pack Monitoring</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_5">
+              <item row="0" column="0" colspan="2">
+               <widget class="QLabel" name="packVoltageLabel">
+                <property name="text">
+                 <string>StackVoltage:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2" colspan="2">
+               <widget class="QLineEdit" name="packVoltageLineEdit">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="focusPolicy">
+                 <enum>Qt::NoFocus</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="4">
+               <widget class="QLabel" name="packVoltageUnit">
+                <property name="text">
+                 <string>mV</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="packCurrentLabel">
+                <property name="text">
+                 <string>Current:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1" colspan="3">
+               <widget class="QLineEdit" name="packCurrentLineEdit">
+                <property name="focusPolicy">
+                 <enum>Qt::NoFocus</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="4">
+               <widget class="QLabel" name="packCurrentUnit">
+                <property name="text">
+                 <string>A</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0" colspan="3">
+               <widget class="QLabel" name="ICTempLabel">
+                <property name="text">
+                 <string>MC33771C temperature:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="3">
+               <widget class="QLineEdit" name="ICCurrentLineEdit">
+                <property name="focusPolicy">
+                 <enum>Qt::NoFocus</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="4">
+               <widget class="QLabel" name="ICTempUnit">
+                <property name="text">
+                 <string>℃</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="statusGroupBox">
+             <property name="title">
+              <string>Status</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <item>
+               <layout class="QGridLayout" name="batteryStatusLayout">
+                <item row="0" column="0">
+                 <widget class="QRadioButton" name="Cell1StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QRadioButton" name="Cell2StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell2</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QRadioButton" name="Cell3StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell3</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="QRadioButton" name="Cell4StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell4</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QRadioButton" name="Cell5StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell5</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QRadioButton" name="Cell6StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell6</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QRadioButton" name="Cell7StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell7</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="3">
+                 <widget class="QRadioButton" name="Cell8StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell8</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QRadioButton" name="Cell9StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell9</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QRadioButton" name="Cell10StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell10</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QRadioButton" name="Cell11StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell11</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="3">
+                 <widget class="QRadioButton" name="Cell12StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell12</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QRadioButton" name="Cell13StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell13</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QRadioButton" name="Cell14StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell14</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="packStatusDisplay">
+                <property name="focusPolicy">
+                 <enum>Qt::NoFocus</enum>
+                </property>
+                <property name="text">
+                 <string>Pack Current</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="ICStatusDisplay">
+                <property name="focusPolicy">
+                 <enum>Qt::NoFocus</enum>
+                </property>
+                <property name="text">
+                 <string>IC temperature</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignRight">
+        <widget class="QLabel" name="nameLabel">
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="text">
+          <string>Made by Zhe Yuan</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuSetting">
+    <property name="title">
+     <string>Setting</string>
+    </property>
+    <addaction name="actionConnect"/>
+    <addaction name="actionSelectPort"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionHelp"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuSetting"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <action name="actionConnect">
+   <property name="text">
+    <string>Connect</string>
+   </property>
+  </action>
+  <action name="actionSelectPort">
+   <property name="text">
+    <string>Select Port</string>
+   </property>
+  </action>
+  <action name="actionChangeUnitV">
+   <property name="text">
+    <string>V</string>
+   </property>
+  </action>
+  <action name="actionChangeUnitmV">
+   <property name="text">
+    <string>mV</string>
+   </property>
+  </action>
+  <action name="actionChangeUnitA">
+   <property name="text">
+    <string>A</string>
+   </property>
+  </action>
+  <action name="actionChangeUnitmA">
+   <property name="text">
+    <string>mA</string>
+   </property>
+  </action>
+  <action name="actionChangeUnitC">
+   <property name="text">
+    <string>℃</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="text">
+    <string>℉</string>
+   </property>
+  </action>
+  <action name="actionHelp">
+   <property name="text">
+    <string>Help</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
