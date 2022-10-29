@@ -589,10 +589,6 @@ class Ui_MainWindow(object):
 
         self.packStatusLayout.addWidget(self.packStatusLabel)
 
-        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.packStatusLayout.addItem(self.horizontalSpacer_6)
-
         self.packStatusDisplay = QLineEdit(self.statusGroupBox)
         self.packStatusDisplay.setObjectName(u"packStatusDisplay")
         self.packStatusDisplay.setFocusPolicy(Qt.NoFocus)
@@ -660,7 +656,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.monitorWindowTab.setCurrentIndex(0)
+        self.monitorWindowTab.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)

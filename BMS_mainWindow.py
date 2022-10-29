@@ -87,7 +87,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Initialisation of serial
         self.serial = serial.Serial()
-        self.detectPort()
 
         # Initialisation of the GUI
         self.init()
@@ -125,15 +124,19 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Clear pack status
         self.packData['voltageStatus'] = voltageStatus.DEFAULT
         self.packData['currentStatus'] = currentStatus.DEFAULT
-        self.packStatusDisplay.setText(
-            (str)(self.packData['voltageStatus'].value))
+        self.packStatusDisplay.setText("Volt:" + self.packData['voltageStatus'].value + "\tAmp:" + self.packData['currentStatus'].value)
+        self.packStatusDisplay.setStyleSheet(
+                "background-color: rgb(0, 255, 0)")
 
         # Clear IC status
         self.ICData['status'] = tempStatus.DEFAULT
-        self.ICStatusDisplay.setText((str)(self.ICData['status'].value))
-    
+        self.ICStatusDisplay.setText(self.ICData['status'].value)
+        self.ICStatusDisplay.setStyleSheet(
+                "background-color: rgb(0, 255, 0)")
+
         for button in self.statusButtonList:
-            button.setStyleSheet("background-color: rgb(0, 255, 0)")
+            button.setStyleSheet(
+                "background-color: rgb(0, 255, 0)")
 
     def init(self):
         """GUI initialisation"""
@@ -217,6 +220,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         if len(self.portsDict) == 0:
             self.portComboBox.addItem("NULL")
+            QMessageBox.critical(self, "COM error", "COM detect failed")
 
     def startMonitor(self):
         """Start the monitor process"""
