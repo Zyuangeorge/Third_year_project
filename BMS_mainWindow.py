@@ -277,7 +277,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Open the timer to receive data
         self.timer = QTimer()
-        self.timer.timeout.connect(communication.receiveData(self))
+        self.timer.timeout.connect(self.receiveData)
 
         # Set the timer for receiving
         self.timer.start(1)  # 1ms/T
@@ -331,6 +331,26 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         if msg == QMessageBox.Yes:
             self.clearData()
 
+    def receiveData(self):
+        try:
+            # Get the data bits in waiting
+            waitBits = self.serial.in_waiting
+
+            # Wait and receive the data again to avoid error
+            if waitBits > 0:
+                time.sleep(0.1)
+                waitBits = self.serial.in_waiting
+        except:
+            QMessageBox.critical(self,'COM error','COM data error, please reconnect the port')
+            self.close()
+            return None
+
+        if waitBits > 0:
+            bccData = self.serial.read(waitBits)
+            num = len(bccData)
+            print(num)
+        else:
+            pass
 
 # Main
 if __name__ == "__main__":
