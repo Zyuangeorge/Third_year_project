@@ -19,9 +19,6 @@ from PySide6.QtCore import QTimer
 # Import UI file
 from BMS_GUI import Ui_MainWindow
 
-# Import com functions
-import communication
-
 class voltageStatus(Enum):
     DEFAULT = "NORMAL"
     UNDERVOLTAGE = "UNDERVOLTAGE"
