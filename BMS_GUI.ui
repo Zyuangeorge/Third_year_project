@@ -343,10 +343,18 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QLineEdit" name="voltageMiniLineEdit"/>
+            <widget class="QLineEdit" name="voltageMiniLineEdit">
+             <property name="acceptDrops">
+              <bool>false</bool>
+             </property>
+            </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLineEdit" name="voltageMaxLineEdit"/>
+            <widget class="QLineEdit" name="voltageMaxLineEdit">
+             <property name="acceptDrops">
+              <bool>false</bool>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -374,10 +382,18 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QLineEdit" name="tempMiniLineEdit"/>
+            <widget class="QLineEdit" name="tempMiniLineEdit">
+             <property name="acceptDrops">
+              <bool>false</bool>
+             </property>
+            </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLineEdit" name="tempMaxLineEdit"/>
+            <widget class="QLineEdit" name="tempMaxLineEdit">
+             <property name="acceptDrops">
+              <bool>false</bool>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -405,10 +421,18 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QLineEdit" name="currentMiniLineEdit"/>
+            <widget class="QLineEdit" name="currentMiniLineEdit">
+             <property name="acceptDrops">
+              <bool>false</bool>
+             </property>
+            </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLineEdit" name="currentMaxLineEdit"/>
+            <widget class="QLineEdit" name="currentMaxLineEdit">
+             <property name="acceptDrops">
+              <bool>false</bool>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>

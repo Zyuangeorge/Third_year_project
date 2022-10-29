@@ -1,5 +1,4 @@
 # Import built-in functions
-from re import S
 import sys
 
 # Import serial library
@@ -20,13 +19,24 @@ from PySide6.QtCore import QTimer
 # Import UI file
 from BMS_GUI import Ui_MainWindow
 
+# Import utility functions
+import util
 
-class batteryStatus(Enum):
-    DEFAULT = "DEFAULT"
+
+class voltageStatus(Enum):
+    DEFAULT = "NORMAL"
     UNDERVOLTAGE = "UNDERVOLTAGE"
     OVERVOLTAGE = "OVERVOLTAGE"
+
+
+class currentStatus(Enum):
+    DEFAULT = "NORMAL"
     UNDERCURRENT = "UNDERCURRENT"
     OVERCURRENT = "OVERCURRENT"
+
+
+class tempStatus(Enum):
+    DEFAULT = "NORMAL"
     UNDERTEMPERATURE = "UNDERTEMPERATURE"
     OVERTEMPERATURE = "OVERTEMPERATURE"
 
@@ -48,9 +58,10 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.currentThreshold = [0, 1600]
         self.voltageThreshold = [3000, 3700]
         self.tempThreshold = [35, 105]
+        self.packVoltageThreshold = [i * 14 for i in self.voltageThreshold]
 
         # Status button list
-        self.cellStatusButtonList = [
+        self.statusButtonList = [
             self.Cell1StatusDisplay, self.Cell2StatusDisplay, self.Cell3StatusDisplay,
             self.Cell4StatusDisplay, self.Cell5StatusDisplay, self.Cell6StatusDisplay,
             self.Cell7StatusDisplay, self.Cell8StatusDisplay, self.Cell9StatusDisplay,
@@ -60,18 +71,22 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Pack data
         self.packData = {'voltage': 0, 'current': 0,
-                         'status': batteryStatus.DEFAULT}
+                         'voltageStatus': voltageStatus.DEFAULT,
+                         'currentStatus': currentStatus.DEFAULT}
 
         # IC data
-        self.ICData = {'temp': 0, 'status': batteryStatus.DEFAULT}
+        self.ICData = {'temp': 0,
+                       'tempStatus': tempStatus.DEFAULT}
 
         # Cell data
-        self.cellData = {'voltage': [], 'status': []}
+        self.cellData = {'voltage': [],
+                         'voltageStatus': [], 'currentStatus': []}
 
         # Initialisation of cell data
         for num in range(0, 14):
             self.cellData['voltage'].append(0)
-            self.cellData['status'].append(batteryStatus.DEFAULT)
+            self.cellData['voltageStatus'].append(voltageStatus.DEFAULT)
+            self.cellData['currentStatus'].append(currentStatus.DEFAULT)
 
         # Initialisation of serial
         self.serial = serial.Serial()
@@ -107,8 +122,10 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.voltageTable.setItem(num, 1, QTableWidgetItem('mV'))
 
         # Clear cell status
-        for cellStatus in self.cellData['status']:
-            cellStatus = batteryStatus.DEFAULT
+        for cellStatus in self.cellData['voltageStatus']:
+            cellStatus = voltageStatus.DEFAULT
+        for cellStatus in self.cellData['currentStatus']:
+            cellStatus = currentStatus.DEFAULT
 
         # Clear pack data
         self.packData['voltage'] = 0
@@ -117,11 +134,13 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.packCurrentLineEdit.setText((str)(self.packData['current']))
 
         # Clear pack status
-        self.packData['status'] = batteryStatus.DEFAULT
-        self.packStatusDisplay.setText((str)(self.packData['status'].value))
+        self.packData['voltageStatus'] = voltageStatus.DEFAULT
+        self.packData['currentStatus'] = currentStatus.DEFAULT
+        self.packStatusDisplay.setText(
+            (str)(self.packData['voltageStatus'].value))
 
         # Clear IC status
-        self.ICData['status'] = batteryStatus.DEFAULT
+        self.ICData['status'] = tempStatus.DEFAULT
         self.ICStatusDisplay.setText((str)(self.ICData['status'].value))
 
         # Clear IC temp data
@@ -135,12 +154,37 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Connect serial button functions
         self.detectPortButton.clicked.connect(self.checkPort)
         self.startButton.clicked.connect(self.startMonitor)
-        # self.stopButton.clicked.connect(self.stopMonitor)
+        self.stopButton.clicked.connect(self.stopMonitor)
 
         # Connect cell state display
-        for statusButton in self.cellStatusButtonList:
-            statusButton.clicked.connect(
-                lambda: self.displayCellStatus(statusButton.index()))
+        self.Cell1StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
+            self.statusButtonList.index(self.Cell1StatusDisplay)))
+        self.Cell2StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
+            self.statusButtonList.index(self.Cell2StatusDisplay)))
+        self.Cell3StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
+            self.statusButtonList.index(self.Cell3StatusDisplay)))
+        self.Cell4StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
+            self.statusButtonList.index(self.Cell4StatusDisplay)))
+        self.Cell5StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
+            self.statusButtonList.index(self.Cell5StatusDisplay)))
+        self.Cell6StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
+            self.statusButtonList.index(self.Cell6StatusDisplay)))
+        self.Cell7StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
+            self.statusButtonList.index(self.Cell7StatusDisplay)))
+        self.Cell8StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
+            self.statusButtonList.index(self.Cell8StatusDisplay)))
+        self.Cell9StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
+            self.statusButtonList.index(self.Cell9StatusDisplay)))
+        self.Cell10StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
+            self.statusButtonList.index(self.Cell10StatusDisplay)))
+        self.Cell11StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
+            self.statusButtonList.index(self.Cell11StatusDisplay)))
+        self.Cell12StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
+            self.statusButtonList.index(self.Cell12StatusDisplay)))
+        self.Cell13StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
+            self.statusButtonList.index(self.Cell13StatusDisplay)))
+        self.Cell14StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
+            self.statusButtonList.index(self.Cell14StatusDisplay)))
 
     def checkPort(self):
         """Check the connected ports"""
@@ -215,13 +259,19 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         try:
             self.timer.stop()
             self.serial.close()
-
         except:
             QMessageBox.critical(self, "COM error", "COM close failed")
+        
+        self.startButton.setEnabled(True)
+        self.stopButton.setEnabled(False)
 
     def displayCellStatus(self, batteryNumber):
-        QMessageBox.about(self, "Cell %s" % + "status")
+        currentStatus = self.cellData['currentStatus'][batteryNumber].value
+        voltageStatus = self.cellData['voltageStatus'][batteryNumber].value
 
+        message = "Cell Current Status: %s\nCell Voltage Status: %s" %(currentStatus, voltageStatus)
+
+        QMessageBox.about(self, "Cell %s" % str(batteryNumber+1) + " Status", message)
 
 
 # Main

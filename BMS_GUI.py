@@ -215,11 +215,13 @@ class Ui_MainWindow(object):
 
         self.voltageMiniLineEdit = QLineEdit(self.thresholdGroupBox)
         self.voltageMiniLineEdit.setObjectName(u"voltageMiniLineEdit")
+        self.voltageMiniLineEdit.setAcceptDrops(False)
 
         self.voltageThresholdLayout.addWidget(self.voltageMiniLineEdit, 0, 1, 1, 1)
 
         self.voltageMaxLineEdit = QLineEdit(self.thresholdGroupBox)
         self.voltageMaxLineEdit.setObjectName(u"voltageMaxLineEdit")
+        self.voltageMaxLineEdit.setAcceptDrops(False)
 
         self.voltageThresholdLayout.addWidget(self.voltageMaxLineEdit, 1, 1, 1, 1)
 
@@ -245,11 +247,13 @@ class Ui_MainWindow(object):
 
         self.tempMiniLineEdit = QLineEdit(self.thresholdGroupBox)
         self.tempMiniLineEdit.setObjectName(u"tempMiniLineEdit")
+        self.tempMiniLineEdit.setAcceptDrops(False)
 
         self.tempThresholdLayout.addWidget(self.tempMiniLineEdit, 0, 1, 1, 1)
 
         self.tempMaxLineEdit = QLineEdit(self.thresholdGroupBox)
         self.tempMaxLineEdit.setObjectName(u"tempMaxLineEdit")
+        self.tempMaxLineEdit.setAcceptDrops(False)
 
         self.tempThresholdLayout.addWidget(self.tempMaxLineEdit, 1, 1, 1, 1)
 
@@ -275,11 +279,13 @@ class Ui_MainWindow(object):
 
         self.currentMiniLineEdit = QLineEdit(self.thresholdGroupBox)
         self.currentMiniLineEdit.setObjectName(u"currentMiniLineEdit")
+        self.currentMiniLineEdit.setAcceptDrops(False)
 
         self.currentThresholdLayout.addWidget(self.currentMiniLineEdit, 0, 1, 1, 1)
 
         self.currentMaxLineEdit = QLineEdit(self.thresholdGroupBox)
         self.currentMaxLineEdit.setObjectName(u"currentMaxLineEdit")
+        self.currentMaxLineEdit.setAcceptDrops(False)
 
         self.currentThresholdLayout.addWidget(self.currentMaxLineEdit, 1, 1, 1, 1)
 
