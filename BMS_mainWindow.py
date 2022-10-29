@@ -248,8 +248,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Set Stop bits
         stopBits = self.stopBitsComboBox.currentText()
         stopBitsDict = {
-            '1': serial.STOPBITS_ONE,
-            '2': serial.STOPBITS_TWO
+            '1':    serial.STOPBITS_ONE,
+            '1.5':  serial.STOPBITS_ONE_POINT_FIVE,
+            '2':    serial.STOPBITS_TWO
         }
         self.serial.stopbits = stopBitsDict.get(stopBits)
 

@@ -117,6 +117,7 @@ class Ui_MainWindow(object):
         self.stopBitsComboBox = QComboBox(self.portConfigBox)
         self.stopBitsComboBox.addItem("")
         self.stopBitsComboBox.addItem("")
+        self.stopBitsComboBox.addItem("")
         self.stopBitsComboBox.setObjectName(u"stopBitsComboBox")
 
         self.serialPortConfigLayout.addWidget(self.stopBitsComboBox, 4, 5, 1, 1)
@@ -688,7 +689,8 @@ class Ui_MainWindow(object):
         self.parityLabel.setText(QCoreApplication.translate("MainWindow", u"Parity:", None))
         self.stopBitsLabel.setText(QCoreApplication.translate("MainWindow", u"Stop bits:", None))
         self.stopBitsComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"1", None))
-        self.stopBitsComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"2", None))
+        self.stopBitsComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"1.5", None))
+        self.stopBitsComboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"2", None))
 
         self.portLabel.setText(QCoreApplication.translate("MainWindow", u"COM Port:", None))
         self.dataBitsLabel.setText(QCoreApplication.translate("MainWindow", u"Data bits:", None))
