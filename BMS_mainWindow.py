@@ -12,13 +12,15 @@ import time
 from enum import Enum
 
 # Import PyQt widgets: PySide6
-from PySide6.QtWidgets import *
+from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QAbstractItemView, QApplication, QMessageBox
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import QTimer
 
 # Import UI file
 from BMS_GUI import Ui_MainWindow
 
+# Import com functions
+import communication
 
 class voltageStatus(Enum):
     DEFAULT = "NORMAL"
@@ -124,15 +126,16 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Clear pack status
         self.packData['voltageStatus'] = voltageStatus.DEFAULT
         self.packData['currentStatus'] = currentStatus.DEFAULT
-        self.packStatusDisplay.setText("Volt:" + self.packData['voltageStatus'].value + "\tAmp:" + self.packData['currentStatus'].value)
+        self.packStatusDisplay.setText(
+            "Volt:" + self.packData['voltageStatus'].value + "\tAmp:" + self.packData['currentStatus'].value)
         self.packStatusDisplay.setStyleSheet(
-                "background-color: rgb(0, 255, 0)")
+            "background-color: rgb(0, 255, 0)")
 
         # Clear IC status
         self.ICData['status'] = tempStatus.DEFAULT
         self.ICStatusDisplay.setText(self.ICData['status'].value)
         self.ICStatusDisplay.setStyleSheet(
-                "background-color: rgb(0, 255, 0)")
+            "background-color: rgb(0, 255, 0)")
 
         for button in self.statusButtonList:
             button.setStyleSheet(
@@ -274,7 +277,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Open the timer to receive data
         self.timer = QTimer()
-        # self.timer.timeout.connect(self.receiveData)
+        self.timer.timeout.connect(communication.receiveData(self))
 
         # Set the timer for receiving
         self.timer.start(1)  # 1ms/T
