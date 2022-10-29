@@ -33,8 +33,8 @@ class Ui_MainWindow(object):
         MainWindow.setLocale(QLocale(QLocale.English, QLocale.UnitedKingdom))
         self.actionConnect = QAction(MainWindow)
         self.actionConnect.setObjectName(u"actionConnect")
-        self.actionSelectPort = QAction(MainWindow)
-        self.actionSelectPort.setObjectName(u"actionSelectPort")
+        self.actionDetectPort = QAction(MainWindow)
+        self.actionDetectPort.setObjectName(u"actionDetectPort")
         self.actionChangeUnitV = QAction(MainWindow)
         self.actionChangeUnitV.setObjectName(u"actionChangeUnitV")
         self.actionChangeUnitmV = QAction(MainWindow)
@@ -607,14 +607,14 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuSetting.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
         self.menuSetting.addAction(self.actionConnect)
-        self.menuSetting.addAction(self.actionSelectPort)
+        self.menuSetting.addAction(self.actionDetectPort)
         self.menuHelp.addAction(self.actionHelp)
         self.menuHelp.addSeparator()
         self.menuHelp.addAction(self.actionAbout)
 
         self.retranslateUi(MainWindow)
 
-        self.monitorWindowTab.setCurrentIndex(0)
+        self.monitorWindowTab.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -623,7 +623,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Third Year Project GUI", None))
         self.actionConnect.setText(QCoreApplication.translate("MainWindow", u"Connect", None))
-        self.actionSelectPort.setText(QCoreApplication.translate("MainWindow", u"Select Port", None))
+        self.actionDetectPort.setText(QCoreApplication.translate("MainWindow", u"Detect Port", None))
         self.actionChangeUnitV.setText(QCoreApplication.translate("MainWindow", u"V", None))
         self.actionChangeUnitmV.setText(QCoreApplication.translate("MainWindow", u"mV", None))
         self.actionChangeUnitA.setText(QCoreApplication.translate("MainWindow", u"A", None))

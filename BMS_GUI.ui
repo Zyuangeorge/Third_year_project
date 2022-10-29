@@ -962,7 +962,7 @@
      <string>Setting</string>
     </property>
     <addaction name="actionConnect"/>
-    <addaction name="actionSelectPort"/>
+    <addaction name="actionDetectPort"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -980,9 +980,9 @@
     <string>Connect</string>
    </property>
   </action>
-  <action name="actionSelectPort">
+  <action name="actionDetectPort">
    <property name="text">
-    <string>Select Port</string>
+    <string>Detect Port</string>
    </property>
   </action>
   <action name="actionChangeUnitV">

@@ -87,7 +87,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Initialisation of serial
         self.serial = serial.Serial()
-        self.checkPort()
+        self.detectPort()
 
         # Initialisation of the GUI
         self.init()
@@ -149,7 +149,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.portStatusDisplay.setEnabled(False)
 
         # Connect serial button functions
-        self.detectPortButton.clicked.connect(self.checkPort)
+        self.detectPortButton.clicked.connect(self.detectPort)
         self.startButton.clicked.connect(self.startMonitor)
         self.stopButton.clicked.connect(self.stopMonitor)
 
@@ -183,7 +183,15 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.Cell14StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
             self.statusButtonList.index(self.Cell14StatusDisplay)))
 
-    def checkPort(self):
+        # Connect help menu actions
+        self.actionHelp.connect(self.helpAction())
+        self.actionAbout.connect(self.aboutAction())
+
+        # Connect setting menu actions
+        self.actionConnect.connect(self.startMonitor())
+        self.actionDetectPort.connect(self.detectPort())
+
+    def detectPort(self):
         """Check the connected ports"""
         self.portsDict = {}
         ports = serial.tools.list_ports.comports()
@@ -272,6 +280,12 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         QMessageBox.about(self, "Cell %s" % str(
             batteryNumber+1) + " Status", message)
+
+    def helpAction(self):
+        QMessageBox.about(self, "Help", "")
+    
+    def aboutAction(self):
+        QMessageBox.about(self, "About", "This GUI is built by Zhe Yuan, and it is used to monitor the battery cell data through MC33771C")
 
 
 # Main
