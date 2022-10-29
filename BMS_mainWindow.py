@@ -19,9 +19,6 @@ from PySide6.QtCore import QTimer
 # Import UI file
 from BMS_GUI import Ui_MainWindow
 
-# Import utility functions
-import util
-
 
 class voltageStatus(Enum):
     DEFAULT = "NORMAL"
@@ -261,7 +258,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.serial.close()
         except:
             QMessageBox.critical(self, "COM error", "COM close failed")
-        
+
         self.startButton.setEnabled(True)
         self.stopButton.setEnabled(False)
 
@@ -269,9 +266,11 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         currentStatus = self.cellData['currentStatus'][batteryNumber].value
         voltageStatus = self.cellData['voltageStatus'][batteryNumber].value
 
-        message = "Cell Current Status: %s\nCell Voltage Status: %s" %(currentStatus, voltageStatus)
+        message = "Cell Current Status: %s\nCell Voltage Status: %s" % (
+            currentStatus, voltageStatus)
 
-        QMessageBox.about(self, "Cell %s" % str(batteryNumber+1) + " Status", message)
+        QMessageBox.about(self, "Cell %s" % str(
+            batteryNumber+1) + " Status", message)
 
 
 # Main
