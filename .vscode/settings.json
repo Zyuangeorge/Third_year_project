@@ -1,8 +1,14 @@
 {
     "cSpell.words": [
+        "bytesize",
+        "EIGHTBITS",
+        "FIVEBITS",
         "OVERCURRENT",
         "OVERTEMPERATURE",
         "OVERVOLTAGE",
+        "SEVENBITS",
+        "SIXBITS",
+        "STOPBITS",
         "UNDERTEMPERATURE",
         "UNDERVOLTAGE"
     ]

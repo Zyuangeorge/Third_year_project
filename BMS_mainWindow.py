@@ -219,7 +219,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         except:
             QMessageBox.critical(self, "COM error", "COM close failed")
 
-
+    def displayCellStatus(self, batteryNumber):
+        QMessageBox.about(self, "Cell %s" % + "status")
 
 
 
