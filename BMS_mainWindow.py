@@ -92,6 +92,49 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Initialisation of the GUI
         self.init()
 
+    def clearData(self):
+        # Clear cell voltage
+        self.voltageTable.clearContents()
+        for num in range(0, 14):
+            self.cellData['voltage'][num] = 0
+            self.voltageTable.setItem(num, 0, QTableWidgetItem(
+                (str)(self.cellData['voltage'][num])))
+            self.voltageTable.setItem(num, 1, QTableWidgetItem('mV'))
+
+        # Clear pack data
+        self.packData['voltage'] = 0
+        self.packData['current'] = 0
+        self.packVoltageLineEdit.setText((str)(self.packData['voltage']))
+        self.packCurrentLineEdit.setText((str)(self.packData['current']))
+
+        # Clear IC temp data
+        self.ICData['temp'] = 0
+        self.ICTempLineEdit.setText((str)(self.ICData['temp']))
+
+        # Clear port status
+        self.portStatusDisplay.setChecked(False)
+        self.portStatusDisplay.setEnabled(False)
+
+    def resetStatus(self):
+        # Clear cell status
+        for cellStatus in self.cellData['voltageStatus']:
+            cellStatus = voltageStatus.DEFAULT
+        for cellStatus in self.cellData['currentStatus']:
+            cellStatus = currentStatus.DEFAULT
+
+        # Clear pack status
+        self.packData['voltageStatus'] = voltageStatus.DEFAULT
+        self.packData['currentStatus'] = currentStatus.DEFAULT
+        self.packStatusDisplay.setText(
+            (str)(self.packData['voltageStatus'].value))
+
+        # Clear IC status
+        self.ICData['status'] = tempStatus.DEFAULT
+        self.ICStatusDisplay.setText((str)(self.ICData['status'].value))
+    
+        for button in self.statusButtonList:
+            button.setStyleSheet("background-color: rgb(0, 255, 0)")
+
     def init(self):
         """GUI initialisation"""
         # Disable the change of the table item
@@ -110,43 +153,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.tempMiniLineEdit.setText((str)(self.tempThreshold[0]))
         self.tempMaxLineEdit.setText((str)(self.tempThreshold[1]))
 
-        # Clear cell voltage
-        self.voltageTable.clearContents()
-        for num in range(0, 14):
-            self.cellData['voltage'][num] = 0
-            self.voltageTable.setItem(num, 0, QTableWidgetItem(
-                (str)(self.cellData['voltage'][num])))
-            self.voltageTable.setItem(num, 1, QTableWidgetItem('mV'))
-
-        # Clear cell status
-        for cellStatus in self.cellData['voltageStatus']:
-            cellStatus = voltageStatus.DEFAULT
-        for cellStatus in self.cellData['currentStatus']:
-            cellStatus = currentStatus.DEFAULT
-
-        # Clear pack data
-        self.packData['voltage'] = 0
-        self.packData['current'] = 0
-        self.packVoltageLineEdit.setText((str)(self.packData['voltage']))
-        self.packCurrentLineEdit.setText((str)(self.packData['current']))
-
-        # Clear pack status
-        self.packData['voltageStatus'] = voltageStatus.DEFAULT
-        self.packData['currentStatus'] = currentStatus.DEFAULT
-        self.packStatusDisplay.setText(
-            (str)(self.packData['voltageStatus'].value))
-
-        # Clear IC status
-        self.ICData['status'] = tempStatus.DEFAULT
-        self.ICStatusDisplay.setText((str)(self.ICData['status'].value))
-
-        # Clear IC temp data
-        self.ICData['temp'] = 0
-        self.ICTempLineEdit.setText((str)(self.ICData['temp']))
-
-        # Clear port status
-        self.portStatusDisplay.setChecked(False)
-        self.portStatusDisplay.setEnabled(False)
+        self.clearData()
+        self.resetStatus()
 
         # Connect serial button functions
         self.detectPortButton.clicked.connect(self.detectPort)
@@ -184,12 +192,18 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.statusButtonList.index(self.Cell14StatusDisplay)))
 
         # Connect help menu actions
-        self.actionHelp.connect(self.helpAction())
-        self.actionAbout.connect(self.aboutAction())
+        self.actionHelp.triggered.connect(self.helpAction)
+        self.actionAbout.triggered.connect(self.aboutAction)
 
         # Connect setting menu actions
-        self.actionConnect.connect(self.startMonitor())
-        self.actionDetectPort.connect(self.detectPort())
+        self.actionConnect.triggered.connect(self.startMonitor)
+        self.actionDetectPort.triggered.connect(self.detectPort)
+
+        # Connect clear data button
+        self.clearDataButton.clicked.connect(self.clearWarning)
+
+        # Connect reset status button
+        self.resetStatusButton.clicked.connect(self.resetStatus)
 
     def detectPort(self):
         """Check the connected ports"""
@@ -282,10 +296,32 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             batteryNumber+1) + " Status", message)
 
     def helpAction(self):
-        QMessageBox.about(self, "Help", "")
-    
+        QMessageBox.about(self, "Help",
+                          "This GUI supports: \n\
+            1. Change UART settings\n\
+            2. Set threshold values\n\
+            3. Display battery data and status\n\
+            4. Display pack data and status\n\
+            5. Display MC33771C temperature\n\n\
+        Follow these steps to use this GUI: \n\
+            1. Set UART configuration\n\
+            2. Set threshold values\n\
+            3. Check data and status\n\
+        *To check individual cell data, please click the cell button\n\
+        **The button will turn red if there is a problem with the status")
+
     def aboutAction(self):
-        QMessageBox.about(self, "About", "This GUI is built by Zhe Yuan, and it is used to monitor the battery cell data through MC33771C")
+        QMessageBox.about(
+            self, "About", "This GUI is built by Zhe Yuan, and it is used to monitor the battery cell data through MC33771C")
+
+    def clearWarning(self):
+        yesButton = QMessageBox.StandardButton.Yes
+        noButton = QMessageBox.StandardButton.No
+
+        msg = QMessageBox.warning(
+            self, "Warning", "You are going to clear all the data!", yesButton, noButton)
+        if msg == QMessageBox.Yes:
+            self.clearData()
 
 
 # Main

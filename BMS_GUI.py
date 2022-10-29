@@ -192,6 +192,16 @@ class Ui_MainWindow(object):
 
         self.leftLayout.addWidget(self.portConfigBox)
 
+        self.resetStatusButton = QPushButton(self.centralwidget)
+        self.resetStatusButton.setObjectName(u"resetStatusButton")
+
+        self.leftLayout.addWidget(self.resetStatusButton)
+
+        self.clearDataButton = QPushButton(self.centralwidget)
+        self.clearDataButton.setObjectName(u"clearDataButton")
+
+        self.leftLayout.addWidget(self.clearDataButton)
+
         self.thresholdGroupBox = QGroupBox(self.centralwidget)
         self.thresholdGroupBox.setObjectName(u"thresholdGroupBox")
         self.thresholdGroupBoxLayout = QVBoxLayout(self.thresholdGroupBox)
@@ -451,85 +461,120 @@ class Ui_MainWindow(object):
         self.batteryStatusLayout.setObjectName(u"batteryStatusLayout")
         self.Cell1StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell1StatusDisplay.setObjectName(u"Cell1StatusDisplay")
+        font2 = QFont()
+        font2.setFamilies([u"Arial"])
+        font2.setBold(True)
+        self.Cell1StatusDisplay.setFont(font2)
         self.Cell1StatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.Cell1StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.batteryStatusLayout.addWidget(self.Cell1StatusDisplay, 0, 0, 1, 1)
 
         self.Cell2StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell2StatusDisplay.setObjectName(u"Cell2StatusDisplay")
+        self.Cell2StatusDisplay.setFont(font2)
         self.Cell2StatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.Cell2StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.batteryStatusLayout.addWidget(self.Cell2StatusDisplay, 0, 1, 1, 1)
 
         self.Cell14StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell14StatusDisplay.setObjectName(u"Cell14StatusDisplay")
+        font3 = QFont()
+        font3.setFamilies([u"Arial"])
+        font3.setBold(True)
+        font3.setStrikeOut(False)
+        self.Cell14StatusDisplay.setFont(font3)
         self.Cell14StatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.Cell14StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.batteryStatusLayout.addWidget(self.Cell14StatusDisplay, 3, 1, 1, 1)
 
         self.Cell3StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell3StatusDisplay.setObjectName(u"Cell3StatusDisplay")
+        self.Cell3StatusDisplay.setFont(font2)
         self.Cell3StatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.Cell3StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.batteryStatusLayout.addWidget(self.Cell3StatusDisplay, 0, 2, 1, 1)
 
         self.Cell4StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell4StatusDisplay.setObjectName(u"Cell4StatusDisplay")
+        self.Cell4StatusDisplay.setFont(font2)
         self.Cell4StatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.Cell4StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.batteryStatusLayout.addWidget(self.Cell4StatusDisplay, 0, 3, 1, 1)
 
         self.Cell5StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell5StatusDisplay.setObjectName(u"Cell5StatusDisplay")
+        self.Cell5StatusDisplay.setFont(font2)
         self.Cell5StatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.Cell5StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.batteryStatusLayout.addWidget(self.Cell5StatusDisplay, 1, 0, 1, 1)
 
         self.Cell6StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell6StatusDisplay.setObjectName(u"Cell6StatusDisplay")
+        self.Cell6StatusDisplay.setFont(font2)
         self.Cell6StatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.Cell6StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.batteryStatusLayout.addWidget(self.Cell6StatusDisplay, 1, 1, 1, 1)
 
         self.Cell7StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell7StatusDisplay.setObjectName(u"Cell7StatusDisplay")
+        self.Cell7StatusDisplay.setFont(font2)
         self.Cell7StatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.Cell7StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.batteryStatusLayout.addWidget(self.Cell7StatusDisplay, 1, 2, 1, 1)
 
         self.Cell8StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell8StatusDisplay.setObjectName(u"Cell8StatusDisplay")
+        self.Cell8StatusDisplay.setFont(font2)
         self.Cell8StatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.Cell8StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.batteryStatusLayout.addWidget(self.Cell8StatusDisplay, 1, 3, 1, 1)
 
         self.Cell9StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell9StatusDisplay.setObjectName(u"Cell9StatusDisplay")
+        self.Cell9StatusDisplay.setFont(font2)
         self.Cell9StatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.Cell9StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.batteryStatusLayout.addWidget(self.Cell9StatusDisplay, 2, 0, 1, 1)
 
         self.Cell10StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell10StatusDisplay.setObjectName(u"Cell10StatusDisplay")
+        self.Cell10StatusDisplay.setFont(font2)
         self.Cell10StatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.Cell10StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.batteryStatusLayout.addWidget(self.Cell10StatusDisplay, 2, 1, 1, 1)
 
         self.Cell11StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell11StatusDisplay.setObjectName(u"Cell11StatusDisplay")
+        self.Cell11StatusDisplay.setFont(font2)
         self.Cell11StatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.Cell11StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.batteryStatusLayout.addWidget(self.Cell11StatusDisplay, 2, 2, 1, 1)
 
         self.Cell12StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell12StatusDisplay.setObjectName(u"Cell12StatusDisplay")
+        self.Cell12StatusDisplay.setFont(font2)
         self.Cell12StatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.Cell12StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.batteryStatusLayout.addWidget(self.Cell12StatusDisplay, 2, 3, 1, 1)
 
         self.Cell13StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell13StatusDisplay.setObjectName(u"Cell13StatusDisplay")
+        self.Cell13StatusDisplay.setFont(font2)
         self.Cell13StatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.Cell13StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.batteryStatusLayout.addWidget(self.Cell13StatusDisplay, 3, 0, 1, 1)
 
@@ -614,7 +659,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.monitorWindowTab.setCurrentIndex(1)
+        self.monitorWindowTab.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -669,6 +714,8 @@ class Ui_MainWindow(object):
         self.detectPortButton.setText(QCoreApplication.translate("MainWindow", u"Detect Port", None))
         self.startButton.setText(QCoreApplication.translate("MainWindow", u"Start Monitoring", None))
         self.stopButton.setText(QCoreApplication.translate("MainWindow", u"Stop Monitoring", None))
+        self.resetStatusButton.setText(QCoreApplication.translate("MainWindow", u"Reset Status", None))
+        self.clearDataButton.setText(QCoreApplication.translate("MainWindow", u"Clear Data", None))
         self.thresholdGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Set thresholds", None))
         self.voltageThresholdLabel.setText(QCoreApplication.translate("MainWindow", u"Cell voltage threshold (mV):", None))
         self.voltageMaxLabel.setText(QCoreApplication.translate("MainWindow", u"Maximum:", None))

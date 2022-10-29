@@ -314,6 +314,20 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="resetStatusButton">
+        <property name="text">
+         <string>Reset Status</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="clearDataButton">
+        <property name="text">
+         <string>Clear Data</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QGroupBox" name="thresholdGroupBox">
         <property name="title">
          <string>Set thresholds</string>
@@ -450,7 +464,7 @@
        <item>
         <widget class="QTabWidget" name="monitorWindowTab">
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="batteryData_1">
           <property name="enabled">
@@ -718,8 +732,17 @@
                <layout class="QGridLayout" name="batteryStatusLayout">
                 <item row="0" column="0">
                  <widget class="QPushButton" name="Cell1StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
                    <string>Cell1</string>
@@ -728,8 +751,17 @@
                 </item>
                 <item row="0" column="1">
                  <widget class="QPushButton" name="Cell2StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
                    <string>Cell2</string>
@@ -738,8 +770,18 @@
                 </item>
                 <item row="3" column="1">
                  <widget class="QPushButton" name="Cell14StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                    <strikeout>false</strikeout>
+                   </font>
+                  </property>
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
                    <string>Cell14</string>
@@ -748,8 +790,17 @@
                 </item>
                 <item row="0" column="2">
                  <widget class="QPushButton" name="Cell3StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
                    <string>Cell3</string>
@@ -758,8 +809,17 @@
                 </item>
                 <item row="0" column="3">
                  <widget class="QPushButton" name="Cell4StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
                    <string>Cell4</string>
@@ -768,8 +828,17 @@
                 </item>
                 <item row="1" column="0">
                  <widget class="QPushButton" name="Cell5StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
                    <string>Cell5</string>
@@ -778,8 +847,17 @@
                 </item>
                 <item row="1" column="1">
                  <widget class="QPushButton" name="Cell6StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
                    <string>Cell6</string>
@@ -788,8 +866,17 @@
                 </item>
                 <item row="1" column="2">
                  <widget class="QPushButton" name="Cell7StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
                    <string>Cell7</string>
@@ -798,8 +885,17 @@
                 </item>
                 <item row="1" column="3">
                  <widget class="QPushButton" name="Cell8StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
                    <string>Cell8</string>
@@ -808,8 +904,17 @@
                 </item>
                 <item row="2" column="0">
                  <widget class="QPushButton" name="Cell9StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
                    <string>Cell9</string>
@@ -818,8 +923,17 @@
                 </item>
                 <item row="2" column="1">
                  <widget class="QPushButton" name="Cell10StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
                    <string>Cell10</string>
@@ -828,8 +942,17 @@
                 </item>
                 <item row="2" column="2">
                  <widget class="QPushButton" name="Cell11StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
                    <string>Cell11</string>
@@ -838,8 +961,17 @@
                 </item>
                 <item row="2" column="3">
                  <widget class="QPushButton" name="Cell12StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
                    <string>Cell12</string>
@@ -848,8 +980,17 @@
                 </item>
                 <item row="3" column="0">
                  <widget class="QPushButton" name="Cell13StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
                    <string>Cell13</string>
