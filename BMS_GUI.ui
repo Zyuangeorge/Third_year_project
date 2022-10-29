@@ -38,7 +38,7 @@
         </property>
         <layout class="QVBoxLayout" name="portConfigBoxLayout">
          <item>
-          <widget class="QRadioButton" name="portStatusDisplay">
+          <widget class="QCheckBox" name="portStatusDisplay">
            <property name="focusPolicy">
             <enum>Qt::NoFocus</enum>
            </property>
@@ -322,15 +322,12 @@
          <item>
           <widget class="QLabel" name="voltageThresholdLabel">
            <property name="text">
-            <string>Cell voltage threshold:</string>
+            <string>Cell voltage threshold (mV):</string>
            </property>
           </widget>
          </item>
          <item>
           <layout class="QGridLayout" name="voltageThresholdLayout">
-           <item row="0" column="1">
-            <widget class="QDoubleSpinBox" name="voltageMiniSpinBox"/>
-           </item>
            <item row="1" column="0">
             <widget class="QLabel" name="voltageMaxLabel">
              <property name="text">
@@ -345,15 +342,18 @@
              </property>
             </widget>
            </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="voltageMiniLineEdit"/>
+           </item>
            <item row="1" column="1">
-            <widget class="QDoubleSpinBox" name="voltageMaxSpinBox"/>
+            <widget class="QLineEdit" name="voltageMaxLineEdit"/>
            </item>
           </layout>
          </item>
          <item>
           <widget class="QLabel" name="tempThresholdLabel">
            <property name="text">
-            <string>IC temperature threshold:</string>
+            <string>IC temperature threshold (℃):</string>
            </property>
           </widget>
          </item>
@@ -366,12 +366,6 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QDoubleSpinBox" name="tempMaxSpinBox"/>
-           </item>
-           <item row="0" column="1">
-            <widget class="QDoubleSpinBox" name="tempMiniSpinBox"/>
-           </item>
            <item row="0" column="0">
             <widget class="QLabel" name="tempMiniLabel">
              <property name="text">
@@ -379,20 +373,23 @@
              </property>
             </widget>
            </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="tempMiniLineEdit"/>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="tempMaxLineEdit"/>
+           </item>
           </layout>
          </item>
          <item>
           <widget class="QLabel" name="currentThresholdLabel">
            <property name="text">
-            <string>Pack Current threshold:</string>
+            <string>Pack Current threshold (mA):</string>
            </property>
           </widget>
          </item>
          <item>
           <layout class="QGridLayout" name="currentThresholdLayout">
-           <item row="1" column="1">
-            <widget class="QDoubleSpinBox" name="currentMaxSpinBox"/>
-           </item>
            <item row="0" column="0">
             <widget class="QLabel" name="currentMiniLabel">
              <property name="text">
@@ -408,7 +405,10 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QDoubleSpinBox" name="currentMiniSpinBox"/>
+            <widget class="QLineEdit" name="currentMiniLineEdit"/>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="currentMaxLineEdit"/>
            </item>
           </layout>
          </item>
@@ -621,6 +621,9 @@
                 <property name="focusPolicy">
                  <enum>Qt::NoFocus</enum>
                 </property>
+                <property name="acceptDrops">
+                 <bool>false</bool>
+                </property>
                </widget>
               </item>
               <item row="0" column="4">
@@ -642,6 +645,9 @@
                 <property name="focusPolicy">
                  <enum>Qt::NoFocus</enum>
                 </property>
+                <property name="acceptDrops">
+                 <bool>false</bool>
+                </property>
                </widget>
               </item>
               <item row="1" column="4">
@@ -659,9 +665,12 @@
                </widget>
               </item>
               <item row="2" column="3">
-               <widget class="QLineEdit" name="ICCurrentLineEdit">
+               <widget class="QLineEdit" name="ICTempLineEdit">
                 <property name="focusPolicy">
                  <enum>Qt::NoFocus</enum>
+                </property>
+                <property name="acceptDrops">
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -680,11 +689,11 @@
              <property name="title">
               <string>Status</string>
              </property>
-             <layout class="QVBoxLayout" name="statusGroupBoxLayout">
+             <layout class="QVBoxLayout" name="verticalLayout">
               <item>
                <layout class="QGridLayout" name="batteryStatusLayout">
                 <item row="0" column="0">
-                 <widget class="QRadioButton" name="Cell1StatusDisplay">
+                 <widget class="QPushButton" name="Cell1StatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
@@ -694,7 +703,7 @@
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="QRadioButton" name="Cell2StatusDisplay">
+                 <widget class="QPushButton" name="Cell2StatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
@@ -703,8 +712,18 @@
                   </property>
                  </widget>
                 </item>
+                <item row="3" column="1">
+                 <widget class="QPushButton" name="Cell14StatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Cell14</string>
+                  </property>
+                 </widget>
+                </item>
                 <item row="0" column="2">
-                 <widget class="QRadioButton" name="Cell3StatusDisplay">
+                 <widget class="QPushButton" name="Cell3StatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
@@ -714,7 +733,7 @@
                  </widget>
                 </item>
                 <item row="0" column="3">
-                 <widget class="QRadioButton" name="Cell4StatusDisplay">
+                 <widget class="QPushButton" name="Cell4StatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
@@ -724,7 +743,7 @@
                  </widget>
                 </item>
                 <item row="1" column="0">
-                 <widget class="QRadioButton" name="Cell5StatusDisplay">
+                 <widget class="QPushButton" name="Cell5StatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
@@ -734,7 +753,7 @@
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="QRadioButton" name="Cell6StatusDisplay">
+                 <widget class="QPushButton" name="Cell6StatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
@@ -744,7 +763,7 @@
                  </widget>
                 </item>
                 <item row="1" column="2">
-                 <widget class="QRadioButton" name="Cell7StatusDisplay">
+                 <widget class="QPushButton" name="Cell7StatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
@@ -754,7 +773,7 @@
                  </widget>
                 </item>
                 <item row="1" column="3">
-                 <widget class="QRadioButton" name="Cell8StatusDisplay">
+                 <widget class="QPushButton" name="Cell8StatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
@@ -764,7 +783,7 @@
                  </widget>
                 </item>
                 <item row="2" column="0">
-                 <widget class="QRadioButton" name="Cell9StatusDisplay">
+                 <widget class="QPushButton" name="Cell9StatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
@@ -774,7 +793,7 @@
                  </widget>
                 </item>
                 <item row="2" column="1">
-                 <widget class="QRadioButton" name="Cell10StatusDisplay">
+                 <widget class="QPushButton" name="Cell10StatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
@@ -784,7 +803,7 @@
                  </widget>
                 </item>
                 <item row="2" column="2">
-                 <widget class="QRadioButton" name="Cell11StatusDisplay">
+                 <widget class="QPushButton" name="Cell11StatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
@@ -794,7 +813,7 @@
                  </widget>
                 </item>
                 <item row="2" column="3">
-                 <widget class="QRadioButton" name="Cell12StatusDisplay">
+                 <widget class="QPushButton" name="Cell12StatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
@@ -804,7 +823,7 @@
                  </widget>
                 </item>
                 <item row="3" column="0">
-                 <widget class="QRadioButton" name="Cell13StatusDisplay">
+                 <widget class="QPushButton" name="Cell13StatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
@@ -813,37 +832,75 @@
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="1">
-                 <widget class="QRadioButton" name="Cell14StatusDisplay">
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="packStatusLayout">
+                <item>
+                 <widget class="QLabel" name="packStatusLabel">
+                  <property name="text">
+                   <string>Pack Status:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_6">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="packStatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
-                  <property name="text">
-                   <string>Cell14</string>
+                  <property name="acceptDrops">
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
                </layout>
               </item>
               <item>
-               <widget class="QRadioButton" name="packStatusDisplay">
-                <property name="focusPolicy">
-                 <enum>Qt::NoFocus</enum>
-                </property>
-                <property name="text">
-                 <string>Pack Current</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QRadioButton" name="ICStatusDisplay">
-                <property name="focusPolicy">
-                 <enum>Qt::NoFocus</enum>
-                </property>
-                <property name="text">
-                 <string>IC temperature</string>
-                </property>
-               </widget>
+               <layout class="QHBoxLayout" name="ICStatusLayout">
+                <item>
+                 <widget class="QLabel" name="ICStatusLabel">
+                  <property name="text">
+                   <string>IC Temperature:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_7">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="ICStatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="acceptDrops">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
              </layout>
             </widget>
