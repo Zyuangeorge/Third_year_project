@@ -261,6 +261,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         self.startButton.setEnabled(True)
         self.stopButton.setEnabled(False)
+        self.portStatusDisplay.setChecked(False)
 
     def displayCellStatus(self, batteryNumber):
         currentStatus = self.cellData['currentStatus'][batteryNumber].value

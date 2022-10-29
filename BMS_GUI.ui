@@ -450,7 +450,7 @@
        <item>
         <widget class="QTabWidget" name="monitorWindowTab">
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="batteryData_1">
           <property name="enabled">
