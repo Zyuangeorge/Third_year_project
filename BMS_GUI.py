@@ -73,28 +73,79 @@ class Ui_MainWindow(object):
 
         self.serialPortConfigLayout = QGridLayout()
         self.serialPortConfigLayout.setObjectName(u"serialPortConfigLayout")
-        self.portLabel = QLabel(self.portConfigBox)
-        self.portLabel.setObjectName(u"portLabel")
+        self.baudRateLabel = QLabel(self.portConfigBox)
+        self.baudRateLabel.setObjectName(u"baudRateLabel")
 
-        self.serialPortConfigLayout.addWidget(self.portLabel, 0, 0, 1, 2)
-
-        self.horizontalSpacer_5 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.serialPortConfigLayout.addItem(self.horizontalSpacer_5, 0, 2, 1, 3)
+        self.serialPortConfigLayout.addWidget(self.baudRateLabel, 1, 0, 1, 2)
 
         self.portComboBox = QComboBox(self.portConfigBox)
         self.portComboBox.setObjectName(u"portComboBox")
 
         self.serialPortConfigLayout.addWidget(self.portComboBox, 0, 5, 1, 1)
 
-        self.baudRateLabel = QLabel(self.portConfigBox)
-        self.baudRateLabel.setObjectName(u"baudRateLabel")
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.serialPortConfigLayout.addWidget(self.baudRateLabel, 1, 0, 1, 2)
+        self.serialPortConfigLayout.addItem(self.horizontalSpacer_3, 2, 2, 1, 3)
+
+        self.dataBitsComboBox = QComboBox(self.portConfigBox)
+        self.dataBitsComboBox.addItem("")
+        self.dataBitsComboBox.addItem("")
+        self.dataBitsComboBox.addItem("")
+        self.dataBitsComboBox.addItem("")
+        self.dataBitsComboBox.setObjectName(u"dataBitsComboBox")
+
+        self.serialPortConfigLayout.addWidget(self.dataBitsComboBox, 3, 5, 1, 1)
+
+        self.horizontalSpacer_5 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.serialPortConfigLayout.addItem(self.horizontalSpacer_5, 0, 2, 1, 3)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.serialPortConfigLayout.addItem(self.horizontalSpacer, 4, 2, 1, 3)
+
+        self.parityLabel = QLabel(self.portConfigBox)
+        self.parityLabel.setObjectName(u"parityLabel")
+
+        self.serialPortConfigLayout.addWidget(self.parityLabel, 2, 0, 1, 2)
+
+        self.stopBitsLabel = QLabel(self.portConfigBox)
+        self.stopBitsLabel.setObjectName(u"stopBitsLabel")
+
+        self.serialPortConfigLayout.addWidget(self.stopBitsLabel, 4, 0, 1, 2)
+
+        self.stopBitsComboBox = QComboBox(self.portConfigBox)
+        self.stopBitsComboBox.addItem("")
+        self.stopBitsComboBox.addItem("")
+        self.stopBitsComboBox.setObjectName(u"stopBitsComboBox")
+
+        self.serialPortConfigLayout.addWidget(self.stopBitsComboBox, 4, 5, 1, 1)
+
+        self.portLabel = QLabel(self.portConfigBox)
+        self.portLabel.setObjectName(u"portLabel")
+
+        self.serialPortConfigLayout.addWidget(self.portLabel, 0, 0, 1, 2)
+
+        self.dataBitsLabel = QLabel(self.portConfigBox)
+        self.dataBitsLabel.setObjectName(u"dataBitsLabel")
+
+        self.serialPortConfigLayout.addWidget(self.dataBitsLabel, 3, 0, 1, 2)
+
+        self.parityComboBox = QComboBox(self.portConfigBox)
+        self.parityComboBox.addItem("")
+        self.parityComboBox.addItem("")
+        self.parityComboBox.addItem("")
+        self.parityComboBox.setObjectName(u"parityComboBox")
+
+        self.serialPortConfigLayout.addWidget(self.parityComboBox, 2, 5, 1, 1)
+
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.serialPortConfigLayout.addItem(self.horizontalSpacer_2, 3, 2, 1, 3)
 
         self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.serialPortConfigLayout.addItem(self.horizontalSpacer_4, 1, 2, 1, 3)
+        self.serialPortConfigLayout.addItem(self.horizontalSpacer_4, 1, 2, 1, 2)
 
         self.baudRateComboBox = QComboBox(self.portConfigBox)
         self.baudRateComboBox.addItem("")
@@ -113,58 +164,7 @@ class Ui_MainWindow(object):
         self.baudRateComboBox.addItem("")
         self.baudRateComboBox.setObjectName(u"baudRateComboBox")
 
-        self.serialPortConfigLayout.addWidget(self.baudRateComboBox, 1, 5, 1, 1)
-
-        self.dataBitsLabel = QLabel(self.portConfigBox)
-        self.dataBitsLabel.setObjectName(u"dataBitsLabel")
-
-        self.serialPortConfigLayout.addWidget(self.dataBitsLabel, 3, 0, 1, 2)
-
-        self.stopBitsLabel = QLabel(self.portConfigBox)
-        self.stopBitsLabel.setObjectName(u"stopBitsLabel")
-
-        self.serialPortConfigLayout.addWidget(self.stopBitsLabel, 4, 0, 1, 2)
-
-        self.parityComboBox = QComboBox(self.portConfigBox)
-        self.parityComboBox.addItem("")
-        self.parityComboBox.addItem("")
-        self.parityComboBox.addItem("")
-        self.parityComboBox.setObjectName(u"parityComboBox")
-
-        self.serialPortConfigLayout.addWidget(self.parityComboBox, 2, 5, 1, 1)
-
-        self.dataBitsComboBox = QComboBox(self.portConfigBox)
-        self.dataBitsComboBox.addItem("")
-        self.dataBitsComboBox.addItem("")
-        self.dataBitsComboBox.addItem("")
-        self.dataBitsComboBox.addItem("")
-        self.dataBitsComboBox.setObjectName(u"dataBitsComboBox")
-
-        self.serialPortConfigLayout.addWidget(self.dataBitsComboBox, 3, 5, 1, 1)
-
-        self.stopBitsComboBox = QComboBox(self.portConfigBox)
-        self.stopBitsComboBox.addItem("")
-        self.stopBitsComboBox.addItem("")
-        self.stopBitsComboBox.setObjectName(u"stopBitsComboBox")
-
-        self.serialPortConfigLayout.addWidget(self.stopBitsComboBox, 4, 5, 1, 1)
-
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.serialPortConfigLayout.addItem(self.horizontalSpacer_2, 3, 2, 1, 3)
-
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.serialPortConfigLayout.addItem(self.horizontalSpacer, 4, 2, 1, 3)
-
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.serialPortConfigLayout.addItem(self.horizontalSpacer_3, 2, 2, 1, 3)
-
-        self.parityLabel = QLabel(self.portConfigBox)
-        self.parityLabel.setObjectName(u"parityLabel")
-
-        self.serialPortConfigLayout.addWidget(self.parityLabel, 2, 0, 1, 2)
+        self.serialPortConfigLayout.addWidget(self.baudRateComboBox, 1, 4, 1, 2)
 
 
         self.portConfigBoxLayout.addLayout(self.serialPortConfigLayout)
@@ -628,8 +628,23 @@ class Ui_MainWindow(object):
         self.actionAbout.setText(QCoreApplication.translate("MainWindow", u"About", None))
         self.portConfigBox.setTitle(QCoreApplication.translate("MainWindow", u"Serial Port Configuration", None))
         self.portStatusDisplay.setText(QCoreApplication.translate("MainWindow", u"Port Status", None))
-        self.portLabel.setText(QCoreApplication.translate("MainWindow", u"COM Port:", None))
         self.baudRateLabel.setText(QCoreApplication.translate("MainWindow", u"Baud Rate:", None))
+        self.dataBitsComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"8", None))
+        self.dataBitsComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"7", None))
+        self.dataBitsComboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"6", None))
+        self.dataBitsComboBox.setItemText(3, QCoreApplication.translate("MainWindow", u"5", None))
+
+        self.parityLabel.setText(QCoreApplication.translate("MainWindow", u"Parity:", None))
+        self.stopBitsLabel.setText(QCoreApplication.translate("MainWindow", u"Stop bits:", None))
+        self.stopBitsComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"1", None))
+        self.stopBitsComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"2", None))
+
+        self.portLabel.setText(QCoreApplication.translate("MainWindow", u"COM Port:", None))
+        self.dataBitsLabel.setText(QCoreApplication.translate("MainWindow", u"Data bits:", None))
+        self.parityComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"None", None))
+        self.parityComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Odd", None))
+        self.parityComboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"Even", None))
+
         self.baudRateComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"1200", None))
         self.baudRateComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"1800", None))
         self.baudRateComboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"2400", None))
@@ -645,21 +660,6 @@ class Ui_MainWindow(object):
         self.baudRateComboBox.setItemText(12, QCoreApplication.translate("MainWindow", u"576000", None))
         self.baudRateComboBox.setItemText(13, QCoreApplication.translate("MainWindow", u"921600", None))
 
-        self.dataBitsLabel.setText(QCoreApplication.translate("MainWindow", u"Data bits:", None))
-        self.stopBitsLabel.setText(QCoreApplication.translate("MainWindow", u"Stop bits:", None))
-        self.parityComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"None", None))
-        self.parityComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Odd", None))
-        self.parityComboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"Even", None))
-
-        self.dataBitsComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"8", None))
-        self.dataBitsComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"7", None))
-        self.dataBitsComboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"6", None))
-        self.dataBitsComboBox.setItemText(3, QCoreApplication.translate("MainWindow", u"5", None))
-
-        self.stopBitsComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"1", None))
-        self.stopBitsComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"2", None))
-
-        self.parityLabel.setText(QCoreApplication.translate("MainWindow", u"Parity:", None))
         self.detectPortButton.setText(QCoreApplication.translate("MainWindow", u"Detect Port", None))
         self.startButton.setText(QCoreApplication.translate("MainWindow", u"Start Monitoring", None))
         self.stopButton.setText(QCoreApplication.translate("MainWindow", u"Stop Monitoring", None))
