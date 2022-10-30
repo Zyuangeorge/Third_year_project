@@ -92,6 +92,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.init()
 
     def clearData(self):
+        """Clear cell voltage, pack voltage & current and IC temperature"""
         # Clear cell voltage
         self.voltageTable.clearContents()
         for num in range(0, 14):
@@ -115,6 +116,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.portStatusDisplay.setEnabled(False)
 
     def resetStatus(self):
+        """Reset cell, pack and IC status as well as the button colours"""
         # Clear cell status
         for cellStatus in self.cellData['voltageStatus']:
             cellStatus = voltageStatus.DEFAULT
@@ -285,6 +287,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.timer.start(1)  # 1ms/T
 
     def stopMonitor(self):
+        """Stop the monitoring porcess"""
         try:
             self.timer.stop()
             self.serial.close()
@@ -296,6 +299,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.portStatusDisplay.setChecked(False)
 
     def displayCellStatus(self, batteryNumber):
+        """Show cell status through a pop-up window"""
         currentStatus = self.cellData['currentStatus'][batteryNumber].value
         voltageStatus = self.cellData['voltageStatus'][batteryNumber].value
 
@@ -306,6 +310,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             batteryNumber+1) + " Status", message)
 
     def helpAction(self):
+        """User manual"""
         QMessageBox.about(self, "Help",
                           "This GUI supports: \n\
             1. Change UART settings\n\
@@ -321,10 +326,12 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         **The button will turn red if there is a problem with the status")
 
     def aboutAction(self):
+        """About this GUI"""
         QMessageBox.about(
             self, "About", "This GUI is built by Zhe Yuan, and it is used to monitor the battery cell data through MC33771C")
 
     def clearWarning(self):
+        """Warn user for clearing data"""
         yesButton = QMessageBox.StandardButton.Yes
         noButton = QMessageBox.StandardButton.No
 
@@ -334,6 +341,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.clearData()
 
     def receiveData(self):
+        """Handler for receiving data"""
         try:
             # Get the data bits in waiting
             waitBits = self.serial.in_waiting
