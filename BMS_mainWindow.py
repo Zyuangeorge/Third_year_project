@@ -311,8 +311,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
     def helpAction(self):
         """User manual"""
-        QMessageBox.about(self, "Help",
-                          "This GUI supports: \n\
+        QMessageBox.about(self,
+        "Help",
+        "This GUI supports: \n\
             1. Change UART settings\n\
             2. Set threshold values\n\
             3. Display battery data and status\n\
@@ -321,7 +322,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         Follow these steps to use this GUI: \n\
             1. Set UART configuration\n\
             2. Set threshold values\n\
-            3. Check data and status\n\
+            3. Start monitoring\n\
+            4. Check data and status\n\
         *To check individual cell data, please click the cell button\n\
         **The button will turn red if there is a problem with the status")
 
