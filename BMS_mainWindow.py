@@ -19,6 +19,7 @@ from PySide6.QtCore import QTimer
 # Import UI file
 from BMS_GUI import Ui_MainWindow
 
+
 class voltageStatus(Enum):
     DEFAULT = "NORMAL"
     UNDERVOLTAGE = "UNDERVOLTAGE"
@@ -123,9 +124,13 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Clear pack status
         self.packData['voltageStatus'] = voltageStatus.DEFAULT
         self.packData['currentStatus'] = currentStatus.DEFAULT
-        self.packStatusDisplay.setText(
-            "Volt:" + self.packData['voltageStatus'].value + "\tAmp:" + self.packData['currentStatus'].value)
-        self.packStatusDisplay.setStyleSheet(
+        self.packVoltageStatusDisplay.setText(
+            self.packData['voltageStatus'].value)
+        self.packCurrentStatusDisplay.setText(
+            self.packData['currentStatus'].value)
+        self.packVoltageStatusDisplay.setStyleSheet(
+            "background-color: rgb(0, 255, 0)")
+        self.packCurrentStatusDisplay.setStyleSheet(
             "background-color: rgb(0, 255, 0)")
 
         # Clear IC status
@@ -338,7 +343,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 time.sleep(0.1)
                 waitBits = self.serial.in_waiting
         except:
-            QMessageBox.critical(self,'COM error','COM data error, please reconnect the port')
+            QMessageBox.critical(
+                self, 'COM error', 'COM data error, please reconnect the port')
             self.close()
             return None
 
@@ -348,6 +354,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             print(num)
         else:
             pass
+
 
 # Main
 if __name__ == "__main__":
