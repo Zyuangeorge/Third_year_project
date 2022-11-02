@@ -263,7 +263,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         if len(self.portsDict) == 0:
             self.portComboBox.addItem("NULL")
-            QMessageBox.critical(self, "COM error", "COM detect failed")
 
     def startMonitor(self):
         """Start the monitor process"""
