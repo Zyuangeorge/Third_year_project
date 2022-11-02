@@ -19,6 +19,9 @@ from PySide6.QtCore import QTimer
 # Import UI file
 from BMS_GUI import Ui_MainWindow
 
+# Import util functions
+import util
+
 
 class voltageStatus(Enum):
     DEFAULT = "NORMAL"
@@ -53,7 +56,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Threshold variables
         self.currentThreshold = [0, 1600]
-        self.voltageThreshold = [3000, 3700]
+        self.voltageThreshold = [2800, 4300]
         self.tempThreshold = [35, 105]
         self.packVoltageThreshold = [i * 14 for i in self.voltageThreshold]
 
@@ -90,6 +93,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Initialisation of the GUI
         self.init()
+        self.detectPort()
 
     def clearData(self):
         """Clear cell voltage, pack voltage & current and IC temperature"""
@@ -312,8 +316,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def helpAction(self):
         """User manual"""
         QMessageBox.about(self,
-        "Help",
-        "This GUI supports: \n\
+                          "Help",
+                          "This GUI supports: \n\
             1. Change UART settings\n\
             2. Set threshold values\n\
             3. Display battery data and status\n\
@@ -344,6 +348,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
     def receiveData(self):
         """Handler for receiving data"""
+        bccRawData = []
+        dataList = []
+        bccData = []
         try:
             # Get the data bits in waiting
             waitBits = self.serial.in_waiting
@@ -359,9 +366,18 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             return None
 
         if waitBits > 0:
-            bccData = self.serial.read(waitBits)
-            num = len(bccData)
-            print(num)
+            # Read data from COM port
+            bccRawData = self.serial.read(waitBits)
+
+            # Transfer the byte data to UART data list
+            dataList = list(hex(data) for data in list(bccRawData))
+            
+            # Filter out incorrect inputs
+            if len(dataList) == 64:
+                bccData = util.listData2strData(dataList)
+            print(bccData)
+
+            
         else:
             pass
 
