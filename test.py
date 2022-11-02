@@ -6,3 +6,5 @@ if __name__ == "__main__":
 
     strData = util.listData2strData(listData)
     print(strData)
+    for i in range (0,15):
+        print(i)

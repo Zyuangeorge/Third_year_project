@@ -13,7 +13,7 @@ from enum import Enum
 
 # Import PyQt widgets: PySide6
 from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QAbstractItemView, QApplication, QMessageBox
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QIntValidator
 from PySide6.QtCore import QTimer
 
 # Import UI file
@@ -57,7 +57,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Threshold variables
         self.currentThreshold = [0, 1600]
         self.voltageThreshold = [2800, 4300]
-        self.tempThreshold = [35, 105]
+        self.tempThreshold = [30, 105]
         self.packVoltageThreshold = [i * 14 for i in self.voltageThreshold]
 
         # Status button list
@@ -95,25 +95,43 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.init()
         self.detectPort()
 
+        # Update threshold values
+        self.voltageMaxLineEdit.textChanged.connect(self.updateThreshold)
+        self.voltageMiniLineEdit.textChanged.connect(self.updateThreshold)
+
+        self.currentMaxLineEdit.textChanged.connect(self.updateThreshold)
+        self.currentMiniLineEdit.textChanged.connect(self.updateThreshold)
+
+        self.tempMaxLineEdit.textChanged.connect(self.updateThreshold)
+        self.tempMiniLineEdit.textChanged.connect(self.updateThreshold)
+
+    def updateThreshold(self):
+        """This function is used to update the threshold values"""
+        self.currentThreshold = [int(self.currentMiniLineEdit.text()), int(
+            self.currentMaxLineEdit.text())]
+
+        self.voltageThreshold = [int(self.voltageMiniLineEdit.text()), int(
+            self.voltageMaxLineEdit.text())]
+
+        self.tempThreshold = [int(self.tempMiniLineEdit.text()), int(
+            self.tempMiniLineEdit.text())]
+
     def clearData(self):
         """Clear cell voltage, pack voltage & current and IC temperature"""
         # Clear cell voltage
-        self.voltageTable.clearContents()
         for num in range(0, 14):
             self.cellData['voltage'][num] = 0
-            self.voltageTable.setItem(num, 0, QTableWidgetItem(
-                (str)(self.cellData['voltage'][num])))
-            self.voltageTable.setItem(num, 1, QTableWidgetItem('mV'))
+            self.voltageTable.item(num, 0).setText(str(0))
 
         # Clear pack data
         self.packData['voltage'] = 0
         self.packData['current'] = 0
-        self.packVoltageLineEdit.setText((str)(self.packData['voltage']))
-        self.packCurrentLineEdit.setText((str)(self.packData['current']))
+        self.packVoltageLineEdit.setText(str(self.packData['voltage']))
+        self.packCurrentLineEdit.setText(str(self.packData['current']))
 
         # Clear IC temp data
         self.ICData['temp'] = 0
-        self.ICTempLineEdit.setText((str)(self.ICData['temp']))
+        self.ICTempLineEdit.setText(str(self.ICData['temp']))
 
         # Clear port status
         self.portStatusDisplay.setChecked(False)
@@ -122,10 +140,13 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def resetStatus(self):
         """Reset cell, pack and IC status as well as the button colours"""
         # Clear cell status
-        for cellStatus in self.cellData['voltageStatus']:
-            cellStatus = voltageStatus.DEFAULT
-        for cellStatus in self.cellData['currentStatus']:
-            cellStatus = currentStatus.DEFAULT
+        for i in range (0,14):
+            self.cellData['voltageStatus'][i] = voltageStatus.DEFAULT
+            self.cellData['currentStatus'][i] = currentStatus.DEFAULT
+
+        for button in self.statusButtonList:
+            button.setStyleSheet(
+                "background-color: rgb(0, 255, 0)")
 
         # Clear pack status
         self.packData['voltageStatus'] = voltageStatus.DEFAULT
@@ -140,32 +161,43 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             "background-color: rgb(0, 255, 0)")
 
         # Clear IC status
-        self.ICData['status'] = tempStatus.DEFAULT
-        self.ICStatusDisplay.setText(self.ICData['status'].value)
+        self.ICData['tempStatus'] = tempStatus.DEFAULT
+        self.ICStatusDisplay.setText(self.ICData['tempStatus'].value)
         self.ICStatusDisplay.setStyleSheet(
-            "background-color: rgb(0, 255, 0)")
-
-        for button in self.statusButtonList:
-            button.setStyleSheet(
-                "background-color: rgb(0, 255, 0)")
+            "background-color: rgb(0, 255, 0)")   
 
     def init(self):
         """GUI initialisation"""
+        # Set QLineEdit restrictions
+        self.voltageMaxLineEdit.setValidator(QIntValidator())
+        self.voltageMiniLineEdit.setValidator(QIntValidator())
+        self.currentMaxLineEdit.setValidator(QIntValidator())
+        self.currentMiniLineEdit.setValidator(QIntValidator())
+        self.tempMaxLineEdit.setValidator(QIntValidator())
+        self.tempMiniLineEdit.setValidator(QIntValidator())
+
         # Disable the change of the table item
         self.voltageTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
+        # Set table item
+        for num in range(0, 14):
+            self.cellData['voltage'][num] = 0
+            self.voltageTable.setItem(num, 0, QTableWidgetItem(
+                str(self.cellData['voltage'][num])))
+            self.voltageTable.setItem(num, 1, QTableWidgetItem('mV'))
 
         # Set the stop monitoring button to close
         self.stopButton.setEnabled(False)
 
         # Set threshold values
-        self.currentMiniLineEdit.setText((str)(self.currentThreshold[0]))
-        self.currentMaxLineEdit.setText((str)(self.currentThreshold[1]))
+        self.currentMiniLineEdit.setText(str(self.currentThreshold[0]))
+        self.currentMaxLineEdit.setText(str(self.currentThreshold[1]))
 
-        self.voltageMiniLineEdit.setText((str)(self.voltageThreshold[0]))
-        self.voltageMaxLineEdit.setText((str)(self.voltageThreshold[1]))
+        self.voltageMiniLineEdit.setText(str(self.voltageThreshold[0]))
+        self.voltageMaxLineEdit.setText(str(self.voltageThreshold[1]))
 
-        self.tempMiniLineEdit.setText((str)(self.tempThreshold[0]))
-        self.tempMaxLineEdit.setText((str)(self.tempThreshold[1]))
+        self.tempMiniLineEdit.setText(str(self.tempThreshold[0]))
+        self.tempMaxLineEdit.setText(str(self.tempThreshold[1]))
 
         self.clearData()
         self.resetStatus()
@@ -226,7 +258,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         self.portComboBox.clear()
         for port in ports:
-            self.portsDict[(str)(port[0])] = (str)(port[1])
+            self.portsDict[str(port[0])] = str(port[1])
             self.portComboBox.addItem(port[0])
 
         if len(self.portsDict) == 0:
@@ -239,7 +271,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.serial.port = self.portComboBox.currentText()
 
         # Set Baud rate
-        self.serial.baudrate = (int)(self.baudRateComboBox.currentText())
+        self.serial.baudrate = int(self.baudRateComboBox.currentText())
 
         # Set Parity
         parity = self.parityComboBox.currentText()
@@ -291,7 +323,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.timer.start(1)  # 1ms/T
 
     def stopMonitor(self):
-        """Stop the monitoring porcess"""
+        """Stop the monitoring process"""
         try:
             self.timer.stop()
             self.serial.close()
@@ -346,6 +378,34 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         if msg == QMessageBox.Yes:
             self.clearData()
 
+    def updateData(self, bccData):
+        """This function is used to update the data as well as the status"""
+        # Update data and status
+        self.packData['voltage'] = bccData[0]
+        if self.packData['voltage'] > self.packVoltageThreshold[1]:
+            self.packData['voltageStatus'] = voltageStatus.OVERVOLTAGE
+        elif self.packData['voltage'] < self.packVoltageThreshold[0]:
+            self.packData['voltageStatus'] = voltageStatus.UNDERVOLTAGE
+        else:
+            self.packData['voltageStatus'] = voltageStatus.DEFAULT
+
+        for i in range(0, 14):
+            self.cellData['voltage'][i] = bccData[i+1]
+            if self.cellData['voltage'][i] > self.voltageThreshold[1]:
+                self.cellData['voltageStatus'][i] = voltageStatus.OVERVOLTAGE
+            elif self.cellData['voltage'][i] < self.voltageThreshold[0]:
+                self.cellData['voltageStatus'][i] = voltageStatus.UNDERVOLTAGE
+            else:
+                self.cellData['voltageStatus'][i] = voltageStatus.DEFAULT
+
+        self.ICData['temp'] = bccData[15] / 1000
+        if self.ICData['temp'] > self.tempThreshold[1]:
+            self.ICData['tempStatus'] = tempStatus.OVERTEMPERATURE
+        elif self.ICData['temp'] < self.tempThreshold[0]:
+            self.ICData['tempStatus'] = tempStatus.UNDERTEMPERATURE
+        else:
+            self.ICData['tempStatus'] = tempStatus.DEFAULT
+
     def receiveData(self):
         """Handler for receiving data"""
         bccRawData = []
@@ -371,13 +431,75 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             # Transfer the byte data to UART data list
             dataList = list(hex(data) for data in list(bccRawData))
-            
+
             # Filter out incorrect inputs
             if len(dataList) == 64:
                 bccData = util.listData2strData(dataList)
-            print(bccData)
+                print(bccData)
+                self.updateData(bccData)
+                print(self.voltageTable.item(0,0))
+                self.updateGUIData()
+            else:
+                pass
 
-            
+        else:
+            pass
+
+    def updateGUIData(self):
+        """This function is used to update GUI display"""
+        # Update cell voltage data and status
+        print(self.packData['voltage'])
+        print(self.packData['current'])
+        print(self.ICData['temp'])
+        print(self.ICData['tempStatus'])
+
+        for i in range(0, 14):
+            self.voltageTable.item(i, 0).setText(
+                str(self.cellData['voltage'][i]))
+            if self.cellData['voltageStatus'][i] == voltageStatus.OVERVOLTAGE or self.cellData['voltageStatus'][i] == voltageStatus.UNDERVOLTAGE:
+                self.statusButtonList[i].setStyleSheet(
+                    "background-color: rgb(255, 0, 0)")
+            elif self.cellData['currentStatus'][i] == currentStatus.OVERCURRENT or self.cellData['currentStatus'][i] == currentStatus.UNDERCURRENT:
+                self.statusButtonList[i].setStyleSheet(
+                    "background-color: rgb(255, 0, 0)")
+            else:
+                pass
+
+        # Update pack data and status
+        self.packVoltageLineEdit.setText(str(self.packData['voltage']))
+        self.packVoltageStatusDisplay.setText(
+            self.packData['voltageStatus'].value)
+        self.packCurrentLineEdit.setText(str(self.packData['current']))
+        self.packCurrentStatusDisplay.setText(
+            self.packData['currentStatus'].value)
+
+        if self.packData['voltageStatus'] == voltageStatus.OVERVOLTAGE:
+            self.packVoltageStatusDisplay.setStyleSheet(
+                "background-color: rgb(255, 0, 0)")
+        elif self.packData['voltageStatus'] == voltageStatus.UNDERVOLTAGE:
+            self.packVoltageStatusDisplay.setStyleSheet(
+                "background-color: rgb(255, 0, 0)")
+        else:
+            pass
+
+        if self.packData['currentStatus'] == currentStatus.OVERCURRENT:
+            self.packCurrentStatusDisplay.setStyleSheet(
+                "background-color: rgb(255, 0, 0)")
+        elif self.packData['currentStatus'] == currentStatus.UNDERCURRENT:
+            self.packCurrentStatusDisplay.setStyleSheet(
+                "background-color: rgb(255, 0, 0)")
+        else:
+            pass
+
+        # Update IC data and status
+        self.ICTempLineEdit.setText(str(self.ICData['temp']))
+        self.ICStatusDisplay.setText(self.ICData['tempStatus'].value)
+        if self.ICData['tempStatus'] == tempStatus.OVERTEMPERATURE:
+            self.ICStatusDisplay.setStyleSheet(
+                "background-color: rgb(255, 0, 0)")
+        elif self.ICData['tempStatus'] == tempStatus.UNDERTEMPERATURE:
+            self.ICStatusDisplay.setStyleSheet(
+                "background-color: rgb(255, 0, 0)")
         else:
             pass
 
