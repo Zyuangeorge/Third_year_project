@@ -93,7 +93,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Initialisation of the GUI
         self.init()
-        self.detectPort()
 
         # Update threshold values
         self.voltageMaxLineEdit.textChanged.connect(self.updateThreshold)
@@ -263,6 +262,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         if len(self.portsDict) == 0:
             self.portComboBox.addItem("NULL")
+            QMessageBox.critical(self, "COM error", "COM detect failed")
 
     def startMonitor(self):
         """Start the monitor process"""
