@@ -319,7 +319,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.timer.timeout.connect(self.receiveData)
 
         # Set the timer for receiving
-        self.timer.start(1)  # 1ms/T
+        self.timer.start(200)  # 1ms/T
 
     def stopMonitor(self):
         """Stop the monitoring process"""
@@ -380,7 +380,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def updateData(self, bccData):
         """This function is used to update the data as well as the status"""
         # Update data and status
-        self.packData['voltage'] = bccData[0]
+        self.packData['voltage'] = bccData[0] / 1000
         if self.packData['voltage'] > self.packVoltageThreshold[1]:
             self.packData['voltageStatus'] = voltageStatus.OVERVOLTAGE
         elif self.packData['voltage'] < self.packVoltageThreshold[0]:
@@ -389,7 +389,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.packData['voltageStatus'] = voltageStatus.DEFAULT
 
         for i in range(0, 14):
-            self.cellData['voltage'][i] = bccData[i+1]
+            self.cellData['voltage'][i] = bccData[i+1] / 1000
             if self.cellData['voltage'][i] > self.voltageThreshold[1]:
                 self.cellData['voltageStatus'][i] = voltageStatus.OVERVOLTAGE
             elif self.cellData['voltage'][i] < self.voltageThreshold[0]:

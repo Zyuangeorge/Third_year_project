@@ -68,6 +68,9 @@ volatile int exit_code = 0;
 #define RED_LED_PORT PTD
 #define RED_LED_PIN 15U
 
+#define BLUE_LED_PORT PTD
+#define BLUE_LED_PIN 0U
+
 /* LPSPI_TX delay configuration */
 #define BCC_TX_LPSPI_DELAY_PCS_TO_SCLK 3U
 #define BCC_TX_LPSPI_DELAY_SCLK_TO_PCS 1U
@@ -147,14 +150,11 @@ typedef struct
                           Admissible range is from 0 to 200. */
 } ntc_config_t;
 
-typedef struct
+struct uart_transfer_status
 {
-	bcc_status_t bccStatus; /* bcc chip status */
-
+    bcc_status_t bccStatus; /* bcc chip status */
 	status_t uartStatus; /* uart transfer status */
-
-} uart_transfre_status;
-
+};
 
 /* Initial BCC configuration */
 
@@ -242,25 +242,6 @@ bool cbIndividual[BCC_MAX_CELLS] = {false, false, false, false, false,
 int32_t cbTimeoutLast = -1;
 int32_t cbEnabledLast = -1;
 
-///* Measurement results */
-//uint32_t stackVoltageUV;
-//uint32_t cell1VoltageUV;
-//uint32_t cell2VoltageUV;
-//uint32_t cell3VoltageUV;
-//uint32_t cell4VoltageUV;
-//uint32_t cell5VoltageUV;
-//uint32_t cell6VoltageUV;
-//uint32_t cell7VoltageUV;
-//uint32_t cell8VoltageUV;
-//uint32_t cell9VoltageUV;
-//uint32_t cell10VoltageUV;
-//uint32_t cell11VoltageUV;
-//uint32_t cell12VoltageUV;
-//uint32_t cell13VoltageUV;
-//uint32_t cell14VoltageUV;
-//
-//int16_t icTempDegC;
-
 /* Faults */
 uint16_t faultStatus1;
 uint16_t faultStatus2;
@@ -286,10 +267,9 @@ static status_t initProject();
 
 /* NTC handlers */
 static void fillNtcTable(const ntc_config_t *const ntcConfig);
-//static bcc_status_t getNtcCelsius(uint16_t regVal, int16_t *temp);
 
 /* Update and transfer measurements */
-static bcc_status_t updateMeasurements(void);
+struct uart_transfer_status updateMeasurements(void);
 //static bcc_status_t updateFaultStatus(void);
 
 /* Cell balancing timeout update */
@@ -559,117 +539,33 @@ void fillNtcTable(const ntc_config_t *const ntcConfig)
 }
 
 /*!
- * @brief This function calculates temperature from raw value of MEAS_ANx
- * register. It uses precalculated values stored in g_ntcTable table.
- *
- * @param regVal Value of MEAS_ANx register.
- * @param temp Temperature value in deg. of Celsius * 10.
- *
- * @return bcc_status_t Error code.
- */
-//static bcc_status_t getNtcCelsius(uint16_t regVal, int16_t *temp)
-//{
-//    int16_t left = 0; /* Pointer (index) to the left border of interval (NTC table). */
-//    /* Pointer (index) to the right border of interval (NTC table). */
-//    int16_t right = NTC_TABLE_SIZE - 1;
-//    int16_t middle;   /* Pointer (index) to the middle of interval (NTC table). */
-//    int8_t degTenths; /* Fractional part of temperature value. */
-//
-//    BCC_MCU_Assert(temp != NULL);
-//
-//    /* Check range of NTC table. */
-//    if (g_ntcTable[NTC_TABLE_SIZE - 1] > regVal)
-//    {
-//        *temp = NTC_COMP_TEMP(NTC_TABLE_SIZE - 1, 0);
-//        return BCC_STATUS_SUCCESS;
-//    }
-//    if (g_ntcTable[0] < regVal)
-//    {
-//        *temp = NTC_COMP_TEMP(0, 0);
-//        return BCC_STATUS_SUCCESS;
-//    }
-//
-//    regVal &= BCC_GET_MEAS_RAW(regVal);
-//
-//    /* Search for an array item which is close to the register value provided
-//     * by user (regVal). Used method is binary search in sorted array. */
-//    while ((left + 1) != right)
-//    {
-//        /* Split interval into halves. */
-//        middle = (left + right) >> 1U;
-//        if (g_ntcTable[middle] <= regVal)
-//        {
-//            /* Select right half (array items are in descending order). */
-//            right = middle;
-//        }
-//        else
-//        {
-//            /* Select left half. */
-//            left = middle;
-//        }
-//    }
-//
-//    /* Notes: found table item (left) is less than the following item in the
-//     * table (left + 1).
-//     * The last item cannot be found (algorithm property). */
-//
-//    /* Calculate fractional part of temperature. */
-//    degTenths = (g_ntcTable[left] - regVal) / ((g_ntcTable[left] - g_ntcTable[left + 1]) / 10);
-//    (*temp) = NTC_COMP_TEMP(left, degTenths);
-//
-//    return BCC_STATUS_SUCCESS;
-//}
-
-/*!
  * @brief This function reads values measured and provided via SPI
  * by BCC device (ISENSE, cell voltages, temperatures).
  *
- * @return bcc_status_t Error code.
+ * @return uart_transfer_status Error code.
  */
-static bcc_status_t updateMeasurements(void)
+struct uart_transfer_status updateMeasurements(void)
 {
-    bcc_status_t error;
-    status_t status;
+    struct uart_transfer_status error;
     uint16_t measurements[BCC_MEAS_CNT]; /* Array needed to store all measured values. */
     uint32_t cellData[16] = {0}; /* Array used in UART communication */
 
     /* Step 1: Start conversion and wait for the conversion time. */
-    error = BCC_Meas_StartAndWait(&drvConfig, BCC_CID_DEV1, BCC_AVG_1);
-    if (error != BCC_STATUS_SUCCESS)
+    error.bccStatus = BCC_Meas_StartAndWait(&drvConfig, BCC_CID_DEV1, BCC_AVG_1);
+    if (error.bccStatus != BCC_STATUS_SUCCESS)
     {
         return error;
     }
 
     /* Step 2: Convert raw measurements to appropriate units. */
-    error = BCC_Meas_GetRawValues(&drvConfig, BCC_CID_DEV1, measurements);
-    if (error != BCC_STATUS_SUCCESS)
+    error.bccStatus = BCC_Meas_GetRawValues(&drvConfig, BCC_CID_DEV1, measurements);
+    if (error.bccStatus != BCC_STATUS_SUCCESS)
     {
         return error;
     }
 
     /* You can use bcc_measurements_t enumeration to index array with raw values. */
     /* Useful macros can be found in bcc.h or bcc_MC3377x.h. */
-
-//    /* Stack voltage in [uV]. */
-//    stackVoltageUV = BCC_GET_STACK_VOLT(measurements[BCC_MSR_STACK_VOLT]);
-//    /* Cells voltage in [uV]. */
-//    cell1VoltageUV = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT1]);
-//    cell2VoltageUV = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT2]);
-//    cell3VoltageUV = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT3]);
-//    cell4VoltageUV = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT4]);
-//    cell5VoltageUV = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT5]);
-//    cell6VoltageUV = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT6]);
-//    cell7VoltageUV = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT7]);
-//    cell8VoltageUV = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT8]);
-//    cell9VoltageUV = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT9]);
-//    cell10VoltageUV = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT10]);
-//    cell11VoltageUV = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT11]);
-//    cell12VoltageUV = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT12]);
-//    cell13VoltageUV = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT13]);
-//    cell14VoltageUV = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT14]);
-//
-//    /* IC temperature measurement in degC (register MEAS_IC_TEMP). */
-//    icTempDegC = (int16_t)(BCC_GET_IC_TEMP_C(measurements[BCC_MSR_ICTEMP]));
 
     cellData[0]= BCC_GET_STACK_VOLT(measurements[BCC_MSR_STACK_VOLT]);
 	cellData[1]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT1]);
@@ -688,15 +584,14 @@ static bcc_status_t updateMeasurements(void)
 	cellData[14]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT14]);
 	cellData[15] = BCC_GET_IC_TEMP_C(measurements[BCC_MSR_ICTEMP]);
 
-	// LPUART_DRV_SendData(INST_LPUART1,(uint8_t *)cellData, sizeof(cellData));
-	status = LPUART_DRV_SendDataBlocking(INST_LPUART1,(uint8_t *)cellData, sizeof(cellData), TIMEOUT);
+	error.uartStatus = LPUART_DRV_SendDataBlocking(INST_LPUART1,(uint8_t *)cellData, sizeof(cellData), TIMEOUT);
 
-	if (status != STATUS_SUCCESS)
+	if (error.uartStatus != STATUS_SUCCESS)
 	{
-		return status;
+		return error;
 	}
 
-    return BCC_STATUS_SUCCESS;
+    return error;
 }
 
 /*!
@@ -831,7 +726,7 @@ static bcc_status_t updateMeasurements(void)
 int main(void)
 {
     /* Write your local variable definition here */
-    bcc_status_t bccStatus;
+    struct uart_transfer_status bccStatus;
 /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
 #ifdef PEX_RTOS_INIT
     PEX_RTOS_INIT(); /* Initialization of the selected RTOS. Macro is defined by the RTOS component. */
@@ -849,7 +744,7 @@ int main(void)
             {
                 /* Update measurements once per 200 ms. */
                 bccStatus = updateMeasurements();
-                if (bccStatus != BCC_STATUS_SUCCESS)
+                if (bccStatus.bccStatus != BCC_STATUS_SUCCESS || bccStatus.uartStatus != STATUS_SUCCESS)
                 {
                     PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
                 }
@@ -865,7 +760,7 @@ int main(void)
     }
     else
     {
-        PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
+        PINS_DRV_ClearPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
     }
 
     /*** Don't write any code pass this line, or it will be deleted during code generation. ***/

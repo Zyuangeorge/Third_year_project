@@ -588,7 +588,13 @@ class Ui_MainWindow(object):
         self.packStatusLabel.setObjectName(u"packStatusLabel")
         self.packStatusLabel.setFont(font2)
 
-        self.PackStatusLayout.addWidget(self.packStatusLabel, 0, 0, 3, 1)
+        self.PackStatusLayout.addWidget(self.packStatusLabel, 0, 0, 4, 1)
+
+        self.packVoltageStatusLabel = QLabel(self.statusGroupBox)
+        self.packVoltageStatusLabel.setObjectName(u"packVoltageStatusLabel")
+        self.packVoltageStatusLabel.setFont(font2)
+
+        self.PackStatusLayout.addWidget(self.packVoltageStatusLabel, 0, 1, 2, 2)
 
         self.packVoltageStatusDisplay = QLineEdit(self.statusGroupBox)
         self.packVoltageStatusDisplay.setObjectName(u"packVoltageStatusDisplay")
@@ -596,13 +602,7 @@ class Ui_MainWindow(object):
         self.packVoltageStatusDisplay.setAcceptDrops(False)
         self.packVoltageStatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
-        self.PackStatusLayout.addWidget(self.packVoltageStatusDisplay, 2, 3, 1, 1)
-
-        self.packCurrentStatusLabel = QLabel(self.statusGroupBox)
-        self.packCurrentStatusLabel.setObjectName(u"packCurrentStatusLabel")
-        self.packCurrentStatusLabel.setFont(font2)
-
-        self.PackStatusLayout.addWidget(self.packCurrentStatusLabel, 2, 1, 1, 2)
+        self.PackStatusLayout.addWidget(self.packVoltageStatusDisplay, 0, 3, 2, 1)
 
         self.packCurrentStatusDisplay = QLineEdit(self.statusGroupBox)
         self.packCurrentStatusDisplay.setObjectName(u"packCurrentStatusDisplay")
@@ -615,13 +615,13 @@ class Ui_MainWindow(object):
         self.packCurrentStatusDisplay.setAcceptDrops(False)
         self.packCurrentStatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
-        self.PackStatusLayout.addWidget(self.packCurrentStatusDisplay, 0, 3, 2, 1)
+        self.PackStatusLayout.addWidget(self.packCurrentStatusDisplay, 2, 3, 2, 1)
 
-        self.packVoltageStatusLabel = QLabel(self.statusGroupBox)
-        self.packVoltageStatusLabel.setObjectName(u"packVoltageStatusLabel")
-        self.packVoltageStatusLabel.setFont(font2)
+        self.packCurrentStatusLabel = QLabel(self.statusGroupBox)
+        self.packCurrentStatusLabel.setObjectName(u"packCurrentStatusLabel")
+        self.packCurrentStatusLabel.setFont(font2)
 
-        self.PackStatusLayout.addWidget(self.packVoltageStatusLabel, 0, 1, 2, 2)
+        self.PackStatusLayout.addWidget(self.packCurrentStatusLabel, 2, 1, 2, 2)
 
 
         self.verticalLayout.addLayout(self.PackStatusLayout)
@@ -843,8 +843,8 @@ class Ui_MainWindow(object):
         self.Cell12StatusDisplay.setText(QCoreApplication.translate("MainWindow", u"Cell12", None))
         self.Cell13StatusDisplay.setText(QCoreApplication.translate("MainWindow", u"Cell13", None))
         self.packStatusLabel.setText(QCoreApplication.translate("MainWindow", u"Pack Status:", None))
-        self.packCurrentStatusLabel.setText(QCoreApplication.translate("MainWindow", u"Current:", None))
         self.packVoltageStatusLabel.setText(QCoreApplication.translate("MainWindow", u"Voltage:", None))
+        self.packCurrentStatusLabel.setText(QCoreApplication.translate("MainWindow", u"Current:", None))
         self.ICStatusLabel.setText(QCoreApplication.translate("MainWindow", u"IC Status:", None))
         self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_2), QCoreApplication.translate("MainWindow", u"Pack Data and Status", None))
         self.nameLabel.setText(QCoreApplication.translate("MainWindow", u"Made by Zhe Yuan", None))
