@@ -319,7 +319,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.timer.timeout.connect(self.receiveData)
 
         # Set the timer for receiving
-        self.timer.start(200)  # 1ms/T
+        self.timer.start(1)  # 1ms/T
 
     def stopMonitor(self):
         """Stop the monitoring process"""
@@ -427,6 +427,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         if waitBits > 0:
             # Read data from COM port
             bccRawData = self.serial.read(waitBits)
+            # print(bccRawData)
+            print(len(bccRawData))
 
             # Transfer the byte data to UART data list
             dataList = list(hex(data) for data in list(bccRawData))
