@@ -1,5 +1,6 @@
-# Import built-in functions
+# Import functions in other folders
 import sys
+sys.path.append('.')
 
 # Import serial library
 import serial
@@ -17,10 +18,10 @@ from PySide6.QtGui import QIcon, QIntValidator
 from PySide6.QtCore import QTimer
 
 # Import UI file
-from BMS_GUI import Ui_MainWindow
+from UI.BMS_GUI import Ui_MainWindow
 
 # Import util functions
-import util
+import util.util as util
 
 
 class voltageStatus(Enum):
@@ -51,7 +52,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         # Set up window logo and disable window size modification
-        self.setWindowIcon(QIcon("sheffield_logo.jpg"))
+        self.setWindowIcon(QIcon("./UI/sheffield_logo.jpg"))
         self.setFixedSize(self.width(), self.height())
 
         # Threshold variables

@@ -1,6 +1,3 @@
-from BMS_mainWindow import voltageStatus, currentStatus, tempStatus
-
-
 def listData2strData(dataList):
     """This function is used to transfer the bcc UART data to bcc data list"""
     dataList.reverse()  # reverse the UART data list
