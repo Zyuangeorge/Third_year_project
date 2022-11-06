@@ -57,7 +57,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Threshold variables
         self.currentThreshold = [0, 1600]
         self.voltageThreshold = [2800, 4300]
-        self.tempThreshold = [30, 105]
+        self.tempThreshold = [20, 105]
         self.packVoltageThreshold = [i * 14 for i in self.voltageThreshold]
 
         # Status button list
@@ -139,7 +139,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def resetStatus(self):
         """Reset cell, pack and IC status as well as the button colours"""
         # Clear cell status
-        for i in range (0,14):
+        for i in range(0, 14):
             self.cellData['voltageStatus'][i] = voltageStatus.DEFAULT
             self.cellData['currentStatus'][i] = currentStatus.DEFAULT
 
@@ -163,7 +163,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.ICData['tempStatus'] = tempStatus.DEFAULT
         self.ICStatusDisplay.setText(self.ICData['tempStatus'].value)
         self.ICStatusDisplay.setStyleSheet(
-            "background-color: rgb(0, 255, 0)")   
+            "background-color: rgb(0, 255, 0)")
 
     def init(self):
         """GUI initialisation"""
@@ -271,6 +271,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Set Baud rate
         self.serial.baudrate = int(self.baudRateComboBox.currentText())
+        print(self.serial.baudrate)
 
         # Set Parity
         parity = self.parityComboBox.currentText()
@@ -397,7 +398,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             else:
                 self.cellData['voltageStatus'][i] = voltageStatus.DEFAULT
 
-        self.ICData['temp'] = bccData[15] / 1000
+        self.ICData['temp'] = bccData[15] / 10
         if self.ICData['temp'] > self.tempThreshold[1]:
             self.ICData['tempStatus'] = tempStatus.OVERTEMPERATURE
         elif self.ICData['temp'] < self.tempThreshold[0]:
@@ -427,7 +428,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         if waitBits > 0:
             # Read data from COM port
             bccRawData = self.serial.read(waitBits)
-            print(bccRawData)
 
             # Transfer the byte data to UART data list
             dataList = list(hex(data) for data in list(bccRawData))
@@ -440,7 +440,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 self.updateGUIData()
             else:
                 pass
-
         else:
             pass
 
