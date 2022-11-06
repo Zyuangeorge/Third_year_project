@@ -1,3 +1,8 @@
+"""
+BMS GUI Version 4
+Features:
+*Update UART transmission
+"""
 # Import functions in other folders
 import sys
 sys.path.append('.')
