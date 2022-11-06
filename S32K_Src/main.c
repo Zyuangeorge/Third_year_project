@@ -240,7 +240,6 @@ static status_t initDemo();
 static void initTimeout(int32_t timeoutMs);
 static bool timeoutExpired(void);
 static bcc_status_t updateMeasurements(void);
-static status_t uartTransfer(uint32_t * cellData);
 
 /*******************************************************************************
  * Functions
@@ -487,22 +486,6 @@ static bcc_status_t updateMeasurements(void)
 }
 
 /*!
-* @brief This function is used to transfer the cell data through non blocking method.
-*
-* @return status_t Error code.
-*/
-static status_t uartTransfer(uint32_t * cellData)
-{
-    status_t status;
-    status = LPUART_DRV_SendData(INST_LPUART1, (uint8_t *)cellData, sizeof(cellData));
-    if (status != STATUS_SUCCESS)
-    {
-    	return status;
-    }
-	return STATUS_SUCCESS;
-}
-
-/*!
 * @brief This function indicates if the timeout expired.
 *
 * @return True if timeout expired, otherwise false.
@@ -516,7 +499,7 @@ int main(void)
 {
   /* Write your local variable definition here */
     bcc_status_t bccStatus;
-//    status_t status;
+
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   #ifdef PEX_RTOS_INIT
     PEX_RTOS_INIT();                   /* Initialization of the selected RTOS. Macro is defined by the RTOS component. */
@@ -554,12 +537,6 @@ int main(void)
               {
                   PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
               }
-//              /* Transfer measurements once per 200 ms. */
-//              status = uartTransfer(cellData);
-//			  if (status != STATUS_SUCCESS)
-//			  {
-//				  PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
-//			  }
           }
       }
   }
