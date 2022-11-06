@@ -427,8 +427,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         if waitBits > 0:
             # Read data from COM port
             bccRawData = self.serial.read(waitBits)
-            # print(bccRawData)
-            print(len(bccRawData))
+            print(bccRawData)
 
             # Transfer the byte data to UART data list
             dataList = list(hex(data) for data in list(bccRawData))
@@ -438,7 +437,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 bccData = util.listData2strData(dataList)
                 print(bccData)
                 self.updateData(bccData)
-                print(self.voltageTable.item(0,0))
                 self.updateGUIData()
             else:
                 pass
@@ -449,11 +447,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def updateGUIData(self):
         """This function is used to update GUI display"""
         # Update cell voltage data and status
-        print(self.packData['voltage'])
-        print(self.packData['current'])
-        print(self.ICData['temp'])
-        print(self.ICData['tempStatus'])
-
         for i in range(0, 14):
             self.voltageTable.item(i, 0).setText(
                 str(self.cellData['voltage'][i]))
