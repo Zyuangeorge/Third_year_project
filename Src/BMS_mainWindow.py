@@ -436,7 +436,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             # Filter out incorrect inputs
             if len(dataList) == 64:
                 bccData = util.listData2strData(dataList)
-                print(bccData)
                 self.updateData(bccData)
                 self.updateGUIData()
             else:
