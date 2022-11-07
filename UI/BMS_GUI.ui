@@ -1019,19 +1019,6 @@
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="1" rowspan="2" colspan="2">
-                 <widget class="QLabel" name="packVoltageStatusLabel">
-                  <property name="font">
-                   <font>
-                    <family>Arial</family>
-                    <bold>true</bold>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>Voltage:</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="0" column="3" rowspan="2">
                  <widget class="QLineEdit" name="packVoltageStatusDisplay">
                   <property name="mouseTracking">
@@ -1070,8 +1057,8 @@
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="1" rowspan="2" colspan="2">
-                 <widget class="QLabel" name="packCurrentStatusLabel">
+                <item row="0" column="1" rowspan="2" colspan="2">
+                 <widget class="QPushButton" name="packVoltageStatusButton">
                   <property name="font">
                    <font>
                     <family>Arial</family>
@@ -1079,7 +1066,20 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>Current:</string>
+                   <string>Voltage</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1" rowspan="2" colspan="2">
+                 <widget class="QPushButton" name="packCurrentStatusButton">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Current</string>
                   </property>
                  </widget>
                 </item>
@@ -1102,6 +1102,32 @@
                 </item>
                 <item>
                  <spacer name="horizontalSpacer_7">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="ICStatusButton">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Temperature</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_6">
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
                   </property>

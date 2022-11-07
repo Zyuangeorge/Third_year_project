@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'BMS_GUI.ui'
+## Form generated from reading UI file 'BMS_GUI_cpy2.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.2.4
 ##
@@ -590,12 +590,6 @@ class Ui_MainWindow(object):
 
         self.PackStatusLayout.addWidget(self.packStatusLabel, 0, 0, 4, 1)
 
-        self.packVoltageStatusLabel = QLabel(self.statusGroupBox)
-        self.packVoltageStatusLabel.setObjectName(u"packVoltageStatusLabel")
-        self.packVoltageStatusLabel.setFont(font2)
-
-        self.PackStatusLayout.addWidget(self.packVoltageStatusLabel, 0, 1, 2, 2)
-
         self.packVoltageStatusDisplay = QLineEdit(self.statusGroupBox)
         self.packVoltageStatusDisplay.setObjectName(u"packVoltageStatusDisplay")
         self.packVoltageStatusDisplay.setMouseTracking(False)
@@ -619,11 +613,17 @@ class Ui_MainWindow(object):
 
         self.PackStatusLayout.addWidget(self.packCurrentStatusDisplay, 2, 3, 2, 1)
 
-        self.packCurrentStatusLabel = QLabel(self.statusGroupBox)
-        self.packCurrentStatusLabel.setObjectName(u"packCurrentStatusLabel")
-        self.packCurrentStatusLabel.setFont(font2)
+        self.packVoltageStatusButton = QPushButton(self.statusGroupBox)
+        self.packVoltageStatusButton.setObjectName(u"packVoltageStatusButton")
+        self.packVoltageStatusButton.setFont(font2)
 
-        self.PackStatusLayout.addWidget(self.packCurrentStatusLabel, 2, 1, 2, 2)
+        self.PackStatusLayout.addWidget(self.packVoltageStatusButton, 0, 1, 2, 2)
+
+        self.packCurrentStatusButton = QPushButton(self.statusGroupBox)
+        self.packCurrentStatusButton.setObjectName(u"packCurrentStatusButton")
+        self.packCurrentStatusButton.setFont(font2)
+
+        self.PackStatusLayout.addWidget(self.packCurrentStatusButton, 2, 1, 2, 2)
 
 
         self.verticalLayout.addLayout(self.PackStatusLayout)
@@ -639,6 +639,16 @@ class Ui_MainWindow(object):
         self.horizontalSpacer_7 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.ICStatusLayout.addItem(self.horizontalSpacer_7)
+
+        self.ICStatusButton = QPushButton(self.statusGroupBox)
+        self.ICStatusButton.setObjectName(u"ICStatusButton")
+        self.ICStatusButton.setFont(font2)
+
+        self.ICStatusLayout.addWidget(self.ICStatusButton)
+
+        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.ICStatusLayout.addItem(self.horizontalSpacer_6)
 
         self.ICStatusDisplay = QLineEdit(self.statusGroupBox)
         self.ICStatusDisplay.setObjectName(u"ICStatusDisplay")
@@ -845,9 +855,10 @@ class Ui_MainWindow(object):
         self.Cell12StatusDisplay.setText(QCoreApplication.translate("MainWindow", u"Cell12", None))
         self.Cell13StatusDisplay.setText(QCoreApplication.translate("MainWindow", u"Cell13", None))
         self.packStatusLabel.setText(QCoreApplication.translate("MainWindow", u"Pack Status:", None))
-        self.packVoltageStatusLabel.setText(QCoreApplication.translate("MainWindow", u"Voltage:", None))
-        self.packCurrentStatusLabel.setText(QCoreApplication.translate("MainWindow", u"Current:", None))
+        self.packVoltageStatusButton.setText(QCoreApplication.translate("MainWindow", u"Voltage", None))
+        self.packCurrentStatusButton.setText(QCoreApplication.translate("MainWindow", u"Current", None))
         self.ICStatusLabel.setText(QCoreApplication.translate("MainWindow", u"IC Status:", None))
+        self.ICStatusButton.setText(QCoreApplication.translate("MainWindow", u"Temperature", None))
         self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_2), QCoreApplication.translate("MainWindow", u"Pack Data and Status", None))
         self.nameLabel.setText(QCoreApplication.translate("MainWindow", u"Made by Zhe Yuan", None))
         self.menuSetting.setTitle(QCoreApplication.translate("MainWindow", u"Setting", None))
