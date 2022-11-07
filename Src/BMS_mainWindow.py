@@ -31,6 +31,7 @@ import util.util as util
 # Import graph window
 from BMS_plotWindow import plotWindow
 
+
 class voltageStatus(Enum):
     DEFAULT = "NORMAL"
     UNDERVOLTAGE = "UNDERVOLTAGE"
@@ -401,43 +402,48 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         graphWindow = plotWindow()
 
         if plotIndex < 14:
-            print(plotIndex)
+            print(plotIndex)          
+            graphTitle = "Cell %s Voltage Graph" %str(plotIndex)
+            yAxisLabel = "Voltage (mV)"
 
-            graphTitle = "Cell %s voltage graph" %str(plotIndex)
-            yAxisTitle = "Voltage (mV)"
-            graphWindow.titles = ["Battery Data Display", graphTitle, "Time (s)", yAxisTitle]
-
+            graphWindow.titles[0] = graphTitle
+            graphWindow.titles[2] = yAxisLabel
+            graphWindow.realtimeData = self.cellData['voltage'][plotIndex]
+            graphWindow.updateTitles()
             graphWindow.exec()
 
         elif plotIndex == plotGraphIndex.PACKVOLTAGE.value:
             print(plotIndex)
-
-            graphTitle = "Pack voltage graph"
+            graphTitle = "Pack Voltage Graph"
             yAxisLabel = "Voltage (mV)"
-            graphWindow.titles = ["Battery Data Display", graphTitle, "Time (s)", yAxisLabel]
 
+            graphWindow.titles[0] = graphTitle
+            graphWindow.titles[2] = yAxisLabel
+            graphWindow.realtimeData = self.packData['voltage']
+            graphWindow.updateTitles()
             graphWindow.exec()
 
         elif plotIndex == plotGraphIndex.PACKCURRENT.value:
             print(plotIndex)
-
-            graphTitle = "Pack Current graph"
+            graphTitle = "Pack Current Graph"
             yAxisLabel = "Current (mA)"
-            graphWindow.titles = ["Battery Data Display", graphTitle, "Time (s)", yAxisLabel]
 
+            graphWindow.titles[0] = graphTitle
+            graphWindow.titles[2] = yAxisLabel
+            graphWindow.realtimeData = self.packData['current']
+            graphWindow.updateTitles()
             graphWindow.exec()
-
 
         elif plotIndex == plotGraphIndex.ICTEMPERATURE.value:
             print(plotIndex)
-            graphWindow = plotWindow()
-
-            graphTitle = "IC temperature graph"
+            graphTitle = "IC Temperature Graph"
             yAxisLabel = "Degree (C)"
-            graphWindow.titles = ["Battery Data Display", graphTitle, "Time (s)", yAxisLabel]
 
+            graphWindow.titles[0] = graphTitle
+            graphWindow.titles[2] = yAxisLabel
+            graphWindow.realtimeData = self.ICData['temp']
+            graphWindow.updateTitles()
             graphWindow.exec()
-
         else:
             pass
         
