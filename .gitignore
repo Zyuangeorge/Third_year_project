@@ -8,3 +8,6 @@ Src/BMS_mainWindow copy.py
 UI/BMS_GUI_cpy2.py
 UI/BMS_GUI_cpy2.ui
 UI/__pycache__/BMS_GUI_cpy2.cpython-310.pyc
+example/example.py
+example/example2.py
+example/graph.py
