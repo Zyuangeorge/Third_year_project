@@ -28,6 +28,8 @@ from UI.BMS_GUI import Ui_MainWindow
 # Import util functions
 import util.util as util
 
+# Import graph window
+from BMS_plotWindow import plotWindow
 
 class voltageStatus(Enum):
     DEFAULT = "NORMAL"
@@ -45,6 +47,13 @@ class tempStatus(Enum):
     DEFAULT = "NORMAL"
     UNDERTEMPERATURE = "UNDERTEMPERATURE"
     OVERTEMPERATURE = "OVERTEMPERATURE"
+
+
+class plotGraphIndex(Enum):
+    # Cell voltage = 0 to 13 defined as statusButtonList index
+    PACKVOLTAGE = 14
+    PACKCURRENT = 15
+    ICTEMPERATURE = 16
 
 
 class mainWindow(QMainWindow, Ui_MainWindow):
@@ -249,6 +258,36 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.statusButtonList.index(self.Cell13StatusDisplay)))
         self.Cell14StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
             self.statusButtonList.index(self.Cell14StatusDisplay)))
+        
+        # Connect cell voltage graph display
+        self.Cell1StatusDisplay.clicked.connect(lambda: self.plotGraph(
+            self.statusButtonList.index(self.Cell1StatusDisplay)))
+        self.Cell2StatusDisplay.clicked.connect(lambda: self.plotGraph(
+            self.statusButtonList.index(self.Cell2StatusDisplay)))
+        self.Cell3StatusDisplay.clicked.connect(lambda: self.plotGraph(
+            self.statusButtonList.index(self.Cell3StatusDisplay)))
+        self.Cell4StatusDisplay.clicked.connect(lambda: self.plotGraph(
+            self.statusButtonList.index(self.Cell4StatusDisplay)))
+        self.Cell5StatusDisplay.clicked.connect(lambda: self.plotGraph(
+            self.statusButtonList.index(self.Cell5StatusDisplay)))
+        self.Cell6StatusDisplay.clicked.connect(lambda: self.plotGraph(
+            self.statusButtonList.index(self.Cell6StatusDisplay)))
+        self.Cell7StatusDisplay.clicked.connect(lambda: self.plotGraph(
+            self.statusButtonList.index(self.Cell7StatusDisplay)))
+        self.Cell8StatusDisplay.clicked.connect(lambda: self.plotGraph(
+            self.statusButtonList.index(self.Cell8StatusDisplay)))
+        self.Cell9StatusDisplay.clicked.connect(lambda: self.plotGraph(
+            self.statusButtonList.index(self.Cell9StatusDisplay)))
+        self.Cell10StatusDisplay.clicked.connect(lambda: self.plotGraph(
+            self.statusButtonList.index(self.Cell10StatusDisplay)))
+        self.Cell11StatusDisplay.clicked.connect(lambda: self.plotGraph(
+            self.statusButtonList.index(self.Cell11StatusDisplay)))
+        self.Cell12StatusDisplay.clicked.connect(lambda: self.plotGraph(
+            self.statusButtonList.index(self.Cell12StatusDisplay)))
+        self.Cell13StatusDisplay.clicked.connect(lambda: self.plotGraph(
+            self.statusButtonList.index(self.Cell13StatusDisplay)))
+        self.Cell14StatusDisplay.clicked.connect(lambda: self.plotGraph(
+            self.statusButtonList.index(self.Cell14StatusDisplay)))
 
         # Connect help menu actions
         self.actionHelp.triggered.connect(self.helpAction)
@@ -263,6 +302,15 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Connect reset status button
         self.resetStatusButton.clicked.connect(self.resetStatus)
+
+        # Connect pack voltage status button
+        self.packVoltageStatusButton.clicked.connect(lambda: self.plotGraph(plotGraphIndex.PACKVOLTAGE.value))
+
+        # Connect pack current status button
+        self.packCurrentStatusButton.clicked.connect(lambda: self.plotGraph(plotGraphIndex.PACKCURRENT.value))
+
+        # Connect IC temperature status button
+        self.ICStatusButton.clicked.connect(lambda: self.plotGraph(plotGraphIndex.ICTEMPERATURE.value))
 
     def detectPort(self):
         """Check the connected ports"""
@@ -348,6 +396,51 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.stopButton.setEnabled(False)
         self.portStatusDisplay.setChecked(False)
 
+    def plotGraph(self, plotIndex):
+        """Show cell status, pack status, IC temperature in a graph"""
+        graphWindow = plotWindow()
+
+        if plotIndex < 14:
+            print(plotIndex)
+
+            graphTitle = "Cell %s voltage graph" %str(plotIndex)
+            yAxisTitle = "Voltage (mV)"
+            graphWindow.titles = ["Battery Data Display", graphTitle, "Time (s)", yAxisTitle]
+
+            graphWindow.exec()
+
+        elif plotIndex == plotGraphIndex.PACKVOLTAGE.value:
+            print(plotIndex)
+
+            graphTitle = "Pack voltage graph"
+            yAxisLabel = "Voltage (mV)"
+            graphWindow.titles = ["Battery Data Display", graphTitle, "Time (s)", yAxisLabel]
+
+            graphWindow.exec()
+
+        elif plotIndex == plotGraphIndex.PACKCURRENT.value:
+            print(plotIndex)
+
+            graphTitle = "Pack Current graph"
+            yAxisLabel = "Current (mA)"
+            graphWindow.titles = ["Battery Data Display", graphTitle, "Time (s)", yAxisLabel]
+
+            graphWindow.exec()
+
+
+        elif plotIndex == plotGraphIndex.ICTEMPERATURE.value:
+            print(plotIndex)
+            graphWindow = plotWindow()
+
+            graphTitle = "IC temperature graph"
+            yAxisLabel = "Degree (C)"
+            graphWindow.titles = ["Battery Data Display", graphTitle, "Time (s)", yAxisLabel]
+
+            graphWindow.exec()
+
+        else:
+            pass
+        
     def displayCellStatus(self, batteryNumber):
         """Show cell status through a pop-up window"""
         currentStatus = self.cellData['currentStatus'][batteryNumber].value
