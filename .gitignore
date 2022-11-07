@@ -4,4 +4,7 @@ __pycache__/BMS_GUI.cpython-310.pyc
 __pycache__/communication.cpython-310.pyc
 __pycache__/util.cpython-310.pyc
 __pycache__/BMS_mainWindow.cpython-310.pyc
-graph.py
+Src/BMS_mainWindow copy.py
+UI/BMS_GUI_cpy2.py
+UI/BMS_GUI_cpy2.ui
+UI/__pycache__/BMS_GUI_cpy2.cpython-310.pyc

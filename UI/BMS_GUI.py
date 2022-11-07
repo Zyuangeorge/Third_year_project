@@ -599,6 +599,7 @@ class Ui_MainWindow(object):
         self.packVoltageStatusDisplay = QLineEdit(self.statusGroupBox)
         self.packVoltageStatusDisplay.setObjectName(u"packVoltageStatusDisplay")
         self.packVoltageStatusDisplay.setMouseTracking(False)
+        self.packVoltageStatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.packVoltageStatusDisplay.setAcceptDrops(False)
         self.packVoltageStatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -612,6 +613,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.packCurrentStatusDisplay.sizePolicy().hasHeightForWidth())
         self.packCurrentStatusDisplay.setSizePolicy(sizePolicy)
         self.packCurrentStatusDisplay.setMouseTracking(False)
+        self.packCurrentStatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.packCurrentStatusDisplay.setAcceptDrops(False)
         self.packCurrentStatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 

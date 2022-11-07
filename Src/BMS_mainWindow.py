@@ -114,12 +114,20 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """This function is used to update the threshold values"""
         self.currentThreshold = [int(self.currentMiniLineEdit.text()), int(
             self.currentMaxLineEdit.text())]
+        print("Current threshold: ")
+        print(self.currentThreshold)
 
         self.voltageThreshold = [int(self.voltageMiniLineEdit.text()), int(
             self.voltageMaxLineEdit.text())]
 
+        print("Voltage threshold: ")
+        print(self.voltageThreshold)
+        
         self.tempThreshold = [int(self.tempMiniLineEdit.text()), int(
-            self.tempMiniLineEdit.text())]
+            self.tempMaxLineEdit.text())]
+        
+        print("Temperature threshold: ")
+        print(self.tempThreshold)
 
     def clearData(self):
         """Clear cell voltage, pack voltage & current and IC temperature"""
@@ -277,7 +285,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Set Baud rate
         self.serial.baudrate = int(self.baudRateComboBox.currentText())
-        print(self.serial.baudrate)
+        print("Baud rate: " + str(self.serial.baudrate))
 
         # Set Parity
         parity = self.parityComboBox.currentText()
