@@ -14,6 +14,7 @@ This GUI is built by PySide6.
 1. Python V3.10
 
 2. Python library
+
  1)pyqtgraph-data plotting
 
  2)pandas-data outputting
