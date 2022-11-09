@@ -798,8 +798,8 @@
              <layout class="QVBoxLayout" name="verticalLayout">
               <item>
                <layout class="QGridLayout" name="batteryStatusLayout">
-                <item row="0" column="0">
-                 <widget class="QPushButton" name="Cell1StatusDisplay">
+                <item row="2" column="3">
+                 <widget class="QPushButton" name="Cell12StatusDisplay">
                   <property name="font">
                    <font>
                     <family>Arial</family>
@@ -813,12 +813,12 @@
                    <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
-                   <string>Cell1</string>
+                   <string>Cell12</string>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="1">
-                 <widget class="QPushButton" name="Cell2StatusDisplay">
+                <item row="1" column="0">
+                 <widget class="QPushButton" name="Cell5StatusDisplay">
                   <property name="font">
                    <font>
                     <family>Arial</family>
@@ -832,7 +832,7 @@
                    <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
-                   <string>Cell2</string>
+                   <string>Cell5</string>
                   </property>
                  </widget>
                 </item>
@@ -856,8 +856,8 @@
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="2">
-                 <widget class="QPushButton" name="Cell3StatusDisplay">
+                <item row="0" column="0">
+                 <widget class="QPushButton" name="Cell1StatusDisplay">
                   <property name="font">
                    <font>
                     <family>Arial</family>
@@ -871,7 +871,7 @@
                    <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
-                   <string>Cell3</string>
+                   <string>Cell1</string>
                   </property>
                  </widget>
                 </item>
@@ -894,8 +894,8 @@
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="0">
-                 <widget class="QPushButton" name="Cell5StatusDisplay">
+                <item row="0" column="2">
+                 <widget class="QPushButton" name="Cell3StatusDisplay">
                   <property name="font">
                    <font>
                     <family>Arial</family>
@@ -909,7 +909,64 @@
                    <string notr="true">background-color: rgb(0, 255, 0);</string>
                   </property>
                   <property name="text">
-                   <string>Cell5</string>
+                   <string>Cell3</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="3">
+                 <widget class="QPushButton" name="Cell8StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
+                  </property>
+                  <property name="text">
+                   <string>Cell8</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QPushButton" name="Cell10StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
+                  </property>
+                  <property name="text">
+                   <string>Cell10</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QPushButton" name="Cell2StatusDisplay">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">background-color: rgb(0, 255, 0);</string>
+                  </property>
+                  <property name="text">
+                   <string>Cell2</string>
                   </property>
                  </widget>
                 </item>
@@ -951,25 +1008,6 @@
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="3">
-                 <widget class="QPushButton" name="Cell8StatusDisplay">
-                  <property name="font">
-                   <font>
-                    <family>Arial</family>
-                    <bold>true</bold>
-                   </font>
-                  </property>
-                  <property name="focusPolicy">
-                   <enum>Qt::NoFocus</enum>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">background-color: rgb(0, 255, 0);</string>
-                  </property>
-                  <property name="text">
-                   <string>Cell8</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="2" column="0">
                  <widget class="QPushButton" name="Cell9StatusDisplay">
                   <property name="font">
@@ -989,25 +1027,6 @@
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="1">
-                 <widget class="QPushButton" name="Cell10StatusDisplay">
-                  <property name="font">
-                   <font>
-                    <family>Arial</family>
-                    <bold>true</bold>
-                   </font>
-                  </property>
-                  <property name="focusPolicy">
-                   <enum>Qt::NoFocus</enum>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">background-color: rgb(0, 255, 0);</string>
-                  </property>
-                  <property name="text">
-                   <string>Cell10</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="2" column="2">
                  <widget class="QPushButton" name="Cell11StatusDisplay">
                   <property name="font">
@@ -1024,25 +1043,6 @@
                   </property>
                   <property name="text">
                    <string>Cell11</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="3">
-                 <widget class="QPushButton" name="Cell12StatusDisplay">
-                  <property name="font">
-                   <font>
-                    <family>Arial</family>
-                    <bold>true</bold>
-                   </font>
-                  </property>
-                  <property name="focusPolicy">
-                   <enum>Qt::NoFocus</enum>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">background-color: rgb(0, 255, 0);</string>
-                  </property>
-                  <property name="text">
-                   <string>Cell12</string>
                   </property>
                  </widget>
                 </item>
@@ -1069,8 +1069,8 @@
               </item>
               <item>
                <layout class="QGridLayout" name="PackStatusLayout">
-                <item row="2" column="2" rowspan="2" colspan="2">
-                 <widget class="QPushButton" name="packCurrentStatusButton">
+                <item row="0" column="0" rowspan="4">
+                 <widget class="QLabel" name="packStatusLabel">
                   <property name="font">
                    <font>
                     <family>Arial</family>
@@ -1078,12 +1078,25 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>Current</string>
+                   <string>Pack Status:</string>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="2" rowspan="2" colspan="2">
-                 <widget class="QPushButton" name="packVoltageStatusButton">
+                <item row="0" column="1" rowspan="2">
+                 <spacer name="horizontalSpacer_11">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="2" column="2" rowspan="2">
+                 <widget class="QLabel" name="packCurrentStatusLabel">
                   <property name="font">
                    <font>
                     <family>Arial</family>
@@ -1091,11 +1104,11 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>Voltage</string>
+                   <string>Current:</string>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="4" rowspan="2">
+                <item row="0" column="3" rowspan="2">
                  <widget class="QLineEdit" name="packVoltageStatusDisplay">
                   <property name="mouseTracking">
                    <bool>false</bool>
@@ -1111,7 +1124,7 @@
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="4" rowspan="2">
+                <item row="2" column="3" rowspan="2">
                  <widget class="QLineEdit" name="packCurrentStatusDisplay">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -1133,19 +1146,6 @@
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="0" rowspan="4">
-                 <widget class="QLabel" name="packStatusLabel">
-                  <property name="font">
-                   <font>
-                    <family>Arial</family>
-                    <bold>true</bold>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>Pack Status:</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="2" column="1" rowspan="2">
                  <spacer name="horizontalSpacer_12">
                   <property name="orientation">
@@ -1159,18 +1159,18 @@
                   </property>
                  </spacer>
                 </item>
-                <item row="0" column="1" rowspan="2">
-                 <spacer name="horizontalSpacer_11">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
+                <item row="0" column="2" rowspan="2">
+                 <widget class="QLabel" name="packVoltageStatusLabel">
+                  <property name="font">
+                   <font>
+                    <family>Arial</family>
+                    <bold>true</bold>
+                   </font>
                   </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
+                  <property name="text">
+                   <string>Voltage:</string>
                   </property>
-                 </spacer>
+                 </widget>
                 </item>
                </layout>
               </item>
@@ -1201,19 +1201,6 @@
                    </size>
                   </property>
                  </spacer>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="ICStatusButton">
-                  <property name="font">
-                   <font>
-                    <family>Arial</family>
-                    <bold>true</bold>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>Temperature</string>
-                  </property>
-                 </widget>
                 </item>
                 <item>
                  <widget class="QLineEdit" name="ICStatusDisplay">

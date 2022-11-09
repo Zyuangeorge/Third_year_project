@@ -18,7 +18,7 @@ import time
 from enum import Enum
 
 # Import PyQt widgets: PySide6
-from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QAbstractItemView, QApplication, QMessageBox, QVBoxLayout, QPushButton
+from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QAbstractItemView, QApplication, QMessageBox, QVBoxLayout, QHBoxLayout, QPushButton
 from PySide6.QtGui import QIcon, QIntValidator
 from PySide6.QtCore import QTimer
 
@@ -51,13 +51,6 @@ class tempStatus(Enum):
     DEFAULT = "NORMAL"
     UNDERTEMPERATURE = "UNDERTEMPERATURE"
     OVERTEMPERATURE = "OVERTEMPERATURE"
-
-
-class plotGraphIndex(Enum):
-    # Cell voltage = 0 to 13 defined as statusButtonList index
-    PACKVOLTAGE = 14
-    PACKCURRENT = 15
-    ICTEMPERATURE = 16
 
 
 class mainWindow(QMainWindow, Ui_MainWindow):
@@ -152,13 +145,22 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """GUI initialisation"""
         # Init graph page layout
         graphPageLayout = QVBoxLayout()
+        plotButtonLayout = QHBoxLayout()
+
+        self.startPlotButton = QPushButton()
+        self.startPlotButton.setText("Start Plotting")
+
         self.stopPlotButton = QPushButton()
         self.stopPlotButton.setText("Stop Plotting")
+
         graphPageLayout.addWidget(self.graphWindow)
-        graphPageLayout.addWidget(self.stopPlotButton)
+
+        plotButtonLayout.addWidget(self.startPlotButton)
+        plotButtonLayout.addWidget(self.stopPlotButton)
 
         # Add graph panels
         self.batteryData_3Layout.addLayout(graphPageLayout)
+        self.batteryData_3Layout.addLayout(plotButtonLayout)
         
         # Set QLineEdit restrictions
         self.voltageMaxLineEdit.setValidator(QIntValidator())
@@ -198,7 +200,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.detectPortButton.clicked.connect(self.detectPort)
         self.startButton.clicked.connect(self.startMonitor)
         self.stopButton.clicked.connect(self.stopMonitor)
-        self.stopPlotButton.clicked.connect(self.stopPlotting)
 
         # Connect cell state display
         self.Cell1StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
@@ -229,36 +230,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.statusButtonList.index(self.Cell13StatusDisplay)))
         self.Cell14StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
             self.statusButtonList.index(self.Cell14StatusDisplay)))
-        
-        # Connect cell voltage graph display
-        self.Cell1StatusDisplay.clicked.connect(lambda: self.plotGraph(
-            self.statusButtonList.index(self.Cell1StatusDisplay)))
-        self.Cell2StatusDisplay.clicked.connect(lambda: self.plotGraph(
-            self.statusButtonList.index(self.Cell2StatusDisplay)))
-        self.Cell3StatusDisplay.clicked.connect(lambda: self.plotGraph(
-            self.statusButtonList.index(self.Cell3StatusDisplay)))
-        self.Cell4StatusDisplay.clicked.connect(lambda: self.plotGraph(
-            self.statusButtonList.index(self.Cell4StatusDisplay)))
-        self.Cell5StatusDisplay.clicked.connect(lambda: self.plotGraph(
-            self.statusButtonList.index(self.Cell5StatusDisplay)))
-        self.Cell6StatusDisplay.clicked.connect(lambda: self.plotGraph(
-            self.statusButtonList.index(self.Cell6StatusDisplay)))
-        self.Cell7StatusDisplay.clicked.connect(lambda: self.plotGraph(
-            self.statusButtonList.index(self.Cell7StatusDisplay)))
-        self.Cell8StatusDisplay.clicked.connect(lambda: self.plotGraph(
-            self.statusButtonList.index(self.Cell8StatusDisplay)))
-        self.Cell9StatusDisplay.clicked.connect(lambda: self.plotGraph(
-            self.statusButtonList.index(self.Cell9StatusDisplay)))
-        self.Cell10StatusDisplay.clicked.connect(lambda: self.plotGraph(
-            self.statusButtonList.index(self.Cell10StatusDisplay)))
-        self.Cell11StatusDisplay.clicked.connect(lambda: self.plotGraph(
-            self.statusButtonList.index(self.Cell11StatusDisplay)))
-        self.Cell12StatusDisplay.clicked.connect(lambda: self.plotGraph(
-            self.statusButtonList.index(self.Cell12StatusDisplay)))
-        self.Cell13StatusDisplay.clicked.connect(lambda: self.plotGraph(
-            self.statusButtonList.index(self.Cell13StatusDisplay)))
-        self.Cell14StatusDisplay.clicked.connect(lambda: self.plotGraph(
-            self.statusButtonList.index(self.Cell14StatusDisplay)))
 
         # Connect help menu actions
         self.actionHelp.triggered.connect(self.helpAction)
@@ -274,14 +245,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Connect reset status button
         self.resetStatusButton.clicked.connect(self.resetStatus)
 
-        # Connect pack voltage status button
-        self.packVoltageStatusButton.clicked.connect(lambda: self.plotGraph(plotGraphIndex.PACKVOLTAGE.value))
-
-        # Connect pack current status button
-        self.packCurrentStatusButton.clicked.connect(lambda: self.plotGraph(plotGraphIndex.PACKCURRENT.value))
-
-        # Connect IC temperature status button
-        self.ICStatusButton.clicked.connect(lambda: self.plotGraph(plotGraphIndex.ICTEMPERATURE.value))
+        # Connect plot button functions
+        self.startPlotButton.clicked.connect(self.plotGraph)
+        self.stopPlotButton.clicked.connect(self.stopPlotting)
 
 # ===================Update threshold values====================
 
@@ -468,7 +434,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         
         self.graphWindow.setGraphs()
 
-    def plotGraph(self, plotIndex):
+    def plotGraph(self):
         """Show cell status, pack status, IC temperature in a graph"""
         self.cellCurve1 = self.graphWindow.p0.plot() # plotDataItem
         self.cellCurve2 = self.graphWindow.p1.plot()
@@ -500,23 +466,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         self.timer2.timeout.connect(self.updateGraphData)
         self.timer2.start(200)
-
-        if plotIndex < 14:
-            print(plotIndex)          
-            # self.timer2.timeout.connect(lambda: self.updateGraphData())
-
-        elif plotIndex == plotGraphIndex.PACKVOLTAGE.value:
-            print(plotIndex)
-            # self.timer2.timeout.connect(self.updateGraphData())
-
-        elif plotIndex == plotGraphIndex.PACKCURRENT.value:
-            print(plotIndex)
-
-        elif plotIndex == plotGraphIndex.ICTEMPERATURE.value:
-            print(plotIndex)
-            # self.timer2.timeout.connect(self.updateGraphData())
-        else:
-            pass
         
     def stopPlotting(self):
         self.timer2.stop()
