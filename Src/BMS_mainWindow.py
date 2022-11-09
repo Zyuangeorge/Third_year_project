@@ -190,6 +190,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Set the stop monitoring button to close
         self.stopButton.setEnabled(False)
 
+        # Set the port status to be unchanged
+        self.portStatusDisplay.setEnabled(False)
+
         # Set threshold values
         self.currentMiniLineEdit.setText(str(self.currentThreshold[0]))
         self.currentMaxLineEdit.setText(str(self.currentThreshold[1]))
@@ -699,6 +702,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
 if __name__ == "__main__":
     application = QApplication(sys.argv)
+    application.setStyle('Fusion')
     gui = mainWindow()
     gui.show()
     sys.exit(application.exec())
