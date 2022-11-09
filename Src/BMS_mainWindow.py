@@ -193,9 +193,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.tempMiniLineEdit.setText(str(self.tempThreshold[0]))
         self.tempMaxLineEdit.setText(str(self.tempThreshold[1]))
 
-        self.clearData()
-        self.resetStatus()
-
         # Connect serial button functions
         self.detectPortButton.clicked.connect(self.detectPort)
         self.startButton.clicked.connect(self.startMonitor)
@@ -296,6 +293,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Clear output data and graph data
         self.graphData = np.zeros((16,1))
         self.outputData =self.outputData.drop(index = self.outputData.index)
+        self.updateGraphData()
 
     def resetStatus(self):
         """Reset cell, pack and IC status as well as the button colours"""
@@ -464,11 +462,19 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.cellCurve10, self.cellCurve11, self.cellCurve12,
             self.cellCurve13, self.cellCurve14, self.ICTempCurve]
 
-        self.timer2.timeout.connect(self.updateGraphData)
-        self.timer2.start(200)
-        
+        if self.serial.isOpen():
+            self.timer2.timeout.connect(self.updateGraphData)
+            self.timer2.start(200)
+        else:
+            QMessageBox.critical(
+                self, 'COM error', 'COM data error, please reconnect the port')
+
     def stopPlotting(self):
-        self.timer2.stop()
+        if self.serial.isOpen():
+            self.timer2.stop()
+        else:
+            QMessageBox.critical(
+                self, 'COM error', 'COM data error, please reconnect the port')
 
 # ===================Status display====================
 

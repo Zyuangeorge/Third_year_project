@@ -1,10 +1,5 @@
-# Import PySide6 widgets
-from PySide6.QtWidgets import QHBoxLayout
-
 # Import pyqtgraph
 import pyqtgraph as pg
-
-import numpy as np
 
 class plotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
