@@ -1,5 +1,6 @@
 # Third_year_project
 This the the python-based GUI, which is used for a battery management system project
+
 This GUI is built by PySide6.
 
 ## Hardware Requirement
@@ -14,9 +15,13 @@ This GUI is built by PySide6.
 
 2. Python library
  1)pyqtgraph-data plotting
- 2)pandas-data outputing
+
+ 2)pandas-data outputting
+
  3)numpy-data plotting
+
  4)PySide6-GUI building
+
  5)Serial-serial communication
  
 ## Main features
