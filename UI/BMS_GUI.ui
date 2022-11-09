@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>742</width>
-    <height>592</height>
+    <height>713</height>
    </rect>
   </property>
   <property name="font">
@@ -348,6 +348,29 @@
         <property name="text">
          <string>Clear Data</string>
         </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="recordGroupBox">
+        <property name="title">
+         <string>Recording</string>
+        </property>
+        <layout class="QVBoxLayout" name="recordGroupBoxLayout">
+         <item>
+          <widget class="QRadioButton" name="startRecordButton">
+           <property name="text">
+            <string>Start Recoding</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="stopRecordButton">
+           <property name="text">
+            <string>Stop Recording</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
@@ -1230,10 +1253,14 @@
          </widget>
         </widget>
        </item>
-       <item>
+       <item alignment="Qt::AlignRight">
         <widget class="QLabel" name="nameLabel">
-         <property name="layoutDirection">
-          <enum>Qt::LeftToRight</enum>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <italic>true</italic>
+           <bold>true</bold>
+          </font>
          </property>
          <property name="text">
           <string>Made by Zhe Yuan</string>

@@ -19,14 +19,15 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
     QGroupBox, QHBoxLayout, QHeaderView, QLabel,
     QLineEdit, QMainWindow, QMenu, QMenuBar,
-    QPushButton, QSizePolicy, QSpacerItem, QTabWidget,
-    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+    QPushButton, QRadioButton, QSizePolicy, QSpacerItem,
+    QTabWidget, QTableWidget, QTableWidgetItem, QVBoxLayout,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(742, 592)
+        MainWindow.resize(742, 713)
         font = QFont()
         font.setFamilies([u"Arial"])
         MainWindow.setFont(font)
@@ -214,6 +215,23 @@ class Ui_MainWindow(object):
         self.clearDataButton.setSizePolicy(sizePolicy1)
 
         self.leftLayout.addWidget(self.clearDataButton)
+
+        self.recordGroupBox = QGroupBox(self.centralwidget)
+        self.recordGroupBox.setObjectName(u"recordGroupBox")
+        self.recordGroupBoxLayout = QVBoxLayout(self.recordGroupBox)
+        self.recordGroupBoxLayout.setObjectName(u"recordGroupBoxLayout")
+        self.startRecordButton = QRadioButton(self.recordGroupBox)
+        self.startRecordButton.setObjectName(u"startRecordButton")
+
+        self.recordGroupBoxLayout.addWidget(self.startRecordButton)
+
+        self.stopRecordButton = QRadioButton(self.recordGroupBox)
+        self.stopRecordButton.setObjectName(u"stopRecordButton")
+
+        self.recordGroupBoxLayout.addWidget(self.stopRecordButton)
+
+
+        self.leftLayout.addWidget(self.recordGroupBox)
 
         self.thresholdGroupBox = QGroupBox(self.centralwidget)
         self.thresholdGroupBox.setObjectName(u"thresholdGroupBox")
@@ -699,9 +717,13 @@ class Ui_MainWindow(object):
 
         self.nameLabel = QLabel(self.monitorGroupBox)
         self.nameLabel.setObjectName(u"nameLabel")
-        self.nameLabel.setLayoutDirection(Qt.LeftToRight)
+        font4 = QFont()
+        font4.setFamilies([u"Arial"])
+        font4.setBold(True)
+        font4.setItalic(True)
+        self.nameLabel.setFont(font4)
 
-        self.monitorGroupBoxLayout.addWidget(self.nameLabel)
+        self.monitorGroupBoxLayout.addWidget(self.nameLabel, 0, Qt.AlignRight)
 
 
         self.centralWidgetLayout.addWidget(self.monitorGroupBox)
@@ -784,6 +806,9 @@ class Ui_MainWindow(object):
         self.stopButton.setText(QCoreApplication.translate("MainWindow", u"Stop Monitoring", None))
         self.resetStatusButton.setText(QCoreApplication.translate("MainWindow", u"Reset Status", None))
         self.clearDataButton.setText(QCoreApplication.translate("MainWindow", u"Clear Data", None))
+        self.recordGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Recording", None))
+        self.startRecordButton.setText(QCoreApplication.translate("MainWindow", u"Start Recoding", None))
+        self.stopRecordButton.setText(QCoreApplication.translate("MainWindow", u"Stop Recording", None))
         self.thresholdGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Set thresholds", None))
         self.voltageThresholdLabel.setText(QCoreApplication.translate("MainWindow", u"Cell voltage threshold (mV):", None))
         self.voltageMaxLabel.setText(QCoreApplication.translate("MainWindow", u"Maximum:", None))

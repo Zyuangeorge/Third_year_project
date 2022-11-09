@@ -18,9 +18,9 @@ import time
 from enum import Enum
 
 # Import PyQt widgets: PySide6
-from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QAbstractItemView, QApplication, QMessageBox, QVBoxLayout, QHBoxLayout, QPushButton
+from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QAbstractItemView, QApplication, QMessageBox, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog
 from PySide6.QtGui import QIcon, QIntValidator
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, QDateTime
 
 # Import UI file
 from UI.BMS_GUI import Ui_MainWindow
@@ -64,6 +64,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Set up window logo and disable window size modification
         self.setWindowIcon(QIcon("./UI/sheffield_logo.jpg"))
+        self.setMinimumWidth(1000)
 
         # Threshold variables
         self.currentThreshold = [0, 1600]
@@ -123,8 +124,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.graphWindow = plotWindow()
 
         # Two timers
-        self.timer = QTimer()
-        self.timer2 = QTimer()
+        self.timer = QTimer() # Timer for GUI data displaying
+        self.timer2 = QTimer() # Timer for data plotting
+        self.timer3 = QTimer() # Timer for data recoding
 
         # Initialisation of the GUI
         self.init()
@@ -147,16 +149,21 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         graphPageLayout = QVBoxLayout()
         plotButtonLayout = QHBoxLayout()
 
-        self.startPlotButton = QPushButton()
-        self.startPlotButton.setText("Start Plotting")
-
-        self.stopPlotButton = QPushButton()
-        self.stopPlotButton.setText("Stop Plotting")
+        self.startPlotButton = QPushButton("Start Plotting")
+        self.stopPlotButton = QPushButton("Stop Plotting")
 
         graphPageLayout.addWidget(self.graphWindow)
 
         plotButtonLayout.addWidget(self.startPlotButton)
         plotButtonLayout.addWidget(self.stopPlotButton)
+        
+        # Init record button
+        self.startRecordButton.setEnabled(False)
+        self.stopRecordButton.setChecked(True)
+
+        # Add print button
+        self.printButton = QPushButton("Print Data")
+        self.recordGroupBoxLayout.addWidget(self.printButton)
 
         # Add graph panels
         self.batteryData_3Layout.addLayout(graphPageLayout)
@@ -245,6 +252,11 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Connect plot button functions
         self.startPlotButton.clicked.connect(self.plotGraph)
         self.stopPlotButton.clicked.connect(self.stopPlotting)
+
+        # Connect record button functions
+        self.startRecordButton.toggled.connect(self.startRecording)
+        self.stopRecordButton.toggled.connect(self.stopRecording)
+        self.printButton.clicked.connect(self.printData)
 
 # ===================Update threshold values====================
 
@@ -381,6 +393,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         try:
             time.sleep(0.1)
             self.serial.open()
+            self.startRecordButton.setEnabled(True)
         except:
             QMessageBox.critical(self, "COM error", "Please check COM port!")
             return None
@@ -402,21 +415,57 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         try:
             self.timer.stop()
             self.timer2.stop()
+            self.stopRecordButton.setChecked(True) #Stop timer 3
             self.serial.close()
         except:
             QMessageBox.critical(self, "COM error", "COM close failed")
 
+        self.startRecordButton.setEnabled(False)
         self.startButton.setEnabled(True)
         self.stopButton.setEnabled(False)
         self.portStatusDisplay.setChecked(False)        
 
-# ===================Data graph plotting====================
+# ===================Data printing====================
+
+    def startRecording(self):
+        """Handler for start data recording"""
+        # Clear previous data
+        self.outputData = self.outputData.drop(index = self.outputData.index)
+
+        # Detect port status
+        self.timer3.timeout.connect(self.recordData)
+        self.timer3.start(200)
+
+    def stopRecording(self):
+        """Handler for stop data recording"""
+        self.timer3.stop()
+
+    def recordData(self):
+        """Handler for updating data"""
+        # Update real time data
+        if self.waitBits > 0:
+            # Set time information
+            timeInfo = QDateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz")
+
+            # Add realtime data
+            index = self.outputData.index.size
+            self.outputData.loc[index] = self.bccData
+            self.outputData.at[index,'Date'] = timeInfo
+            self.outputData.index = self.outputData.index + 1
+
+            print(self.outputData)
 
     def printData(self):
-        """Handler for printing data"""
-        index = self.outputData.index.size
-        self.outputData.loc[index] = self.bccData
-        self.outputData.index = self.outputData.index + 1
+        """Handler for saving data"""
+        if self.serial.isOpen():
+            fileName = QFileDialog.getSaveFileName(self, "Save File", ".", ("*.csv"))
+
+        else:
+            self.stopRecordButton.setChecked(True)
+            QMessageBox.critical(
+                self, 'COM error', 'COM data error, please reconnect the port')
+
+# ===================Data graph plotting====================
 
     def updateGraphData(self):
         """Handler for updating curve data"""
@@ -613,21 +662,21 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         dataList = []
         try:
             # Get the data bits in waiting
-            waitBits = self.serial.in_waiting
+            self.waitBits = self.serial.in_waiting
 
             # Wait and receive the data again to avoid error
-            if waitBits > 0:
+            if self.waitBits > 0:
                 time.sleep(0.1)
-                waitBits = self.serial.in_waiting
+                self.waitBits = self.serial.in_waiting
         except:
             QMessageBox.critical(
                 self, 'COM error', 'COM data error, please reconnect the port')
             self.close()
             return None
 
-        if waitBits > 0:
+        if self.waitBits > 0:
             # Read data from COM port
-            bccRawData = self.serial.read(waitBits)
+            bccRawData = self.serial.read(self.waitBits)
 
             # Transfer the byte data to UART data list
             dataList = list(hex(data) for data in list(bccRawData))
