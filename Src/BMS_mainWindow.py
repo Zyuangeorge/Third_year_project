@@ -1,7 +1,7 @@
 """
-BMS GUI Version 4
+BMS GUI Version 5
 Features:
-*Update UART transmission
+*Update graph plotting
 """
 # Import functions in other folders
 import sys
@@ -18,7 +18,7 @@ import time
 from enum import Enum
 
 # Import PyQt widgets: PySide6
-from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QAbstractItemView, QApplication, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QAbstractItemView, QApplication, QMessageBox, QVBoxLayout, QPushButton
 from PySide6.QtGui import QIcon, QIntValidator
 from PySide6.QtCore import QTimer
 
@@ -31,6 +31,9 @@ import util.util as util
 # Import graph window
 from BMS_plotWindow import plotWindow
 
+# Import pandas
+import pandas as pd
+import numpy as np
 
 class voltageStatus(Enum):
     DEFAULT = "NORMAL"
@@ -68,7 +71,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Set up window logo and disable window size modification
         self.setWindowIcon(QIcon("./UI/sheffield_logo.jpg"))
-        self.setFixedSize(self.width(), self.height())
 
         # Threshold variables
         self.currentThreshold = [0, 1600]
@@ -85,6 +87,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.Cell13StatusDisplay, self.Cell14StatusDisplay,
         ]
 
+        # ===================Data used for GUI displaying====================
         # Pack data
         self.packData = {'voltage': 0, 'current': 0,
                          'voltageStatus': voltageStatus.DEFAULT,
@@ -98,14 +101,37 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.cellData = {'voltage': [],
                          'voltageStatus': [], 'currentStatus': []}
 
+        # Raw data in integer form
+        self.bccData = [0 for i in range(0,16)]
+
         # Initialisation of cell data
         for num in range(0, 14):
             self.cellData['voltage'].append(0)
             self.cellData['voltageStatus'].append(voltageStatus.DEFAULT)
             self.cellData['currentStatus'].append(currentStatus.DEFAULT)
 
+        # ===================Data used for graph plotting and recording====================
+
+        self.outputData = pd.DataFrame(
+        columns=[
+            'packVoltage','cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4'
+            'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 'cellVoltage_9',
+            'cellVoltage_10','cellVoltage_11','cellVoltage_12','cellVoltage_13','cellVoltage_14',
+            'ICTemperature','Date'])
+        
+        self.graphData = np.zeros((16,1))
+
+        # ===================================================================
+
         # Initialisation of serial
         self.serial = serial.Serial()
+
+        # Initialisation of graph window
+        self.graphWindow = plotWindow()
+
+        # Two timers
+        self.timer = QTimer()
+        self.timer2 = QTimer()
 
         # Initialisation of the GUI
         self.init()
@@ -120,77 +146,20 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.tempMaxLineEdit.textChanged.connect(self.updateThreshold)
         self.tempMiniLineEdit.textChanged.connect(self.updateThreshold)
 
-    def updateThreshold(self):
-        """This function is used to update the threshold values"""
-        self.currentThreshold = [int(self.currentMiniLineEdit.text()), int(
-            self.currentMaxLineEdit.text())]
-        print("Current threshold: ")
-        print(self.currentThreshold)
-
-        self.voltageThreshold = [int(self.voltageMiniLineEdit.text()), int(
-            self.voltageMaxLineEdit.text())]
-
-        print("Voltage threshold: ")
-        print(self.voltageThreshold)
-        
-        self.tempThreshold = [int(self.tempMiniLineEdit.text()), int(
-            self.tempMaxLineEdit.text())]
-        
-        print("Temperature threshold: ")
-        print(self.tempThreshold)
-
-    def clearData(self):
-        """Clear cell voltage, pack voltage & current and IC temperature"""
-        # Clear cell voltage
-        for num in range(0, 14):
-            self.cellData['voltage'][num] = 0
-            self.voltageTable.item(num, 0).setText(str(0))
-
-        # Clear pack data
-        self.packData['voltage'] = 0
-        self.packData['current'] = 0
-        self.packVoltageLineEdit.setText(str(self.packData['voltage']))
-        self.packCurrentLineEdit.setText(str(self.packData['current']))
-
-        # Clear IC temp data
-        self.ICData['temp'] = 0
-        self.ICTempLineEdit.setText(str(self.ICData['temp']))
-
-        # Clear port status
-        self.portStatusDisplay.setChecked(False)
-        self.portStatusDisplay.setEnabled(False)
-
-    def resetStatus(self):
-        """Reset cell, pack and IC status as well as the button colours"""
-        # Clear cell status
-        for i in range(0, 14):
-            self.cellData['voltageStatus'][i] = voltageStatus.DEFAULT
-            self.cellData['currentStatus'][i] = currentStatus.DEFAULT
-
-        for button in self.statusButtonList:
-            button.setStyleSheet(
-                "background-color: rgb(0, 255, 0)")
-
-        # Clear pack status
-        self.packData['voltageStatus'] = voltageStatus.DEFAULT
-        self.packData['currentStatus'] = currentStatus.DEFAULT
-        self.packVoltageStatusDisplay.setText(
-            self.packData['voltageStatus'].value)
-        self.packCurrentStatusDisplay.setText(
-            self.packData['currentStatus'].value)
-        self.packVoltageStatusDisplay.setStyleSheet(
-            "background-color: rgb(0, 255, 0)")
-        self.packCurrentStatusDisplay.setStyleSheet(
-            "background-color: rgb(0, 255, 0)")
-
-        # Clear IC status
-        self.ICData['tempStatus'] = tempStatus.DEFAULT
-        self.ICStatusDisplay.setText(self.ICData['tempStatus'].value)
-        self.ICStatusDisplay.setStyleSheet(
-            "background-color: rgb(0, 255, 0)")
+# ===================Class initialisation====================
 
     def init(self):
         """GUI initialisation"""
+        # Init graph page layout
+        graphPageLayout = QVBoxLayout()
+        self.stopPlotButton = QPushButton()
+        self.stopPlotButton.setText("Stop Plotting")
+        graphPageLayout.addWidget(self.graphWindow)
+        graphPageLayout.addWidget(self.stopPlotButton)
+
+        # Add graph panels
+        self.batteryData_3Layout.addLayout(graphPageLayout)
+        
         # Set QLineEdit restrictions
         self.voltageMaxLineEdit.setValidator(QIntValidator())
         self.voltageMiniLineEdit.setValidator(QIntValidator())
@@ -229,6 +198,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.detectPortButton.clicked.connect(self.detectPort)
         self.startButton.clicked.connect(self.startMonitor)
         self.stopButton.clicked.connect(self.stopMonitor)
+        self.stopPlotButton.clicked.connect(self.stopPlotting)
 
         # Connect cell state display
         self.Cell1StatusDisplay.clicked.connect(lambda: self.displayCellStatus(
@@ -313,6 +283,85 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Connect IC temperature status button
         self.ICStatusButton.clicked.connect(lambda: self.plotGraph(plotGraphIndex.ICTEMPERATURE.value))
 
+# ===================Update threshold values====================
+
+    def updateThreshold(self):
+        """This function is used to update the threshold values"""
+        self.currentThreshold = [int(self.currentMiniLineEdit.text()), int(
+            self.currentMaxLineEdit.text())]
+        print("Current threshold: ")
+        print(self.currentThreshold)
+
+        self.voltageThreshold = [int(self.voltageMiniLineEdit.text()), int(
+            self.voltageMaxLineEdit.text())]
+
+        print("Voltage threshold: ")
+        print(self.voltageThreshold)
+        
+        self.tempThreshold = [int(self.tempMiniLineEdit.text()), int(
+            self.tempMaxLineEdit.text())]
+        
+        print("Temperature threshold: ")
+        print(self.tempThreshold)
+
+# ===================Clear and reset data====================
+
+    def clearData(self):
+        """Clear cell voltage, pack voltage & current and IC temperature"""
+        # Clear cell voltage
+        for num in range(0, 14):
+            self.cellData['voltage'][num] = 0
+            self.voltageTable.item(num, 0).setText(str(0))
+
+        # Clear pack data
+        self.packData['voltage'] = 0
+        self.packData['current'] = 0
+        self.packVoltageLineEdit.setText(str(self.packData['voltage']))
+        self.packCurrentLineEdit.setText(str(self.packData['current']))
+
+        # Clear IC temp data
+        self.ICData['temp'] = 0
+        self.ICTempLineEdit.setText(str(self.ICData['temp']))
+
+        # Clear port status
+        self.portStatusDisplay.setChecked(False)
+        self.portStatusDisplay.setEnabled(False)
+
+        # Clear output data and graph data
+        self.graphData = np.zeros((16,1))
+        self.outputData =self.outputData.drop(index = self.outputData.index)
+
+    def resetStatus(self):
+        """Reset cell, pack and IC status as well as the button colours"""
+        # Clear cell status
+        for i in range(0, 14):
+            self.cellData['voltageStatus'][i] = voltageStatus.DEFAULT
+            self.cellData['currentStatus'][i] = currentStatus.DEFAULT
+
+        for button in self.statusButtonList:
+            button.setStyleSheet(
+                "background-color: rgb(0, 255, 0)")
+
+        # Clear pack status
+        self.packData['voltageStatus'] = voltageStatus.DEFAULT
+        self.packData['currentStatus'] = currentStatus.DEFAULT
+        self.packVoltageStatusDisplay.setText(
+            self.packData['voltageStatus'].value)
+        self.packCurrentStatusDisplay.setText(
+            self.packData['currentStatus'].value)
+        self.packVoltageStatusDisplay.setStyleSheet(
+            "background-color: rgb(0, 255, 0)")
+        self.packCurrentStatusDisplay.setStyleSheet(
+            "background-color: rgb(0, 255, 0)")
+
+        # Clear IC status
+        self.ICData['tempStatus'] = tempStatus.DEFAULT
+        self.ICStatusDisplay.setText(self.ICData['tempStatus'].value)
+        self.ICStatusDisplay.setStyleSheet(
+            "background-color: rgb(0, 255, 0)")
+
+# ===================Port configuration and communication====================
+
     def detectPort(self):
         """Check the connected ports"""
         self.portsDict = {}
@@ -379,7 +428,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.portStatusDisplay.setChecked(True)
 
         # Open the timer to receive data
-        self.timer = QTimer()
         self.timer.timeout.connect(self.receiveData)
 
         # Set the timer for receiving
@@ -389,64 +437,92 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """Stop the monitoring process"""
         try:
             self.timer.stop()
+            self.timer2.stop()
             self.serial.close()
         except:
             QMessageBox.critical(self, "COM error", "COM close failed")
 
         self.startButton.setEnabled(True)
         self.stopButton.setEnabled(False)
-        self.portStatusDisplay.setChecked(False)
+        self.portStatusDisplay.setChecked(False)        
+
+# ===================Data graph plotting====================
+
+    def printData(self):
+        """Handler for printing data"""
+        index = self.outputData.index.size
+        self.outputData.loc[index] = self.bccData
+        self.outputData.index = self.outputData.index + 1
+
+    def updateGraphData(self):
+        """Handler for updating curve data"""
+        insertData = list(i / 1000000 for i in self.bccData)
+        insertData[15] = insertData[15] * 100000
+
+        insertData = np.array(insertData).reshape((16,1))
+
+        self.graphData = np.append(self.graphData, insertData, axis = 1)
+
+        for i in range(0,16):
+            self.curveList[i].setData(self.graphData[i])
+        
+        self.graphWindow.setGraphs()
 
     def plotGraph(self, plotIndex):
         """Show cell status, pack status, IC temperature in a graph"""
-        graphWindow = plotWindow()
+        self.cellCurve1 = self.graphWindow.p0.plot() # plotDataItem
+        self.cellCurve2 = self.graphWindow.p1.plot()
+        self.cellCurve3 = self.graphWindow.p2.plot()
+        self.cellCurve4 = self.graphWindow.p3.plot()
+
+        self.cellCurve5 = self.graphWindow.p4.plot()
+        self.cellCurve6 = self.graphWindow.p5.plot()
+        self.cellCurve7 = self.graphWindow.p6.plot()
+        self.cellCurve8 = self.graphWindow.p7.plot()
+        
+        self.cellCurve9 = self.graphWindow.p8.plot()
+        self.cellCurve10 = self.graphWindow.p9.plot()
+        self.cellCurve11 = self.graphWindow.p10.plot()
+        self.cellCurve12 = self.graphWindow.p11.plot()
+
+        self.cellCurve13 = self.graphWindow.p12.plot()
+        self.cellCurve14 = self.graphWindow.p13.plot()
+        
+        self.packVoltageCurve = self.graphWindow.packVoltageP.plot()
+        self.ICTempCurve = self.graphWindow.ICTempP.plot()
+
+        self.curveList = [self.packVoltageCurve,
+            self.cellCurve1, self.cellCurve2, self.cellCurve3,
+            self.cellCurve4, self.cellCurve5, self.cellCurve6,
+            self.cellCurve7, self.cellCurve8, self.cellCurve9,
+            self.cellCurve10, self.cellCurve11, self.cellCurve12,
+            self.cellCurve13, self.cellCurve14, self.ICTempCurve]
+
+        self.timer2.timeout.connect(self.updateGraphData)
+        self.timer2.start(200)
 
         if plotIndex < 14:
             print(plotIndex)          
-            graphTitle = "Cell %s Voltage Graph" %str(plotIndex)
-            yAxisLabel = "Voltage (mV)"
-
-            graphWindow.titles[0] = graphTitle
-            graphWindow.titles[2] = yAxisLabel
-            graphWindow.realtimeData = self.cellData['voltage'][plotIndex]
-            graphWindow.updateTitles()
-            graphWindow.exec()
+            # self.timer2.timeout.connect(lambda: self.updateGraphData())
 
         elif plotIndex == plotGraphIndex.PACKVOLTAGE.value:
             print(plotIndex)
-            graphTitle = "Pack Voltage Graph"
-            yAxisLabel = "Voltage (mV)"
-
-            graphWindow.titles[0] = graphTitle
-            graphWindow.titles[2] = yAxisLabel
-            graphWindow.realtimeData = self.packData['voltage']
-            graphWindow.updateTitles()
-            graphWindow.exec()
+            # self.timer2.timeout.connect(self.updateGraphData())
 
         elif plotIndex == plotGraphIndex.PACKCURRENT.value:
             print(plotIndex)
-            graphTitle = "Pack Current Graph"
-            yAxisLabel = "Current (mA)"
-
-            graphWindow.titles[0] = graphTitle
-            graphWindow.titles[2] = yAxisLabel
-            graphWindow.realtimeData = self.packData['current']
-            graphWindow.updateTitles()
-            graphWindow.exec()
 
         elif plotIndex == plotGraphIndex.ICTEMPERATURE.value:
             print(plotIndex)
-            graphTitle = "IC Temperature Graph"
-            yAxisLabel = "Degree (C)"
-
-            graphWindow.titles[0] = graphTitle
-            graphWindow.titles[2] = yAxisLabel
-            graphWindow.realtimeData = self.ICData['temp']
-            graphWindow.updateTitles()
-            graphWindow.exec()
+            # self.timer2.timeout.connect(self.updateGraphData())
         else:
             pass
         
+    def stopPlotting(self):
+        self.timer2.stop()
+
+# ===================Status display====================
+
     def displayCellStatus(self, batteryNumber):
         """Show cell status through a pop-up window"""
         currentStatus = self.cellData['currentStatus'][batteryNumber].value
@@ -457,103 +533,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         QMessageBox.about(self, "Cell %s" % str(
             batteryNumber+1) + " Status", message)
-
-    def helpAction(self):
-        """User manual"""
-        QMessageBox.about(self,
-                          "Help",
-                          "This GUI supports: \n\
-            1. Change UART settings\n\
-            2. Set threshold values\n\
-            3. Display battery data and status\n\
-            4. Display pack data and status\n\
-            5. Display MC33771C temperature\n\n\
-        Follow these steps to use this GUI: \n\
-            1. Set UART configuration\n\
-            2. Set threshold values\n\
-            3. Start monitoring\n\
-            4. Check data and status\n\
-        *To check individual cell data, please click the cell button\n\
-        **The button will turn red if there is a problem with the status")
-
-    def aboutAction(self):
-        """About this GUI"""
-        QMessageBox.about(
-            self, "About", "This GUI is built by Zhe Yuan, and it is used to monitor the battery cell data through MC33771C")
-
-    def clearWarning(self):
-        """Warn user for clearing data"""
-        yesButton = QMessageBox.StandardButton.Yes
-        noButton = QMessageBox.StandardButton.No
-
-        msg = QMessageBox.warning(
-            self, "Warning", "You are going to clear all the data!", yesButton, noButton)
-        if msg == QMessageBox.Yes:
-            self.clearData()
-
-    def updateData(self, bccData):
-        """This function is used to update the data as well as the status"""
-        # Update data and status
-        self.packData['voltage'] = bccData[0] / 1000
-        if self.packData['voltage'] > self.packVoltageThreshold[1]:
-            self.packData['voltageStatus'] = voltageStatus.OVERVOLTAGE
-        elif self.packData['voltage'] < self.packVoltageThreshold[0]:
-            self.packData['voltageStatus'] = voltageStatus.UNDERVOLTAGE
-        else:
-            self.packData['voltageStatus'] = voltageStatus.DEFAULT
-
-        for i in range(0, 14):
-            self.cellData['voltage'][i] = bccData[i+1] / 1000
-            if self.cellData['voltage'][i] > self.voltageThreshold[1]:
-                self.cellData['voltageStatus'][i] = voltageStatus.OVERVOLTAGE
-            elif self.cellData['voltage'][i] < self.voltageThreshold[0]:
-                self.cellData['voltageStatus'][i] = voltageStatus.UNDERVOLTAGE
-            else:
-                self.cellData['voltageStatus'][i] = voltageStatus.DEFAULT
-
-        self.ICData['temp'] = bccData[15] / 10
-        if self.ICData['temp'] > self.tempThreshold[1]:
-            self.ICData['tempStatus'] = tempStatus.OVERTEMPERATURE
-        elif self.ICData['temp'] < self.tempThreshold[0]:
-            self.ICData['tempStatus'] = tempStatus.UNDERTEMPERATURE
-        else:
-            self.ICData['tempStatus'] = tempStatus.DEFAULT
-
-    def receiveData(self):
-        """Handler for receiving data"""
-        bccRawData = []
-        dataList = []
-        bccData = []
-        try:
-            # Get the data bits in waiting
-            waitBits = self.serial.in_waiting
-
-            # Wait and receive the data again to avoid error
-            if waitBits > 0:
-                time.sleep(0.1)
-                waitBits = self.serial.in_waiting
-        except:
-            QMessageBox.critical(
-                self, 'COM error', 'COM data error, please reconnect the port')
-            self.close()
-            return None
-
-        if waitBits > 0:
-            # Read data from COM port
-            bccRawData = self.serial.read(waitBits)
-
-            # Transfer the byte data to UART data list
-            dataList = list(hex(data) for data in list(bccRawData))
-
-            # Filter out incorrect inputs
-            if len(dataList) == 64:
-                bccData = util.listData2strData(dataList)
-                self.updateData(bccData)
-                self.updateGUIData()
-            else:
-                pass
-        else:
-            pass
 
     def updateGUIData(self):
         """This function is used to update GUI display"""
@@ -608,8 +587,109 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         else:
             pass
 
+# ===================GUI pop-up dialogues====================
 
-# Main
+    def helpAction(self):
+        """User manual"""
+        QMessageBox.about(self,
+                          "Help",
+                          "This GUI supports: \n\
+            1. Change UART settings\n\
+            2. Set threshold values\n\
+            3. Display battery data and status\n\
+            4. Display pack data and status\n\
+            5. Display MC33771C temperature\n\n\
+        Follow these steps to use this GUI: \n\
+            1. Set UART configuration\n\
+            2. Set threshold values\n\
+            3. Start monitoring\n\
+            4. Check data and status\n\
+        *To check individual cell data, please click the cell button\n\
+        **The button will turn red if there is a problem with the status")
+
+    def aboutAction(self):
+        """About this GUI"""
+        QMessageBox.about(
+            self, "About", "This GUI is built by Zhe Yuan, and it is used to monitor the battery cell data through MC33771C")
+
+    def clearWarning(self):
+        """Warn user for clearing data"""
+        yesButton = QMessageBox.StandardButton.Yes
+        noButton = QMessageBox.StandardButton.No
+
+        msg = QMessageBox.warning(
+            self, "Warning", "You are going to clear all the data!", yesButton, noButton)
+        if msg == QMessageBox.Yes:
+            self.clearData()
+
+# ===================Serial data receiving and updating====================
+
+    def updateData(self):
+        """This function is used to update the data as well as the status"""
+        # Update data and status
+        self.packData['voltage'] = self.bccData[0] / 1000
+        if self.packData['voltage'] > self.packVoltageThreshold[1]:
+            self.packData['voltageStatus'] = voltageStatus.OVERVOLTAGE
+        elif self.packData['voltage'] < self.packVoltageThreshold[0]:
+            self.packData['voltageStatus'] = voltageStatus.UNDERVOLTAGE
+        else:
+            self.packData['voltageStatus'] = voltageStatus.DEFAULT
+
+        for i in range(0, 14):
+            self.cellData['voltage'][i] = self.bccData[i+1] / 1000
+            if self.cellData['voltage'][i] > self.voltageThreshold[1]:
+                self.cellData['voltageStatus'][i] = voltageStatus.OVERVOLTAGE
+            elif self.cellData['voltage'][i] < self.voltageThreshold[0]:
+                self.cellData['voltageStatus'][i] = voltageStatus.UNDERVOLTAGE
+            else:
+                self.cellData['voltageStatus'][i] = voltageStatus.DEFAULT
+
+        self.ICData['temp'] = self.bccData[15] / 10
+        if self.ICData['temp'] > self.tempThreshold[1]:
+            self.ICData['tempStatus'] = tempStatus.OVERTEMPERATURE
+        elif self.ICData['temp'] < self.tempThreshold[0]:
+            self.ICData['tempStatus'] = tempStatus.UNDERTEMPERATURE
+        else:
+            self.ICData['tempStatus'] = tempStatus.DEFAULT
+
+    def receiveData(self):
+        """Handler for receiving data"""
+        bccRawData = []
+        dataList = []
+        try:
+            # Get the data bits in waiting
+            waitBits = self.serial.in_waiting
+
+            # Wait and receive the data again to avoid error
+            if waitBits > 0:
+                time.sleep(0.1)
+                waitBits = self.serial.in_waiting
+        except:
+            QMessageBox.critical(
+                self, 'COM error', 'COM data error, please reconnect the port')
+            self.close()
+            return None
+
+        if waitBits > 0:
+            # Read data from COM port
+            bccRawData = self.serial.read(waitBits)
+
+            # Transfer the byte data to UART data list
+            dataList = list(hex(data) for data in list(bccRawData))
+
+            # Filter out incorrect inputs
+            if len(dataList) == 64:
+                self.bccData = util.listData2strData(dataList)
+                self.updateData()
+                self.updateGUIData()
+            else:
+                pass
+        else:
+            pass
+
+
+# ===================Main====================
+
 if __name__ == "__main__":
     application = QApplication(sys.argv)
     gui = mainWindow()

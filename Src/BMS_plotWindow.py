@@ -1,100 +1,78 @@
 # Import PySide6 widgets
-from PySide6.QtWidgets import QDialog, QApplication, QHBoxLayout, QMessageBox
-from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QHBoxLayout
 
 # Import pyqtgraph
 import pyqtgraph as pg
 
-# Import numpy
 import numpy as np
 
-from random import randint
-
-# Import serial library
-import serial
-
-class plotWindow(QDialog):
+class plotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
 
     def __init__(self):
         super().__init__()
         
-        # Graph titles
-        self.titles = ["Battery Data Display", "Time(s)", "Default y axis"]
-
-        # x axis setting
-        self.xAxis = list(range(100)) # x-axis values
-
         # Battery data
-        self.batteryData = [randint(0,100) for _ in range(100)] # y-axis values
-        self.realtimeData = 0
+        self.batteryDataBuffer = [] # Data buffer
 
-        # Graph widget
-        self.graphWidget = pg.PlotWidget()
+        # Panel list
+        self.voltagePanels = []
         
-        # Serial port
-        self.serialPort = serial.Serial()
-        
-        # Set layout
-        self.setWindowTitle(self.titles[0])
-        self.buildLayout()
+        self.setPlotPanels()
+        self.setGraphs()
 
-        # Add timer
-        self.timer = QTimer()
-        self.initTimer()
+    def setPlotPanels(self):
+        """Handler for setting battery data graphs"""
 
-    def setGraph(self):
-        # Set background colour
-        self.graphWidget.setBackground('w')
-        
-        # Set x and y axis label
-        self.graphWidget.setLabel(axis='bottom', text=self.titles[1])
-        self.graphWidget.setLabel(axis='left', text=self.titles[2])
+        # Set plot windows
+        self.p0 = self.addPlot(title="Cell 1 Voltage")
+        self.p1 = self.addPlot(title="Cell 2 Voltage")
+        self.p2 = self.addPlot(title="Cell 3 Voltage")
+        self.p3 = self.addPlot(title="Cell 4 Voltage")
 
-        # Set Graph pen
-        self.pen = pg.mkPen(color=(0, 255, 0))
+        self.nextRow()
+        self.p4 = self.addPlot(title="Cell 5 Voltage")
+        self.p5 = self.addPlot(title="Cell 6 Voltage")
+        self.p6 = self.addPlot(title="Cell 7 Voltage")
+        self.p7 = self.addPlot(title="Cell 8 Voltage")
 
-        # Set line
-        self.dataLine =  self.graphWidget.plot(self.xAxis, self.batteryData, pen=self.pen)
+        self.nextRow()
+        self.p8 = self.addPlot(title="Cell 9 Voltage")
+        self.p9 = self.addPlot(title="Cell 10 Voltage")
+        self.p10 = self.addPlot(title="Cell 11 Voltage")
+        self.p11 = self.addPlot(title="Cell 12 Voltage")
 
-        # Set graph layout
-        graphLayout = QHBoxLayout()
-        graphLayout.addWidget(self.graphWidget)
+        self.nextRow()
+        self.p12 = self.addPlot(title="Cell 13 Voltage")
+        self.p13 = self.addPlot(title="Cell 14 Voltage")
+        self.ICTempP = self.addPlot(title="Pack Voltage")
+        self.packVoltageP = self.addPlot(title="IC Temperature")
 
-        return graphLayout
+        self.voltageCurves = (
+            self.p0,self.p1,self.p2,self.p3,
+            self.p4,self.p5,self.p6,self.p7,
+            self.p8,self.p9,self.p10,self.p11,
+            self.p12,self.p13)
 
-    def buildLayout(self):
-        graphLayout = self.setGraph()
+    def setGraphs(self):
+        """Handler for setting panels"""
+        for curve in self.voltageCurves:
+            # Set background colour
+            curve.autoRange()
 
-        # Set window layout
-        dialogLayout = QHBoxLayout() # Layout type
+        self.packVoltageP.autoRange()
+        self.ICTempP.autoRange()
 
-        dialogLayout.addLayout(graphLayout)
-        self.setLayout(dialogLayout)
+    def updateThresholdLines(self, voltageThreshold, tempThreshold, packVoltageThreshold):
+        """Handler for adding threshold lines"""
+        pen = pg.mkPen(color=(255, 0, 0))
 
-    def initTimer(self):
-        self.timer.setInterval(200) # Set time interval in milliseconds
-        self.timer.timeout.connect(self.updateData)  
-        self.timer.start()    
+        for curve in self.voltageCurves:
+            curve.addLine(y=voltageThreshold[0],pen=pen)
+            curve.addLine(y=voltageThreshold[1],pen=pen)
 
-    def updateData(self):
-        self.xAxis = self.xAxis[1:]  # Remove the first y element.
-        self.xAxis.append(self.xAxis[-1] + 0.5)  # Add a new value 1 higher than the last.
+        self.ICTempP.addLine(y=tempThreshold[0],pen=pen)
+        self.ICTempP.addLine(y=tempThreshold[1],pen=pen)
 
-        self.batteryData = self.batteryData[1:]  # Remove the first
-        self.batteryData.append(self.realtimeData)  # Add the battery data.
-
-        self.dataLine.setData(self.xAxis, self.batteryData)  # Update the data.
-
-    def updateTitles(self):
-        self.setWindowTitle(self.titles[0])
-        self.graphWidget.setLabel(axis='bottom', text=self.titles[1])
-        self.graphWidget.setLabel(axis='left', text=self.titles[2])
-        
-
-
-if __name__ == "__main__":
-    application = QApplication([])
-    plotDialog = plotWindow()
-    plotDialog.show()
-    exit(application.exec())
+        self.packVoltageP.addLine(y=packVoltageThreshold[0],pen=pen)
+        self.packVoltageP.addLine(y=packVoltageThreshold[1],pen=pen)
