@@ -429,9 +429,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
     def startRecording(self):
         """Handler for start data recording"""
-        # Clear previous data
-        self.outputData = self.outputData.drop(index = self.outputData.index)
-
         # Detect port status
         self.timer3.timeout.connect(self.recordData)
         self.timer3.start(200)
@@ -452,13 +449,19 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.outputData.loc[index] = self.bccData
             self.outputData.at[index,'Date'] = timeInfo
             self.outputData.index = self.outputData.index + 1
-
-            print(self.outputData)
-
+            
     def printData(self):
-        """Handler for saving data"""
-        if self.serial.isOpen():
+        """Handler for saving data as zip"""
+        self.stopRecordButton.setChecked(True)
+
+        if self.serial.isOpen() and self.waitBits > 0:
             fileName = QFileDialog.getSaveFileName(self, "Save File", ".", ("*.csv"))
+            
+            with open(fileName[0],'w') as f:
+                self.outputData.to_csv(f, index=False, line_terminator='\n')
+                f.close()
+            
+            self.outputData = self.outputData.drop(index = self.outputData.index)
 
         else:
             self.stopRecordButton.setChecked(True)
