@@ -36,7 +36,7 @@ This GUI is built by PySide6.
 
 8. Battery data plotting
 
-##Further Improvements
+## Further Improvements
 1. Improving the speed
 
 2. Improving the graph format
