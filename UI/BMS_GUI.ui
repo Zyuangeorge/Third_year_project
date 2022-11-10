@@ -374,6 +374,22 @@
        </widget>
       </item>
       <item>
+       <widget class="QGroupBox" name="loadGroupBox">
+        <property name="title">
+         <string>Loading</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QPushButton" name="loadingButton">
+           <property name="text">
+            <string>Load file</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
        <widget class="QGroupBox" name="thresholdGroupBox">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">

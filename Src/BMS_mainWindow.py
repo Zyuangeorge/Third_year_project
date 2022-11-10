@@ -30,14 +30,11 @@ from UI.BMS_GUI import Ui_MainWindow
 import util.util as util
 
 # Import graph window
-from BMS_plotWindow import plotWindow, zoomWindow
+from BMS_plotWindow import plotWindow, zoomWindow, loadGraphWindow
 
 # Import pandas
 import pandas as pd
 import numpy as np
-
-# Import pyqtgraph
-import pyqtgraph as pg
 
 
 class voltageStatus(Enum):
@@ -300,6 +297,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Connect zoom button functions
         self.zoomButton.clicked.connect(self.zoomGraph)
+
+        # Connect load button function
+        self.loadingButton.clicked.connect(self.openFile)
 
 # ===================Update threshold values====================
 
@@ -594,6 +594,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             'Pack Voltage': 0,
             'IC Temperature': 15
         }
+
         if self.graphData.shape[1] > 2:
             graphItemIndex = zoomedGraphDict.get(zoomedGraph)
             
@@ -612,7 +613,22 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         else:
             QMessageBox.critical(
                 self, 'Data error', 'No curve data, please restart plotting')
-        
+
+# ===================Read data====================
+
+    def openFile(self):
+        openFileName = QFileDialog.getOpenFileName(
+            self, 'Choose a CSV file to open', '.', 'CSV file(*.csv)')
+
+        readFile = pd.read_csv(openFileName[0])
+
+        if readFile.shape[1] > 2:
+            loadWindow = loadGraphWindow()
+            loadWindow.loadGraphData(readFile)
+            loadWindow.exec()
+        else:
+            QMessageBox.critical(
+                self, 'Data error', 'No curve data, please check file')
 
 # ===================Status display====================
 

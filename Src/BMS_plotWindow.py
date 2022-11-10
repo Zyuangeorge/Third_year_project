@@ -1,5 +1,7 @@
 import sys
 
+import numpy as np
+
 # Import pyqtgraph
 import pyqtgraph as pg
 
@@ -48,11 +50,11 @@ class plotWindow(pg.GraphicsLayoutWidget):
         self.ICTempP = self.addPlot(title="IC Temperature")
         self.packVoltageP = self.addPlot(title="Pack Voltage")
 
-        self.voltageCurves = (
+        self.voltageCurves = [
             self.p0,self.p1,self.p2,self.p3,
             self.p4,self.p5,self.p6,self.p7,
             self.p8,self.p9,self.p10,self.p11,
-            self.p12,self.p13)
+            self.p12,self.p13]
 
     def initCurves(self):
         """Handler for curve initialisation"""
@@ -122,3 +124,43 @@ class zoomWindow(QDialog):
         self.plot.setLabel('left', self.labels[1])
         self.plot.autoRange()
 
+class loadGraphWindow(QDialog):
+    """Window for zooming graphs"""
+    def __init__(self):
+        super().__init__()
+
+        self.canvas = plotWindow()
+
+        self.title = "Loaded file graphs"
+
+        self.initGraph()
+    
+    def initGraph(self):
+        """Handler for initialisation graph window"""
+
+        self.setWindowTitle(self.title)
+
+        self.canvas.resize(800, 1100)
+
+        layout = QHBoxLayout()
+        layout.addWidget(self.canvas)
+
+        self.setLayout(layout)
+    
+    def loadGraphData(self, readFile):
+        """Handler for loading curve data"""
+        readFile = readFile.drop('Date', axis=1) # Remove time column to get value
+
+        data = readFile.values # Set data frame as matrix
+
+        data = np.array(data) # Transfer matrix to numpy matrix
+
+        data = np.transpose(data) # Transpose the matrix
+
+        for i in range(0,14):
+            self.canvas.voltageCurves[i].plot(data[i + 1]) # Set voltage data in order
+
+        self.canvas.packVoltageP.plot(data[0])
+        self.canvas.ICTempP.plot(data[15])
+
+        self.canvas.setGraphs()

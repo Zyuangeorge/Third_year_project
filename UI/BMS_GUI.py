@@ -233,6 +233,18 @@ class Ui_MainWindow(object):
 
         self.leftLayout.addWidget(self.recordGroupBox)
 
+        self.loadGroupBox = QGroupBox(self.centralwidget)
+        self.loadGroupBox.setObjectName(u"loadGroupBox")
+        self.verticalLayout_2 = QVBoxLayout(self.loadGroupBox)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.loadingButton = QPushButton(self.loadGroupBox)
+        self.loadingButton.setObjectName(u"loadingButton")
+
+        self.verticalLayout_2.addWidget(self.loadingButton)
+
+
+        self.leftLayout.addWidget(self.loadGroupBox)
+
         self.thresholdGroupBox = QGroupBox(self.centralwidget)
         self.thresholdGroupBox.setObjectName(u"thresholdGroupBox")
         sizePolicy.setHeightForWidth(self.thresholdGroupBox.sizePolicy().hasHeightForWidth())
@@ -809,6 +821,8 @@ class Ui_MainWindow(object):
         self.recordGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Recording", None))
         self.startRecordButton.setText(QCoreApplication.translate("MainWindow", u"Start Recoding", None))
         self.stopRecordButton.setText(QCoreApplication.translate("MainWindow", u"Stop Recording", None))
+        self.loadGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Loading", None))
+        self.loadingButton.setText(QCoreApplication.translate("MainWindow", u"Load file", None))
         self.thresholdGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Set thresholds", None))
         self.voltageThresholdLabel.setText(QCoreApplication.translate("MainWindow", u"Cell voltage threshold (mV):", None))
         self.voltageMaxLabel.setText(QCoreApplication.translate("MainWindow", u"Maximum:", None))
