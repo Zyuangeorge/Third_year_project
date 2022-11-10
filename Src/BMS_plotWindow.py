@@ -1,11 +1,9 @@
-import sys
-
 import numpy as np
 
 # Import pyqtgraph
 import pyqtgraph as pg
 
-from PySide6.QtWidgets import QDialog, QHBoxLayout
+from PySide6.QtWidgets import QDialog, QHBoxLayout, QComboBox, QPushButton, QVBoxLayout, QMessageBox
 
 class plotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
@@ -59,14 +57,14 @@ class plotWindow(pg.GraphicsLayoutWidget):
     def initCurves(self):
         """Handler for curve initialisation"""
         for curve in self.voltageCurves:
-            curve.setLabel('bottom', "Time (S)")
-            curve.setLabel('left', "Voltage (mV)")
+            curve.setLabel('bottom', "Time (s) * 5")
+            curve.setLabel('left', "Voltage (V)")
         
-        self.ICTempP.setLabel('bottom', "Time (S)")
+        self.ICTempP.setLabel('bottom', "Time (s) * 5")
         self.ICTempP.setLabel('left', "Temperature (°C)")
 
-        self.packVoltageP.setLabel('bottom', "Time (S)")
-        self.packVoltageP.setLabel('left', "Voltage (mV)")
+        self.packVoltageP.setLabel('bottom', "Time (s) * 5")
+        self.packVoltageP.setLabel('left', "Voltage (V)")
 
     def setGraphs(self):
         """Handler for setting panels"""
@@ -112,7 +110,7 @@ class zoomWindow(QDialog):
         self.canvas.resize(800, 600)
         
         self.plot.setLabel('left', self.labels[1])
-        self.plot.setLabel('bottom', "Time (S)")
+        self.plot.setLabel('bottom', "Time (s) * 5")
 
         layout = QHBoxLayout()
         layout.addWidget(self.canvas)
@@ -123,6 +121,7 @@ class zoomWindow(QDialog):
         self.setWindowTitle(self.labels[0])
         self.plot.setLabel('left', self.labels[1])
         self.plot.autoRange()
+
 
 class loadGraphWindow(QDialog):
     """Window for zooming graphs"""
@@ -140,10 +139,42 @@ class loadGraphWindow(QDialog):
 
         self.setWindowTitle(self.title)
 
-        self.canvas.resize(800, 1100)
+        layout = QVBoxLayout()
 
-        layout = QHBoxLayout()
-        layout.addWidget(self.canvas)
+        graphLayout = QHBoxLayout()
+        graphLayout.addWidget(self.canvas)
+
+        plotButtonLayout = QHBoxLayout()
+        
+        # Add zoom item combo box
+        self.zoomGraphComboBox = QComboBox()
+        self.zoomGraphComboBox.addItem('Cell 1 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 2 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 3 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 4 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 5 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 6 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 7 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 8 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 9 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 10 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 11 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 12 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 13 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 14 Voltage')
+        self.zoomGraphComboBox.addItem('Pack Voltage')
+        self.zoomGraphComboBox.addItem('IC Temperature')
+
+        self.zoomButton = QPushButton("Zoom Graph")
+
+        plotButtonLayout.addWidget(self.zoomGraphComboBox)
+        plotButtonLayout.addWidget(self.zoomButton)
+
+        layout.addLayout(graphLayout)
+        layout.addLayout(plotButtonLayout)
+
+        # Connect zoom button functions
+        self.zoomButton.clicked.connect(self.zoomGraph)
 
         self.setLayout(layout)
     
@@ -151,16 +182,60 @@ class loadGraphWindow(QDialog):
         """Handler for loading curve data"""
         readFile = readFile.drop('Date', axis=1) # Remove time column to get value
 
-        data = readFile.values # Set data frame as matrix
+        self.data = readFile.values # Set data frame as matrix
 
-        data = np.array(data) # Transfer matrix to numpy matrix
+        self.data = np.array(self.data) # Transfer matrix to numpy matrix
 
-        data = np.transpose(data) # Transpose the matrix
+        self.data = np.transpose(self.data) # Transpose the matrix
 
-        for i in range(0,14):
-            self.canvas.voltageCurves[i].plot(data[i + 1]) # Set voltage data in order
+        for j in range(0,14):
+            self.canvas.voltageCurves[j].plot(list(i / 1000000 for i in self.data[j + 1])) # Set voltage data in order
 
-        self.canvas.packVoltageP.plot(data[0])
-        self.canvas.ICTempP.plot(data[15])
+        self.canvas.packVoltageP.plot(list(i / 1000000 for i in self.data[0]))
+        self.canvas.ICTempP.plot(list(i / 10 for i in self.data[15]))
 
         self.canvas.setGraphs()
+    
+    def zoomGraph(self):
+        """Handler for zooming graph"""
+        zoomedGraph = self.zoomGraphComboBox.currentText()
+        zoomedGraphDict = {
+            'Cell 1 Voltage': 1,
+            'Cell 2 Voltage': 2,
+            'Cell 3 Voltage': 3,
+            'Cell 4 Voltage': 4,
+            'Cell 5 Voltage': 5,
+            'Cell 6 Voltage': 6,
+            'Cell 7 Voltage': 7,
+            'Cell 8 Voltage': 8,
+            'Cell 9 Voltage': 9,
+            'Cell 10 Voltage': 10,
+            'Cell 11 Voltage': 11,
+            'Cell 12 Voltage': 12,
+            'Cell 13 Voltage': 13,
+            'Cell 14 Voltage': 14,
+            'Pack Voltage': 0,
+            'IC Temperature': 15
+        }
+        if self.data.shape[1] > 2:
+            graphItemIndex = zoomedGraphDict.get(zoomedGraph)
+            
+            title = self.zoomGraphComboBox.currentText()
+
+            if graphItemIndex < 15:
+                yLabel = "Voltage (V)"
+            else:
+                yLabel = "Temperature (°C)"
+
+            graphWindow = zoomWindow() # Init zoom window
+            graphWindow.labels = [title, yLabel]
+            if graphItemIndex < 15:
+                graphWindow.plot.plot(list(i / 1000000 for i in self.data[graphItemIndex])) # Plot Curve
+            else:
+                graphWindow.plot.plot(list(i / 10 for i in self.data[graphItemIndex]))
+
+            graphWindow.updateGraph() # Update labels
+            graphWindow.exec()
+        else:
+            QMessageBox.critical(
+                self, 'Data error', 'No curve data, please restart plotting')

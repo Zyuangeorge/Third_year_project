@@ -1,7 +1,7 @@
 """
-BMS GUI Version 5
+BMS GUI Version 6
 Features:
-*Update graph plotting
+*Update open file
 """
 # Import functions in other folders
 import sys
@@ -601,9 +601,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             title = self.zoomGraphComboBox.currentText()
 
             if graphItemIndex < 15:
-                yLabel = "Voltage (mV)"
+                yLabel = "Voltage (V)"
             else:
-                yLabel = "Temperature ()"
+                yLabel = "Temperature (°C)"
 
             graphWindow = zoomWindow() # Init zoom window
             graphWindow.labels = [title, yLabel]
