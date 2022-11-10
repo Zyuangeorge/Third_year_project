@@ -1,5 +1,9 @@
+import sys
+
 # Import pyqtgraph
 import pyqtgraph as pg
+
+from PySide6.QtWidgets import QDialog, QHBoxLayout
 
 class plotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
@@ -14,6 +18,7 @@ class plotWindow(pg.GraphicsLayoutWidget):
         self.voltagePanels = []
         
         self.setPlotPanels()
+        self.initCurves()
         self.setGraphs()
 
     def setPlotPanels(self):
@@ -40,8 +45,8 @@ class plotWindow(pg.GraphicsLayoutWidget):
         self.nextRow()
         self.p12 = self.addPlot(title="Cell 13 Voltage")
         self.p13 = self.addPlot(title="Cell 14 Voltage")
-        self.ICTempP = self.addPlot(title="Pack Voltage")
-        self.packVoltageP = self.addPlot(title="IC Temperature")
+        self.ICTempP = self.addPlot(title="IC Temperature")
+        self.packVoltageP = self.addPlot(title="Pack Voltage")
 
         self.voltageCurves = (
             self.p0,self.p1,self.p2,self.p3,
@@ -49,10 +54,21 @@ class plotWindow(pg.GraphicsLayoutWidget):
             self.p8,self.p9,self.p10,self.p11,
             self.p12,self.p13)
 
+    def initCurves(self):
+        """Handler for curve initialisation"""
+        for curve in self.voltageCurves:
+            curve.setLabel('bottom', "Time (S)")
+            curve.setLabel('left', "Voltage (mV)")
+        
+        self.ICTempP.setLabel('bottom', "Time (S)")
+        self.ICTempP.setLabel('left', "Temperature (°C)")
+
+        self.packVoltageP.setLabel('bottom', "Time (S)")
+        self.packVoltageP.setLabel('left', "Voltage (mV)")
+
     def setGraphs(self):
         """Handler for setting panels"""
         for curve in self.voltageCurves:
-            # Set background colour
             curve.autoRange()
 
         self.packVoltageP.autoRange()
@@ -71,3 +87,38 @@ class plotWindow(pg.GraphicsLayoutWidget):
 
         self.packVoltageP.addLine(y=packVoltageThreshold[0],pen=pen)
         self.packVoltageP.addLine(y=packVoltageThreshold[1],pen=pen)
+
+
+class zoomWindow(QDialog):
+    """Window for zooming graphs"""
+    def __init__(self):
+        super().__init__()
+
+        self.canvas = pg.GraphicsLayoutWidget()
+
+        self.labels = ["Default window name","Default left label"]
+        
+        self.plot = self.canvas.addPlot()
+
+        self.initGraph()
+    
+    def initGraph(self):
+        """Handler for initialisation graph window"""
+
+        self.setWindowTitle(self.labels[0])
+
+        self.canvas.resize(800, 600)
+        
+        self.plot.setLabel('left', self.labels[1])
+        self.plot.setLabel('bottom', "Time (S)")
+
+        layout = QHBoxLayout()
+        layout.addWidget(self.canvas)
+        self.setLayout(layout)
+
+    def updateGraph(self):
+        """Handler for updating graph labels"""
+        self.setWindowTitle(self.labels[0])
+        self.plot.setLabel('left', self.labels[1])
+        self.plot.autoRange()
+

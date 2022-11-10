@@ -18,7 +18,8 @@ import time
 from enum import Enum
 
 # Import PyQt widgets: PySide6
-from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QAbstractItemView, QApplication, QMessageBox, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog
+from PySide6.QtWidgets import QMainWindow, QAbstractItemView, QApplication, QVBoxLayout, QHBoxLayout, QSizePolicy
+from PySide6.QtWidgets import QTableWidgetItem, QMessageBox, QPushButton, QFileDialog, QComboBox, QSpacerItem, QLabel
 from PySide6.QtGui import QIcon, QIntValidator
 from PySide6.QtCore import QTimer, QDateTime
 
@@ -29,11 +30,15 @@ from UI.BMS_GUI import Ui_MainWindow
 import util.util as util
 
 # Import graph window
-from BMS_plotWindow import plotWindow
+from BMS_plotWindow import plotWindow, zoomWindow
 
 # Import pandas
 import pandas as pd
 import numpy as np
+
+# Import pyqtgraph
+import pyqtgraph as pg
+
 
 class voltageStatus(Enum):
     DEFAULT = "NORMAL"
@@ -64,7 +69,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Set up window logo and disable window size modification
         self.setWindowIcon(QIcon("./UI/sheffield_logo.jpg"))
-        self.setMinimumWidth(1000)
+        self.setMinimumWidth(1200)
 
         # Threshold variables
         self.currentThreshold = [0, 1600]
@@ -108,7 +113,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         self.outputData = pd.DataFrame(
         columns=[
-            'packVoltage','cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4'
+            'packVoltage','cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
             'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 'cellVoltage_9',
             'cellVoltage_10','cellVoltage_11','cellVoltage_12','cellVoltage_13','cellVoltage_14',
             'ICTemperature','Date'])
@@ -149,14 +154,46 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         graphPageLayout = QVBoxLayout()
         plotButtonLayout = QHBoxLayout()
 
+        # Add stop and start plotting button
         self.startPlotButton = QPushButton("Start Plotting")
         self.stopPlotButton = QPushButton("Stop Plotting")
 
-        graphPageLayout.addWidget(self.graphWindow)
+        graphSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        zoomLabel = QLabel("Choose to zoom")
 
+        # Add zoom item combo box
+        self.zoomGraphComboBox = QComboBox()
+        self.zoomGraphComboBox.addItem('Cell 1 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 2 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 3 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 4 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 5 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 6 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 7 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 8 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 9 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 10 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 11 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 12 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 13 Voltage')
+        self.zoomGraphComboBox.addItem('Cell 14 Voltage')
+        self.zoomGraphComboBox.addItem('Pack Voltage')
+        self.zoomGraphComboBox.addItem('IC Temperature')
+
+        self.zoomButton = QPushButton("Zoom Graph")
+
+        # Set layouts
         plotButtonLayout.addWidget(self.startPlotButton)
         plotButtonLayout.addWidget(self.stopPlotButton)
-        
+
+        plotButtonLayout.addItem(graphSpacer)
+
+        plotButtonLayout.addWidget(zoomLabel)
+        plotButtonLayout.addWidget(self.zoomGraphComboBox)
+        plotButtonLayout.addWidget(self.zoomButton)
+
+        graphPageLayout.addWidget(self.graphWindow)
+
         # Init record button
         self.startRecordButton.setEnabled(False)
         self.stopRecordButton.setChecked(True)
@@ -260,6 +297,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.startRecordButton.toggled.connect(self.startRecording)
         self.stopRecordButton.toggled.connect(self.stopRecording)
         self.printButton.clicked.connect(self.printData)
+
+        # Connect zoom button functions
+        self.zoomButton.clicked.connect(self.zoomGraph)
 
 # ===================Update threshold values====================
 
@@ -449,15 +489,16 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             # Add realtime data
             index = self.outputData.index.size
-            self.outputData.loc[index] = self.bccData
-            self.outputData.at[index,'Date'] = timeInfo
+            realTimeData = self.bccData
+            realTimeData.append(timeInfo)
+            self.outputData.loc[index] = realTimeData
             self.outputData.index = self.outputData.index + 1
             
     def printData(self):
         """Handler for saving data as zip"""
         self.stopRecordButton.setChecked(True)
 
-        if self.serial.isOpen() and self.waitBits > 0:
+        if self.serial.isOpen() and self.outputData.size > 2:
             fileName = QFileDialog.getSaveFileName(self, "Save File", ".", ("*.csv"))
             
             with open(fileName[0],'w') as f:
@@ -525,11 +566,53 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 self, 'COM error', 'COM data error, please reconnect the port')
 
     def stopPlotting(self):
+        """Handler for stop plotting data"""
         if self.serial.isOpen():
             self.timer2.stop()
         else:
             QMessageBox.critical(
                 self, 'COM error', 'COM data error, please reconnect the port')
+    
+    def zoomGraph(self):
+        """Handler for zooming graph"""
+        zoomedGraph = self.zoomGraphComboBox.currentText()
+        zoomedGraphDict = {
+            'Cell 1 Voltage': 1,
+            'Cell 2 Voltage': 2,
+            'Cell 3 Voltage': 3,
+            'Cell 4 Voltage': 4,
+            'Cell 5 Voltage': 5,
+            'Cell 6 Voltage': 6,
+            'Cell 7 Voltage': 7,
+            'Cell 8 Voltage': 8,
+            'Cell 9 Voltage': 9,
+            'Cell 10 Voltage': 10,
+            'Cell 11 Voltage': 11,
+            'Cell 12 Voltage': 12,
+            'Cell 13 Voltage': 13,
+            'Cell 14 Voltage': 14,
+            'Pack Voltage': 0,
+            'IC Temperature': 15
+        }
+        if self.graphData.shape[1] > 2:
+            graphItemIndex = zoomedGraphDict.get(zoomedGraph)
+            
+            title = self.zoomGraphComboBox.currentText()
+
+            if graphItemIndex < 15:
+                yLabel = "Voltage (mV)"
+            else:
+                yLabel = "Temperature ()"
+
+            graphWindow = zoomWindow() # Init zoom window
+            graphWindow.labels = [title, yLabel]
+            graphWindow.plot.plot(self.graphData[graphItemIndex]) # Plot Curve
+            graphWindow.updateGraph() # Update labels
+            graphWindow.exec()
+        else:
+            QMessageBox.critical(
+                self, 'Data error', 'No curve data, please restart plotting')
+        
 
 # ===================Status display====================
 
