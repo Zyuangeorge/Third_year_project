@@ -125,7 +125,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Initialisation of graph window
         self.graphWindow = plotWindow()
 
-        # Two timers
+        # Three timers
         self.timer = QTimer() # Timer for GUI data displaying
         self.timer2 = QTimer() # Timer for data plotting
         self.timer3 = QTimer() # Timer for data recoding
