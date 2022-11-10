@@ -25,6 +25,10 @@ This GUI is built by PySide6.
 
  5)Serial-serial communication
  
+ 6)CSV data opening
+ 
+ 7)Curve zooming
+ 
 ## Main features
 1. Serial communication with configuration of serial port
 
@@ -44,5 +48,3 @@ This GUI is built by PySide6.
 
 ## Further Improvements
 1. Improving the speed
-
-2. Improving the graph format
