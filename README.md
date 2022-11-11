@@ -15,15 +15,15 @@ This GUI is built by PySide6.
 
 2. Python library
 
- 1)pyqtgraph-data plotting
+ * pyqtgraph-data plotting
 
- 2)pandas-data outputting
+ * pandas-data outputting
 
- 3)numpy-data plotting
+ * numpy-data plotting
 
- 4)PySide6-GUI building
+ * PySide6-GUI building
 
- 5)Serial-serial communication
+ * Serial-serial communication
  
 ## Main features
 1. Serial communication with configuration of serial port
@@ -42,7 +42,9 @@ This GUI is built by PySide6.
 
 8. Battery data plotting
 
+9. CSV data opening
+
+10. Curve zooming
+
 ## Further Improvements
 1. Improving the speed
-
-2. Improving the graph format
