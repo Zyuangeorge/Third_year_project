@@ -617,18 +617,22 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 # ===================Read data====================
 
     def openFile(self):
-        openFileName = QFileDialog.getOpenFileName(
-            self, 'Choose a CSV file to open', '.', 'CSV file(*.csv)')
+        """Handler for opening file"""
+        try:
+            openFileName = QFileDialog.getOpenFileName(
+                self, 'Choose a CSV file to open', '.', 'CSV file(*.csv)')
 
-        readFile = pd.read_csv(openFileName[0])
+            readFile = pd.read_csv(openFileName[0])
 
-        if readFile.shape[1] > 2:
-            loadWindow = loadGraphWindow()
-            loadWindow.loadGraphData(readFile)
-            loadWindow.exec()
-        else:
-            QMessageBox.critical(
-                self, 'Data error', 'No curve data, please check file')
+            if readFile.shape[1] > 2:
+                loadWindow = loadGraphWindow()
+                loadWindow.loadGraphData(readFile)
+                loadWindow.exec()
+            else:
+                QMessageBox.critical(
+                    self, 'Data error', 'No curve data, please check file')
+        except:
+            pass
 
 # ===================Status display====================
 
@@ -795,7 +799,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 pass
         else:
             pass
-
 
 # ===================Main====================
 
