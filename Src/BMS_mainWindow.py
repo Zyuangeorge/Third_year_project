@@ -5,36 +5,36 @@ Features:
 """
 # Import functions in other folders
 import sys
+
+# Expend file path
 sys.path.append('.')
 
-# Import serial library
-import serial
-import serial.tools.list_ports
-
-# Import time
+# Import time for setting timer
 import time
-
-# Import enum
+# Import enum to define status
 from enum import Enum
 
+# Import numpy for realtime plotting
+import numpy as np
+# Import pandas for data outputting
+import pandas as pd
+# Import pyserial for serial communication
+import serial
+import serial.tools.list_ports
 # Import PyQt widgets: PySide6
-from PySide6.QtWidgets import QMainWindow, QAbstractItemView, QApplication, QVBoxLayout, QHBoxLayout, QSizePolicy
-from PySide6.QtWidgets import QTableWidgetItem, QMessageBox, QPushButton, QFileDialog, QComboBox, QSpacerItem, QLabel
+from PySide6.QtCore import QDateTime, QTimer
 from PySide6.QtGui import QIcon, QIntValidator
-from PySide6.QtCore import QTimer, QDateTime
-
-# Import UI file
-from UI.BMS_GUI import Ui_MainWindow
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox,
+                               QFileDialog, QHBoxLayout, QLabel, QMainWindow,
+                               QMessageBox, QPushButton, QSizePolicy,
+                               QSpacerItem, QTableWidgetItem, QVBoxLayout)
 
 # Import util functions
 import util.util as util
-
 # Import graph window
-from BMS_plotWindow import plotWindow, zoomWindow, loadGraphWindow
-
-# Import pandas
-import pandas as pd
-import numpy as np
+from BMS_plotWindow import loadGraphWindow, plotWindow, zoomWindow
+# Import UI file
+from UI.BMS_GUI import Ui_MainWindow
 
 
 class voltageStatus(Enum):

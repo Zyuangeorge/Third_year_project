@@ -1,9 +1,8 @@
 import numpy as np
-
-# Import pyqtgraph
 import pyqtgraph as pg
+from PySide6.QtWidgets import (QComboBox, QDialog, QHBoxLayout, QMessageBox,
+                               QPushButton, QVBoxLayout)
 
-from PySide6.QtWidgets import QDialog, QHBoxLayout, QComboBox, QPushButton, QVBoxLayout, QMessageBox
 
 class plotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
