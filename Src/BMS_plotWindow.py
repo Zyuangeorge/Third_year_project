@@ -44,8 +44,10 @@ class plotWindow(pg.GraphicsLayoutWidget):
         self.nextRow()
         self.p12 = self.addPlot(title="Cell 13 Voltage")
         self.p13 = self.addPlot(title="Cell 14 Voltage")
+        self.nextRow()
         self.ICTempP = self.addPlot(title="IC Temperature")
         self.packVoltageP = self.addPlot(title="Pack Voltage")
+        self.packCurrentP = self.addPlot(title="Pack Current")
 
         self.voltageCurves = [
             self.p0,self.p1,self.p2,self.p3,
@@ -65,14 +67,20 @@ class plotWindow(pg.GraphicsLayoutWidget):
         self.packVoltageP.setLabel('bottom', "Time (s) * 5")
         self.packVoltageP.setLabel('left', "Voltage (V)")
 
+        self.packCurrentP.setLabel('bottom', "Time (s) * 5")
+        self.packCurrentP.setLabel('left', "Current (mA)")
+
     def setGraphs(self):
         """Handler for setting panels"""
         for curve in self.voltageCurves:
             curve.autoRange()
 
         self.packVoltageP.autoRange()
+
         self.ICTempP.autoRange()
 
+        self.packCurrentP.autoRange()
+        
     def updateThresholdLines(self, voltageThreshold, tempThreshold, packVoltageThreshold):
         """Handler for adding threshold lines"""
         pen = pg.mkPen(color=(255, 0, 0))
@@ -86,6 +94,9 @@ class plotWindow(pg.GraphicsLayoutWidget):
 
         self.packVoltageP.addLine(y=packVoltageThreshold[0],pen=pen)
         self.packVoltageP.addLine(y=packVoltageThreshold[1],pen=pen)
+
+        self.packCurrentP.addLine(y=packVoltageThreshold[0],pen=pen)
+        self.packCurrentP.addLine(y=packVoltageThreshold[1],pen=pen)
 
 
 class zoomWindow(QDialog):
@@ -163,6 +174,7 @@ class loadGraphWindow(QDialog):
         self.zoomGraphComboBox.addItem('Cell 14 Voltage')
         self.zoomGraphComboBox.addItem('Pack Voltage')
         self.zoomGraphComboBox.addItem('IC Temperature')
+        self.zoomGraphComboBox.addItem('Pack Current')
 
         self.zoomButton = QPushButton("Zoom Graph")
 
@@ -191,7 +203,10 @@ class loadGraphWindow(QDialog):
             self.canvas.voltageCurves[j].plot(list(i / 1000000 for i in self.data[j + 1])) # Set voltage data in order
 
         self.canvas.packVoltageP.plot(list(i / 1000000 for i in self.data[0]))
+        
         self.canvas.ICTempP.plot(list(i / 10 for i in self.data[15]))
+
+        self.canvas.packCurrentP.plot(list(i for i in self.data[16]))
 
         self.canvas.setGraphs()
     
@@ -214,7 +229,8 @@ class loadGraphWindow(QDialog):
             'Cell 13 Voltage': 13,
             'Cell 14 Voltage': 14,
             'Pack Voltage': 0,
-            'IC Temperature': 15
+            'IC Temperature': 15,
+            'Pack Current': 16
         }
         if self.data.shape[1] > 2:
             graphItemIndex = zoomedGraphDict.get(zoomedGraph)
@@ -223,15 +239,19 @@ class loadGraphWindow(QDialog):
 
             if graphItemIndex < 15:
                 yLabel = "Voltage (V)"
-            else:
+            elif graphItemIndex == 15:
                 yLabel = "Temperature (°C)"
+            else:
+                yLabel = "Current (mA)"
 
             graphWindow = zoomWindow() # Init zoom window
             graphWindow.labels = [title, yLabel]
             if graphItemIndex < 15:
                 graphWindow.plot.plot(list(i / 1000000 for i in self.data[graphItemIndex])) # Plot Curve
-            else:
+            elif graphItemIndex == 15:
                 graphWindow.plot.plot(list(i / 10 for i in self.data[graphItemIndex]))
+            else:
+                graphWindow.plot.plot(list(i for i in self.data[graphItemIndex]))
 
             graphWindow.updateGraph() # Update labels
             graphWindow.exec()

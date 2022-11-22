@@ -98,7 +98,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                          'voltageStatus': [], 'currentStatus': []}
 
         # Raw data in integer form
-        self.bccData = [0 for i in range(0,16)]
+        self.bccData = [0 for i in range(0,17)]
 
         # Initialisation of cell data
         for num in range(0, 14):
@@ -113,9 +113,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             'packVoltage','cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
             'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 'cellVoltage_9',
             'cellVoltage_10','cellVoltage_11','cellVoltage_12','cellVoltage_13','cellVoltage_14',
-            'ICTemperature','Date'])
+            'ICTemperature','cellCurrent','Date'])
         
-        self.graphData = np.zeros((16,1))
+        self.graphData = np.zeros((17,1))
 
         # ===================================================================
 
@@ -175,6 +175,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.zoomGraphComboBox.addItem('Cell 13 Voltage')
         self.zoomGraphComboBox.addItem('Cell 14 Voltage')
         self.zoomGraphComboBox.addItem('Pack Voltage')
+        self.zoomGraphComboBox.addItem('Pack Current')
         self.zoomGraphComboBox.addItem('IC Temperature')
 
         self.zoomButton = QPushButton("Zoom Graph")
@@ -346,7 +347,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.portStatusDisplay.setEnabled(False)
 
         # Clear output data and graph data
-        self.graphData = np.zeros((16,1))
+        self.graphData = np.zeros((17,1))
         self.outputData =self.outputData.drop(index = self.outputData.index)
         self.updateGraphData()
 
@@ -516,14 +517,15 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
     def updateGraphData(self):
         """Handler for updating curve data"""
-        insertData = list(i / 1000000 for i in self.bccData)
-        insertData[15] = insertData[15] * 100000
+        insertData = list(i / 1000000 for i in self.bccData) # All element divided by 1000000
+        insertData[15] = insertData[15] * 100000 # xxx/1000000*10000=xxx/10
+        insertData[16] = insertData[16] * 1000000 # xx/1000000*1000000=xx
 
-        insertData = np.array(insertData).reshape((16,1))
+        insertData = np.array(insertData).reshape((17,1))
 
         self.graphData = np.append(self.graphData, insertData, axis = 1)
 
-        for i in range(0,16):
+        for i in range(0,17):
             self.curveList[i].setData(self.graphData[i])
         
         self.graphWindow.setGraphs()
@@ -550,13 +552,14 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         
         self.packVoltageCurve = self.graphWindow.packVoltageP.plot()
         self.ICTempCurve = self.graphWindow.ICTempP.plot()
+        self.packCurrentCurve = self.graphWindow.packCurrentP.plot()
 
         self.curveList = [self.packVoltageCurve,
             self.cellCurve1, self.cellCurve2, self.cellCurve3,
             self.cellCurve4, self.cellCurve5, self.cellCurve6,
             self.cellCurve7, self.cellCurve8, self.cellCurve9,
             self.cellCurve10, self.cellCurve11, self.cellCurve12,
-            self.cellCurve13, self.cellCurve14, self.ICTempCurve]
+            self.cellCurve13, self.cellCurve14, self.ICTempCurve, self.packCurrentCurve]
 
         if self.serial.isOpen():
             self.timer2.timeout.connect(self.updateGraphData)
@@ -592,7 +595,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             'Cell 13 Voltage': 13,
             'Cell 14 Voltage': 14,
             'Pack Voltage': 0,
-            'IC Temperature': 15
+            'IC Temperature': 15,
+            'Pack Current': 16,
         }
 
         if self.graphData.shape[1] > 2:
@@ -602,8 +606,10 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             if graphItemIndex < 15:
                 yLabel = "Voltage (V)"
-            else:
+            elif graphItemIndex == 15:
                 yLabel = "Temperature (°C)"
+            else:
+                yLabel = "Current (mA)"
 
             graphWindow = zoomWindow() # Init zoom window
             graphWindow.labels = [title, yLabel]
@@ -662,13 +668,10 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             else:
                 pass
 
-        # Update pack data and status
+        # Update pack data
         self.packVoltageLineEdit.setText(str(self.packData['voltage']))
-        self.packVoltageStatusDisplay.setText(
-            self.packData['voltageStatus'].value)
+
         self.packCurrentLineEdit.setText(str(self.packData['current']))
-        self.packCurrentStatusDisplay.setText(
-            self.packData['currentStatus'].value)
 
         if self.packData['voltageStatus'] == voltageStatus.OVERVOLTAGE:
             self.packVoltageStatusDisplay.setStyleSheet(
@@ -688,9 +691,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         else:
             pass
 
-        # Update IC data and status
+        # Update IC data
         self.ICTempLineEdit.setText(str(self.ICData['temp']))
-        self.ICStatusDisplay.setText(self.ICData['tempStatus'].value)
+
         if self.ICData['tempStatus'] == tempStatus.OVERTEMPERATURE:
             self.ICStatusDisplay.setStyleSheet(
                 "background-color: rgb(255, 0, 0)")
@@ -699,6 +702,15 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 "background-color: rgb(255, 0, 0)")
         else:
             pass
+        
+        # Set status
+        self.packVoltageStatusDisplay.setText(
+            self.packData['voltageStatus'].value)
+
+        self.packCurrentStatusDisplay.setText(
+            self.packData['currentStatus'].value)
+
+        self.ICStatusDisplay.setText(self.ICData['tempStatus'].value)
 
 # ===================GUI pop-up dialogues====================
 
@@ -748,6 +760,14 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.packData['voltageStatus'] = voltageStatus.DEFAULT
 
+        self.packData['current'] = self.bccData[16]
+        if self.packData['current'] > self.currentThreshold[1]:
+            self.packData['currentStatus'] = currentStatus.OVERCURRENT
+        elif self.packData['current'] < self.currentThreshold[0]:
+            self.packData['currentStatus'] = currentStatus.UNDERCURRENT
+        else:
+            self.packData['currentStatus'] = currentStatus.DEFAULT
+
         for i in range(0, 14):
             self.cellData['voltage'][i] = self.bccData[i+1] / 1000
             if self.cellData['voltage'][i] > self.voltageThreshold[1]:
@@ -756,6 +776,13 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 self.cellData['voltageStatus'][i] = voltageStatus.UNDERVOLTAGE
             else:
                 self.cellData['voltageStatus'][i] = voltageStatus.DEFAULT
+
+            if self.packData['current'] > self.currentThreshold[1]:
+                self.cellData['currentStatus'][i] = currentStatus.OVERCURRENT
+            elif self.packData['current'] < self.currentThreshold[0]:
+                self.cellData['currentStatus'][i] = currentStatus.UNDERCURRENT
+            else:
+                self.cellData['currentStatus'][i] = currentStatus.DEFAULT
 
         self.ICData['temp'] = self.bccData[15] / 10
         if self.ICData['temp'] > self.tempThreshold[1]:
@@ -791,7 +818,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             dataList = list(hex(data) for data in list(bccRawData))
 
             # Filter out incorrect inputs
-            if len(dataList) == 64:
+            if len(dataList) == 68:
                 self.bccData = util.listData2strData(dataList)
                 self.updateData()
                 self.updateGUIData()

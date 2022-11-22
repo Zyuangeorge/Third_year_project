@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(742, 713)
+        MainWindow.resize(742, 737)
         font = QFont()
         font.setFamilies([u"Arial"])
         MainWindow.setFont(font)
@@ -901,7 +901,7 @@ class Ui_MainWindow(object):
 
         self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_1), QCoreApplication.translate("MainWindow", u"Cell Voltage Data", None))
         self.packMonitoringGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Pack Monitoring", None))
-        self.packCurrentUnit.setText(QCoreApplication.translate("MainWindow", u"A", None))
+        self.packCurrentUnit.setText(QCoreApplication.translate("MainWindow", u"mA", None))
         self.ICTempUnit.setText(QCoreApplication.translate("MainWindow", u"\u2103", None))
         self.packCurrentLabel.setText(QCoreApplication.translate("MainWindow", u"Current:", None))
         self.packVoltageLabel.setText(QCoreApplication.translate("MainWindow", u"StackVoltage:", None))
