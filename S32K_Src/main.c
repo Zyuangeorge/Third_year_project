@@ -223,7 +223,7 @@ static const bcc_init_reg_t s_initRegsMc33771c[BCC_INIT_CONF_REG_CNT] = {
 bcc_drv_config_t drvConfig;  /* BCC driver configuration. */
 uint16_t g_ntcTable[NTC_TABLE_SIZE]; /* NTC look-up table. */
 
-uint32_t cellData[16]; /* Array used in UART communication */
+uint32_t cellData[17]; /* Array used in UART communication */
 
 /* State variable (used as indication if SPI is accessible or not). */
 bool sleepMode = false;
@@ -479,8 +479,7 @@ static bcc_status_t updateMeasurements(void)
 	cellData[15] = BCC_GET_IC_TEMP_C(measurements[BCC_MSR_ICTEMP]);
 
 	/*ISENCE data (current measurement) */
-	//cellData[16] = BCC_GET_ISENSE_AMP(DEMO_RSHUNT, measurements[BCC_MSR_ISENSE1], measurements[BCC_MSR_ISENSE2]);
-	LPUART_DRV_SendData(INST_LPUART1, (uint8_t *)cellData, sizeof(cellData));
+	cellData[16] = BCC_GET_ISENSE_AMP(DEMO_RSHUNT, measurements[BCC_MSR_ISENSE1], measurements[BCC_MSR_ISENSE2]);
 
 	return BCC_STATUS_SUCCESS;
 }
@@ -538,6 +537,7 @@ int main(void)
                   PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
               }
           }
+      	  LPUART_DRV_SendData(INST_LPUART1, (uint8_t *)cellData, sizeof(cellData));
       }
   }
   else
