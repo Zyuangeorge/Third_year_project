@@ -83,62 +83,53 @@
 /* Used channel of LPIT0 for BCC SW driver timing. */
 #define LPIT0_CHANNEL_BCCDRV   3U
 
-/* NTC precomputed table configuration. */
-/*! @brief Minimal temperature in NTC table.
-*
-* It directly influences size of the NTC table (number of precomputed values).
-* Specifically lower boundary.
-*/
-#define NTC_MINTEMP          (-40)
 
-/*! @brief Maximal temperature in NTC table.
-*
-* It directly influences size of the NTC table (number of precomputed values).
-* Specifically higher boundary.
-*/
-#define NTC_MAXTEMP           (120)
-/*! @brief Size of NTC look-up table. */
-#define NTC_TABLE_SIZE        (NTC_MAXTEMP - NTC_MINTEMP + 1)
-/*! @brief 0 degree Celsius converted to Kelvin. */
-#define NTC_DEGC_0            273.15
+#define RATEDCAPACITANCE 0.5 //0.5Ah
 
-/*!
-* @brief Calculates final temperature value.
-*
-* @param tblIdx Index of value in NTC table which is close
-*        to the register value provided by user.
-* @param degTenths Fractional part of temperature value.
-* @return Temperature.
-*/
-#define NTC_COMP_TEMP(tblIdx, degTenths) \
-  ((((tblIdx) + NTC_MINTEMP) * 10) + (degTenths))
+/* The minimum value of OCV */
+#define OCV_MINSOC          0
+
+/* The maximum value of OCV */
+#define OCV_MAXSOC          1000 //100.0%
+
+/* The size of the lookup table*/
+#define OCV_TABLE_SIZE      (OCV_MAXSOC - OCV_MINSOC + 1)// 1000 sets of data in the lookupTable
+
+/*******************************************************************************
+* Enum definition
+******************************************************************************/
+
+
 
 /*******************************************************************************
 * Structure definition
 ******************************************************************************/
 
-/*!
-* @brief NTC Configuration.
-*
-* The device has seven GPIOs which enable temperature measurement.
-* NTC thermistor and fixed resistor are external components and must be set
-* by the user. These values are used to calculate temperature. Beta parameter
-* equation is used to calculate temperature. GPIO port of BCC device must be
-* configured as Analog Input to measure temperature.
-* This configuration is common for all GPIO ports and all devices (in case of
-* daisy chain).
-*/
 typedef struct
 {
-  uint32_t beta;         /*!< Beta parameter of NTC thermistor in [K].
-							  Admissible range is from 1 to 1000000. */
-  uint32_t rntc;         /*!< R_NTC - NTC fixed resistance in [Ohm].
-							  Admissible range is from 1 to 1000000. */
-  uint32_t refRes;       /*!< NTC Reference Resistance in [Ohm].
-							  Admissible range is from 1 to 1000000. */
-  uint8_t refTemp;       /*!< NTC Reference Temperature in degrees [Celsius].
-							  Admissible range is from 0 to 200. */
-} ntc_config_t;
+	int16_t SOC_0[14]; // The initial SoC value 100.0%*10
+
+	int16_t SOC_c[14]; // The current SoC value 100.0%*10
+
+	double depthOfDischarge; // The integral value of current unit: A*s
+
+	int32_t current_c; // The current current unit: mA
+
+} Ah_integral_data;
+
+/* Define a struct used in OCV_SOC lookup table */
+typedef struct
+{
+    double coefficient_4th; // 1st order coefficient
+
+    double coefficient_3th; // 1st order coefficient
+
+    double coefficient_2nd; // 2nd order coefficient
+
+    double coefficient_1st; // 1st order coefficient
+
+    double constant; // constant value
+} ocv_config_t;
 
 /*******************************************************************************
  * Initial BCC configuration
@@ -152,7 +143,9 @@ typedef struct
 typedef struct
 {
     const uint8_t address;
+
     const uint16_t defaultVal;
+
     const uint16_t value;
 } bcc_init_reg_t;
 
@@ -221,14 +214,23 @@ static const bcc_init_reg_t s_initRegsMc33771c[BCC_INIT_CONF_REG_CNT] = {
  ******************************************************************************/
 
 bcc_drv_config_t drvConfig;  /* BCC driver configuration. */
-uint16_t g_ntcTable[NTC_TABLE_SIZE]; /* NTC look-up table. */
 
 uint32_t cellData[17]; /* Array used in UART communication */
+
+uint16_t measurements[BCC_MEAS_CNT]; /* Array needed to store all measured values. */
+
+Ah_integral_data AhData; /* Ah intergal data*/
+
+uint32_t transmitData[31]; /* Final transmitted data */
+
+uint32_t g_ocvTable[OCV_TABLE_SIZE]; /* The OCV-SOC lookup table */
 
 /* State variable (used as indication if SPI is accessible or not). */
 bool sleepMode = false;
 
-int32_t timeout = 0;
+int32_t timeout = 0; /* Timeout value of the lpit */
+
+int16_t currentDirectionFlag = 0; /* Current direction flag: 0 is discharge, 1 is charge */
 
 /*******************************************************************************
  * Function prototypes
@@ -240,6 +242,12 @@ static status_t initDemo();
 static void initTimeout(int32_t timeoutMs);
 static bool timeoutExpired(void);
 static bcc_status_t updateMeasurements(void);
+static bcc_status_t Ah_integral_initialize(void);
+static void Ah_integral_step(void);
+static void clearAhData(void);
+static void getcurrentSOC(void);
+static void fillOcvTable(const ocv_config_t* const ocvConfig);
+static void getSOCResult(uint32_t cellVoltage, int16_t *soc);
 
 /*******************************************************************************
  * Functions
@@ -251,7 +259,6 @@ static bcc_status_t updateMeasurements(void);
 void LPIT0_Ch0_IRQHandler(void)
 {
     LPIT_DRV_ClearInterruptFlagTimerChannels(INST_LPIT1, (1 << LPIT0_CHANNEL_TYPGUI));
-
     timeout--;
 }
 
@@ -361,6 +368,121 @@ static bcc_status_t clearFaultRegs()
 }
 
 /*!
+ * @brief Fill in the OSC-SOC lookup table.
+ * The items in the lookup table is the voltage.
+ * The index of the lookup table is the SOC value.
+ * There are 1000 elements in the lookup table, so the accuracy of SOC is 0.1%
+ */
+void fillOcvTable(const ocv_config_t* const ocvConfig)
+{
+    uint16_t i = 0;
+    uint16_t soc;
+    double term_1, term_2, term_3, term_4, sum;
+
+    for (soc = OCV_MINSOC; soc <= OCV_MAXSOC; soc++)
+    {
+        term_1 = ocvConfig->coefficient_4th * (soc * 0.1) * (soc * 0.1) * (soc * 0.1) * (soc * 0.1);
+        term_2 = ocvConfig->coefficient_3th * (soc * 0.1) * (soc * 0.1) * (soc * 0.1);
+        term_3 = ocvConfig->coefficient_2nd * (soc * 0.1) * (soc * 0.1);
+        term_4 = ocvConfig->coefficient_1st * (soc * 0.1);
+
+        sum = (term_1 + term_2 + term_3 + term_4 + ocvConfig->constant) * 1000000;
+
+        g_ocvTable[i] = (uint32_t)round(sum); // Round the result of the function so that all the value will be integer
+
+        i++;
+    }
+}
+
+/*!
+ * @brief Get the SOC value from the Lookup table.
+ * The searching method is binary search.
+ */
+static void getSOCResult(uint32_t cellVoltage, int16_t *soc)
+{
+    int16_t left = 0;
+    int16_t right = OCV_TABLE_SIZE - 1;
+    int16_t middle;
+
+    /* Set the SOC value if the value can't be found in the lookup table */
+    if (g_ocvTable[OCV_TABLE_SIZE - 1] <= cellVoltage)
+    {
+        *soc = OCV_TABLE_SIZE - 1;
+    }
+
+    if (g_ocvTable[0] >= cellVoltage)
+    {
+        *soc = 0;
+    }
+
+    /* Search for an element that is close to the input voltage */
+    while ((left + 1) != right)
+    {
+        /* Split interval into halves */
+        middle = (left + right) >> 1U;
+        if (g_ocvTable[middle] > cellVoltage)
+        {
+            /* Select right half */
+            right = middle;
+        }
+        else
+        {
+            left = middle;
+        }
+    }
+
+    *soc = left;
+}
+
+/*!
+* @brief This function is used to calculate the initial SOC.
+*
+* @return bccStatus.
+*/
+static bcc_status_t Ah_integral_initialize(void)
+{
+	bcc_status_t error;
+    ocv_config_t ocvConfig;
+    int16_t currentValue;
+	int16_t soc;
+    int16_t i;
+
+	error = updateMeasurements();
+
+	if (error != BCC_STATUS_SUCCESS)
+	{
+		return error;
+	}
+
+	currentValue = cellData[16];
+
+	if (currentValue >= 0){
+		ocvConfig.coefficient_4th = -6.539e-08;
+		ocvConfig.coefficient_3th = 1.512e-05;
+		ocvConfig.coefficient_2nd = -0.001177;
+		ocvConfig.coefficient_1st = 0.04344;
+		ocvConfig.constant = 3.006;
+	}
+	else{
+		ocvConfig.coefficient_4th = -6.884e-08;
+		ocvConfig.coefficient_3th = 1.577e-05;
+		ocvConfig.coefficient_2nd = -0.00121;
+		ocvConfig.coefficient_1st = 0.04339;
+		ocvConfig.constant = 3.044;
+	}
+
+	/* Initialize the OCV-SOC look up table */
+	fillOcvTable(&ocvConfig);
+
+	for (i = 0; i < 14; i++){
+		getSOCResult(cellData[i + 1],&soc);
+		AhData.SOC_0[i] = soc;
+	}
+
+	return BCC_STATUS_SUCCESS;
+}
+
+/*!
  * @brief MCU and BCC initialization.
  */
 static status_t initDemo()
@@ -410,6 +532,8 @@ static status_t initDemo()
     drvConfig.cellCnt[0] = 14U;
     drvConfig.loopBack = false;
 
+    Ah_integral_initialize();
+
     LPIT_DRV_StartTimerChannels(INST_LPIT1, (1 << LPIT0_CHANNEL_TYPGUI));
 
     bccStatus = BCC_Init(&drvConfig);
@@ -442,7 +566,7 @@ static status_t initDemo()
 static bcc_status_t updateMeasurements(void)
 {
     bcc_status_t error;
-    uint16_t measurements[BCC_MEAS_CNT]; /* Array needed to store all measured values. */
+    int16_t currentValue; // In mA
 
     /* Step 1: Start conversion and wait for the conversion time. */
     error = BCC_Meas_StartAndWait(&drvConfig, BCC_CID_DEV1, BCC_AVG_1);
@@ -460,7 +584,6 @@ static bcc_status_t updateMeasurements(void)
 
     /* You can use bcc_measurements_t enumeration to index array with raw values. */
     /* Useful macros can be found in bcc.h or bcc_MC3377x.h. */
-
     cellData[0]= BCC_GET_STACK_VOLT(measurements[BCC_MSR_STACK_VOLT]);
 	cellData[1]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT1]);
 	cellData[2]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT2]);
@@ -481,6 +604,14 @@ static bcc_status_t updateMeasurements(void)
 	/*ISENCE data (current measurement) */
 	cellData[16] = BCC_GET_ISENSE_AMP(DEMO_RSHUNT, measurements[BCC_MSR_ISENSE1], measurements[BCC_MSR_ISENSE2]);
 
+	currentValue = cellData[16];
+	if (currentValue >= 0){
+		currentDirectionFlag = 0; // Discharge
+	}
+	else{
+		currentDirectionFlag = 1; // Charge
+	}
+
 	return BCC_STATUS_SUCCESS;
 }
 
@@ -494,11 +625,52 @@ static bool timeoutExpired(void)
     return (timeout <= 0);
 }
 
+/* Model step function */
+void Ah_integral_step(void)
+{
+    uint16_t measurements_temp [BCC_MEAS_CNT]; /* Array needed to store all measured values. */
+
+    /* Step 1: Start conversion and wait for the conversion time. */
+    BCC_Meas_StartAndWait(&drvConfig, BCC_CID_DEV1, BCC_AVG_1);
+
+    /* Step 2: Convert raw measurements to appropriate units. */
+    BCC_Meas_GetRawValues(&drvConfig, BCC_CID_DEV1, measurements_temp);
+
+    AhData.current_c = BCC_GET_ISENSE_AMP(DEMO_RSHUNT, measurements_temp[BCC_MSR_ISENSE1], measurements_temp[BCC_MSR_ISENSE2]);
+	AhData.depthOfDischarge += 0.001 * AhData.current_c * 0.2; //convert to 1A, and 200ms = 0.2s
+}
+
+/*
+ * @brief Function used to clear Ah data
+ */
+void clearAhData(void)
+{
+	int i;
+	for (i = 0; i < 14; i++){
+		AhData.SOC_c[i] = 0;
+	}
+}
+
+/*
+ * @brief Function used to get current SOC value
+ */
+void getcurrentSOC(void)
+{
+	double deltaSOC;
+	int i;
+
+	deltaSOC = AhData.depthOfDischarge / (RATEDCAPACITANCE * 3600.0);
+
+	for (i = 0; i < 14; i++){
+		AhData.SOC_c[i] = AhData.SOC_0[i] - deltaSOC * 1000;
+	}
+}
+
 int main(void)
 {
   /* Write your local variable definition here */
     bcc_status_t bccStatus;
-
+    int i;
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   #ifdef PEX_RTOS_INIT
     PEX_RTOS_INIT();                   /* Initialization of the selected RTOS. Macro is defined by the RTOS component. */
@@ -509,10 +681,17 @@ int main(void)
   /* For example: for(;;) { } */
   if (initDemo() == STATUS_SUCCESS)
   {
+	  /* Get the initial value of SoC through lookup table */
+	  Ah_integral_initialize();
+
       /* Infinite loop for the real-time processing routines. */
       while (1)
       {
-          initTimeout(200);
+    	  /* The initial timeout value is set to 10, since the lpit period is set to 200000 (20ms)
+    	   * 10*20ms = 200ms, so the do while will be ended every 200ms
+    	   */
+
+          initTimeout(10);
 
           /* Loops until specified timeout expires. */
           do
@@ -532,12 +711,32 @@ int main(void)
           {
               /* Update measurements once per 200 ms. */
               bccStatus = updateMeasurements();
+
+              bccStatus = BCC_STATUS_SUCCESS;
               if (bccStatus != BCC_STATUS_SUCCESS)
               {
-                  PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
+            	  PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
               }
+
+              /* Integration of the current */
+        	  Ah_integral_step();
+
+        	  /* Calculate the current SOC value */
+        	  getcurrentSOC();
+
+              /* Rearrange data */
+			  for (i = 0; i < 17; i++){
+			    transmitData[i] = cellData[i];
+			  }
+
+			  for (i = 17; i < 31; i++){
+				transmitData[i] = AhData.SOC_c[i - 17];
+			  }
           }
-      	  LPUART_DRV_SendData(INST_LPUART1, (uint8_t *)cellData, sizeof(cellData));
+
+          LPUART_DRV_SendData(INST_LPUART1, (uint8_t *)cellData, sizeof(cellData)); // Transmit the data through UART
+
+          clearAhData(); // Clear the current SOC value to avoid mistake
       }
   }
   else
