@@ -83,22 +83,20 @@
 /* Used channel of LPIT0 for BCC SW driver timing. */
 #define LPIT0_CHANNEL_BCCDRV   3U
 
-
 #define RATEDCAPACITANCE 0.5 //0.5Ah
 
 /* The minimum value of OCV */
 #define OCV_MINSOC          0
 
 /* The maximum value of OCV */
-#define OCV_MAXSOC          1000 //100.0%
+#define OCV_MAXSOC          1000 // 100 permille
 
 /* The size of the lookup table*/
-#define OCV_TABLE_SIZE      (OCV_MAXSOC - OCV_MINSOC + 1)// 1000 sets of data in the lookupTable
+#define OCV_TABLE_SIZE      (OCV_MAXSOC - OCV_MINSOC + 1) // 1000 sets of data in the lookupTable
 
 /*******************************************************************************
 * Enum definition
 ******************************************************************************/
-
 
 
 /*******************************************************************************
@@ -120,9 +118,9 @@ typedef struct
 /* Define a struct used in OCV_SOC lookup table */
 typedef struct
 {
-    double coefficient_4th; // 1st order coefficient
+    double coefficient_4th; // 4th order coefficient
 
-    double coefficient_3th; // 1st order coefficient
+    double coefficient_3rd; // 3rd order coefficient
 
     double coefficient_2nd; // 2nd order coefficient
 
@@ -236,16 +234,16 @@ int16_t currentDirectionFlag = 0; /* Current direction flag: 0 is discharge, 1 i
  * Function prototypes
  ******************************************************************************/
 
-static bcc_status_t initRegisters();
-static bcc_status_t clearFaultRegs();
-static status_t initDemo();
+static bcc_status_t initRegisters(void);
+static bcc_status_t clearFaultRegs(void);
+static status_t initDemo(void);
 static void initTimeout(int32_t timeoutMs);
 static bool timeoutExpired(void);
 static bcc_status_t updateMeasurements(void);
 static bcc_status_t Ah_integral_initialize(void);
 static void Ah_integral_step(void);
 static void clearAhData(void);
-static void getcurrentSOC(void);
+static void getCurrentSOC(void);
 static void fillOcvTable(const ocv_config_t* const ocvConfig);
 static void getSOCResult(uint32_t cellVoltage, int16_t *soc);
 
@@ -276,7 +274,7 @@ static void initTimeout(int32_t timeoutMs)
  * @brief Initializes BCC device registers according to BCC_INIT_CONF.
  * Registers having the wanted content already after POR are not rewritten.
  */
-static bcc_status_t initRegisters()
+static bcc_status_t initRegisters(void)
 {
     uint8_t i;
     bcc_status_t status;
@@ -300,7 +298,7 @@ static bcc_status_t initRegisters()
 /*!
  * @brief Clears all fault registers of BCC devices.
  */
-static bcc_status_t clearFaultRegs()
+static bcc_status_t clearFaultRegs(void)
 {
     bcc_status_t status;
 
@@ -382,7 +380,7 @@ void fillOcvTable(const ocv_config_t* const ocvConfig)
     for (soc = OCV_MINSOC; soc <= OCV_MAXSOC; soc++)
     {
         term_1 = ocvConfig->coefficient_4th * (soc * 0.1) * (soc * 0.1) * (soc * 0.1) * (soc * 0.1);
-        term_2 = ocvConfig->coefficient_3th * (soc * 0.1) * (soc * 0.1) * (soc * 0.1);
+        term_2 = ocvConfig->coefficient_3rd * (soc * 0.1) * (soc * 0.1) * (soc * 0.1);
         term_3 = ocvConfig->coefficient_2nd * (soc * 0.1) * (soc * 0.1);
         term_4 = ocvConfig->coefficient_1st * (soc * 0.1);
 
@@ -443,7 +441,6 @@ static bcc_status_t Ah_integral_initialize(void)
 {
 	bcc_status_t error;
     ocv_config_t ocvConfig;
-    int16_t currentValue;
 	int16_t soc;
     int16_t i;
 
@@ -454,18 +451,18 @@ static bcc_status_t Ah_integral_initialize(void)
 		return error;
 	}
 
-	currentValue = cellData[16];
-
-	if (currentValue >= 0){
+	if (currentDirectionFlag == 0){ 
+        // Discharge
 		ocvConfig.coefficient_4th = -6.539e-08;
-		ocvConfig.coefficient_3th = 1.512e-05;
+		ocvConfig.coefficient_3rd = 1.512e-05;
 		ocvConfig.coefficient_2nd = -0.001177;
 		ocvConfig.coefficient_1st = 0.04344;
 		ocvConfig.constant = 3.006;
 	}
-	else{
+	else{ 
+        // Charge
 		ocvConfig.coefficient_4th = -6.884e-08;
-		ocvConfig.coefficient_3th = 1.577e-05;
+		ocvConfig.coefficient_3rd = 1.577e-05;
 		ocvConfig.coefficient_2nd = -0.00121;
 		ocvConfig.coefficient_1st = 0.04339;
 		ocvConfig.constant = 3.044;
@@ -485,7 +482,7 @@ static bcc_status_t Ah_integral_initialize(void)
 /*!
  * @brief MCU and BCC initialization.
  */
-static status_t initDemo()
+static status_t initDemo(void)
 {
     status_t status;
     bcc_status_t bccStatus;
@@ -532,6 +529,7 @@ static status_t initDemo()
     drvConfig.cellCnt[0] = 14U;
     drvConfig.loopBack = false;
 
+    /* Get the initial value of SoC through lookup table */
     Ah_integral_initialize();
 
     LPIT_DRV_StartTimerChannels(INST_LPIT1, (1 << LPIT0_CHANNEL_TYPGUI));
@@ -566,7 +564,7 @@ static status_t initDemo()
 static bcc_status_t updateMeasurements(void)
 {
     bcc_status_t error;
-    int16_t currentValue; // In mA
+    int16_t currentValue; // In mA with sign
 
     /* Step 1: Start conversion and wait for the conversion time. */
     error = BCC_Meas_StartAndWait(&drvConfig, BCC_CID_DEV1, BCC_AVG_1);
@@ -601,7 +599,7 @@ static bcc_status_t updateMeasurements(void)
 	cellData[14]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT14]);
 	cellData[15] = BCC_GET_IC_TEMP_C(measurements[BCC_MSR_ICTEMP]);
 
-	/*ISENCE data (current measurement) */
+	/* ISENCE data (current measurement) */
 	cellData[16] = BCC_GET_ISENSE_AMP(DEMO_RSHUNT, measurements[BCC_MSR_ISENSE1], measurements[BCC_MSR_ISENSE2]);
 
 	currentValue = cellData[16];
@@ -654,7 +652,7 @@ void clearAhData(void)
 /*
  * @brief Function used to get current SOC value
  */
-void getcurrentSOC(void)
+void getCurrentSOC(void)
 {
 	double deltaSOC;
 	int i;
@@ -681,22 +679,19 @@ int main(void)
   /* For example: for(;;) { } */
   if (initDemo() == STATUS_SUCCESS)
   {
-	  /* Get the initial value of SoC through lookup table */
-	  Ah_integral_initialize();
-
       /* Infinite loop for the real-time processing routines. */
       while (1)
       {
     	  /* The initial timeout value is set to 10, since the lpit period is set to 200000 (20ms)
     	   * 10*20ms = 200ms, so the do while will be ended every 200ms
     	   */
-
           initTimeout(10);
 
           /* Loops until specified timeout expires. */
           do
           {
         	  PINS_DRV_TogglePins(RED_LED_PORT, 1U << RED_LED_PIN);
+
               if (!sleepMode)
               {
                   /* To prevent communication loss. */
@@ -712,7 +707,6 @@ int main(void)
               /* Update measurements once per 200 ms. */
               bccStatus = updateMeasurements();
 
-              bccStatus = BCC_STATUS_SUCCESS;
               if (bccStatus != BCC_STATUS_SUCCESS)
               {
             	  PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
@@ -722,7 +716,7 @@ int main(void)
         	  Ah_integral_step();
 
         	  /* Calculate the current SOC value */
-        	  getcurrentSOC();
+        	  getCurrentSOC();
 
               /* Rearrange data */
 			  for (i = 0; i < 17; i++){
