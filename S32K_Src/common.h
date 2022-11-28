@@ -43,7 +43,7 @@
 //#define TPL         /* Define TPL if S32K144EVB + FRDMDUAL33664EVB + RD33771CDSTEVB is used. */
 
 /* R_SHUNT value in [uOhm] */
-#define DEMO_RSHUNT             299148U
+#define DEMO_RSHUNT             246121U
 
 /*******************************************************************************
  * Initial register configuration

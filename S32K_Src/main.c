@@ -11,10 +11,10 @@
 ** ###################################################################*/
 /*!
 ** @file main.c
-** @version 01.00
+** @version 03.00
 ** @brief
 **         Main module.
-**         This module contains user's application code.
+**         Enhanced CC method.
 */         
 /*!
 **  @addtogroup main_module main module documentation
@@ -77,13 +77,14 @@
 #define BCC_TX_LPSPI_DELAY_SCLK_TO_PCS         1U  /* 1us (g >= 0.60us) */
 #define BCC_TX_LPSPI_DELAY_BETWEEN_TRANSFERS   5U  /* 5us (t_MCU_RES >= 4us) */
 
-/* Used channel of LPIT0 for Freemaster timing. */
+/* Used channel of LPIT0 for GUI timing. */
 #define LPIT0_CHANNEL_TYPGUI  0U
 
 /* Used channel of LPIT0 for BCC SW driver timing. */
 #define LPIT0_CHANNEL_BCCDRV   3U
 
-#define RATEDCAPACITANCE 0.5 //0.5Ah
+/* Battery rated capacitance */
+#define RATEDCAPACITANCE 0.5
 
 /* The minimum value of OCV */
 #define OCV_MINSOC          0
@@ -94,10 +95,33 @@
 /* The size of the lookup table*/
 #define OCV_TABLE_SIZE      (OCV_MAXSOC - OCV_MINSOC + 1) // 1000 sets of data in the lookupTable
 
+/* Operation efficiency */
+#define KC 1 // Charging efficiency
+#define KD 1 // Discharging efficiency
+
+/* Battery minimum and maximum voltages */
+#define MIN_VOLTAGE 3000000 // In micro volt
+#define MAX_VOLTAGE 4200000 // In micro volt
+
 /*******************************************************************************
 * Enum definition
 ******************************************************************************/
+//Different state of bms system
+typedef enum
+{   
+    Idle_State,
+    Charge_State,
+    Discharge_State,
+    OpenCircuit_State
+} bmsSystemState;
 
+//Different type events
+typedef enum
+{
+    Discharge_Event,
+    Charge_Event,
+    OpenCircuit_Event
+} bmsSystemEvent;
 
 /*******************************************************************************
 * Structure definition
@@ -105,14 +129,17 @@
 
 typedef struct
 {
-	int16_t SOC_0[14]; // The initial SoC value 100.0%*10
+	int16_t SOC_0[14]; // Initial SoC value: 100 permille
 
-	int16_t SOC_c[14]; // The current SoC value 100.0%*10
+	int16_t SOC_c[14]; // Current SoC value: 100 permille
 
-	double depthOfDischarge; // The integral value of current unit: A*s
+    int16_t DOD_0[14]; // Inital depth of Discharge: 100 permille
 
-	int32_t current_c; // The current current unit: mA
+    int16_t DOD_c[14]; // Current depth of Discharge: 100 permille
 
+    int16_t SOH[14]; // State of health: 100 permille
+
+	double integratedCurrent; // The integral value of current: A*s
 } Ah_integral_data;
 
 /* Define a struct used in OCV_SOC lookup table */
@@ -219,7 +246,7 @@ uint16_t measurements[BCC_MEAS_CNT]; /* Array needed to store all measured value
 
 Ah_integral_data AhData; /* Ah intergal data*/
 
-uint32_t transmitData[31]; /* Final transmitted data */
+uint32_t transmittedData[45]; /* Final transmitted data */
 
 uint32_t g_ocvTable[OCV_TABLE_SIZE]; /* The OCV-SOC lookup table */
 
@@ -236,39 +263,35 @@ int16_t currentDirectionFlag = 0; /* Current direction flag: 0 is discharge, 1 i
 
 static bcc_status_t initRegisters(void);
 static bcc_status_t clearFaultRegs(void);
-static status_t initDemo(void);
+
 static void initTimeout(int32_t timeoutMs);
 static bool timeoutExpired(void);
-static bcc_status_t updateMeasurements(void);
-static bcc_status_t Ah_integral_initialize(void);
-static void Ah_integral_step(void);
-static void clearAhData(void);
-static void getCurrentSOC(void);
+
 static void fillOcvTable(const ocv_config_t* const ocvConfig);
 static void getSOCResult(uint32_t cellVoltage, int16_t *soc);
+
+static status_t initDemo(void);
+static bcc_status_t Ah_integral_initialize(void);
+
+static bcc_status_t updateMeasurements(void);
+
+static void Ah_integral_step(void);
+
+static void getCurrentDOD(void);
+static void getCurrentSOC(void);
+
+static void DischargeHandler(void);
+static void ChargeHandler(void);
+static void OpenCircuitHandler(void);
+
+static bmsSystemEvent monitorBattery(void);
+
+static void dataTransmit(void);
+static void resetData(void);
 
 /*******************************************************************************
  * Functions
  ******************************************************************************/
-
-/*!
-* @brief LPIT0 IRQ handler.
-*/
-void LPIT0_Ch0_IRQHandler(void)
-{
-    LPIT_DRV_ClearInterruptFlagTimerChannels(INST_LPIT1, (1 << LPIT0_CHANNEL_TYPGUI));
-    timeout--;
-}
-
-/*!
-* @brief This function initializes timeout.
-*
-* @param timeoutMs timeout delay in [ms].
-*/
-static void initTimeout(int32_t timeoutMs)
-{
-    timeout = timeoutMs;
-}
 
 /*!
  * @brief Initializes BCC device registers according to BCC_INIT_CONF.
@@ -366,6 +389,35 @@ static bcc_status_t clearFaultRegs(void)
 }
 
 /*!
+* @brief This function initializes timeout.
+*
+* @param timeoutMs timeout delay in [ms].
+*/
+static void initTimeout(int32_t timeoutMs)
+{
+    timeout = timeoutMs;
+}
+
+/*!
+* @brief This function indicates if the timeout expired.
+*
+* @return True if timeout expired, otherwise false.
+*/
+static bool timeoutExpired(void)
+{
+    return (timeout <= 0);
+}
+
+/*!
+* @brief LPIT0 IRQ handler.
+*/
+void LPIT0_Ch0_IRQHandler(void)
+{
+    LPIT_DRV_ClearInterruptFlagTimerChannels(INST_LPIT1, (1 << LPIT0_CHANNEL_TYPGUI));
+    timeout--;
+}
+
+/*!
  * @brief Fill in the OSC-SOC lookup table.
  * The items in the lookup table is the voltage.
  * The index of the lookup table is the SOC value.
@@ -441,16 +493,17 @@ static bcc_status_t Ah_integral_initialize(void)
 {
 	bcc_status_t error;
     ocv_config_t ocvConfig;
-	int16_t soc;
+    int16_t soc;
     int16_t i;
 
+    /* Start the first measurement */
 	error = updateMeasurements();
-
 	if (error != BCC_STATUS_SUCCESS)
 	{
 		return error;
 	}
 
+    /* Initialise lookup table settings */
 	if (currentDirectionFlag == 0){ 
         // Discharge
 		ocvConfig.coefficient_4th = -6.539e-08;
@@ -472,9 +525,18 @@ static bcc_status_t Ah_integral_initialize(void)
 	fillOcvTable(&ocvConfig);
 
 	for (i = 0; i < 14; i++){
+		/* Get the initial SOC value */
 		getSOCResult(cellData[i + 1],&soc);
 		AhData.SOC_0[i] = soc;
+        
+        AhData.SOH[i] = 1000; // Assume the initial health is 100%
+
+        /* Calculate the initial DOD value */
+        AhData.DOD_0[i] = 1000 - AhData.SOC_0[i];
+        AhData.DOD_c[i] = 1000 - AhData.SOC_0[i];
 	}
+    
+    AhData.integratedCurrent = 0.0;
 
 	return BCC_STATUS_SUCCESS;
 }
@@ -528,9 +590,6 @@ static status_t initDemo(void)
     drvConfig.device[0] = BCC_DEVICE_MC33771C;
     drvConfig.cellCnt[0] = 14U;
     drvConfig.loopBack = false;
-
-    /* Get the initial value of SoC through lookup table */
-    Ah_integral_initialize();
 
     LPIT_DRV_StartTimerChannels(INST_LPIT1, (1 << LPIT0_CHANNEL_TYPGUI));
 
@@ -614,61 +673,162 @@ static bcc_status_t updateMeasurements(void)
 }
 
 /*!
-* @brief This function indicates if the timeout expired.
-*
-* @return True if timeout expired, otherwise false.
-*/
-static bool timeoutExpired(void)
-{
-    return (timeout <= 0);
-}
-
-/* Model step function */
+ * @brief Model step function 
+ */
 void Ah_integral_step(void)
 {
-    uint16_t measurements_temp [BCC_MEAS_CNT]; /* Array needed to store all measured values. */
+    int32_t current_c; // Current current
 
-    /* Step 1: Start conversion and wait for the conversion time. */
-    BCC_Meas_StartAndWait(&drvConfig, BCC_CID_DEV1, BCC_AVG_1);
+    current_c = cellData[16];
 
-    /* Step 2: Convert raw measurements to appropriate units. */
-    BCC_Meas_GetRawValues(&drvConfig, BCC_CID_DEV1, measurements_temp);
-
-    AhData.current_c = BCC_GET_ISENSE_AMP(DEMO_RSHUNT, measurements_temp[BCC_MSR_ISENSE1], measurements_temp[BCC_MSR_ISENSE2]);
-	AhData.depthOfDischarge += 0.001 * AhData.current_c * 0.2; //convert to 1A, and 200ms = 0.2s
+	AhData.integratedCurrent += 0.001 * current_c * 0.2; //convert to 1A, and 200ms = 0.2s
 }
 
 /*
- * @brief Function used to clear Ah data
+ * @brief Function used to get current DOD value
  */
-void clearAhData(void)
+static void getCurrentDOD(void)
 {
+	double deltaDOD;
 	int i;
+
+	deltaDOD = AhData.integratedCurrent / (RATEDCAPACITANCE * 3600.0) * 1000;
+    
 	for (i = 0; i < 14; i++){
-		AhData.SOC_c[i] = 0;
+        if (currentDirectionFlag == 0){
+            AhData.DOD_c[i] = AhData.DOD_0[i] + KD * deltaDOD; // Discharge DOD
+        }
+        else{
+            AhData.DOD_c[i] = AhData.DOD_0[i] + KC * deltaDOD; // Charge DOD
+        }
 	}
 }
 
 /*
  * @brief Function used to get current SOC value
  */
-void getCurrentSOC(void)
+static void getCurrentSOC(void)
 {
-	double deltaSOC;
 	int i;
 
-	deltaSOC = AhData.depthOfDischarge / (RATEDCAPACITANCE * 3600.0);
-
 	for (i = 0; i < 14; i++){
-		AhData.SOC_c[i] = AhData.SOC_0[i] - deltaSOC * 1000;
+		AhData.SOC_c[i] = AhData.SOH[i] - AhData.DOD_c[i];
 	}
+}
+
+/*
+ * @brief Handler for discharge state
+ */
+static void DischargeHandler(void)
+{
+    int16_t i;
+    int16_t flag;
+
+    for (i = 0; i < 14; i++){
+        if (cellData[i + 1] <= MIN_VOLTAGE){
+            AhData.SOH[i] = AhData.DOD_c[i]; // Calibrate SOH for each cell
+            flag = 1;
+        }
+        else{
+        	flag = 0;
+        }
+    }
+    if (flag == 0){
+    	Ah_integral_step();
+		getCurrentDOD();
+		getCurrentSOC();
+    }
+}
+
+/*
+ * @brief Handler for charge state
+ */
+static void ChargeHandler(void)
+{
+    int16_t i;
+    int16_t flag;
+
+    for (i = 0; i < 14; i++){
+        if (cellData[i + 1] >= MAX_VOLTAGE){
+            AhData.SOH[i] = AhData.SOC_c[i] - AhData.DOD_c[i];
+            AhData.DOD_c[i] = 0.0;
+        }
+        else{
+        	flag = 0;
+        }
+    }
+    if (flag == 0){
+    	Ah_integral_step();
+		getCurrentDOD();
+		getCurrentSOC();
+    }
+}
+
+/*
+ * @brief Handler for open circuit state
+ */
+static void OpenCircuitHandler(void)
+{
+    // Compensation of self-discharging loss
+    BCC_SendNop(&drvConfig, BCC_CID_DEV1);
+}
+
+/*
+ * @brief Handler for battery monitoring
+ */
+static bmsSystemEvent monitorBattery(void)
+{
+    updateMeasurements();
+
+    if (currentDirectionFlag == 0){
+        return Discharge_Event;
+    }
+    else if (currentDirectionFlag == 1){
+        return Charge_Event;
+    }
+    else{
+        return OpenCircuit_Event;
+    }
+}
+
+/*
+ * @brief Function used to transmit data
+ */
+void dataTransmit(void)
+{
+    int16_t i;
+
+    /* Rearrange data */
+    for (i = 0; i < 17; i++){
+        transmittedData[i] = cellData[i]; // Cell data
+    }
+
+    for (i = 17; i < 31; i++){
+        transmittedData[i] = AhData.SOC_c[i - 17]; // SOC data
+    }
+
+    for (i = 31; i < 45; i++){
+        transmittedData[i] = AhData.SOH[i - 31]; // SOH data
+    }
+
+    LPUART_DRV_SendData(INST_LPUART1, (uint8_t *)transmittedData, sizeof(transmittedData)); // Transmit the data through UART
+}
+
+/*
+ * @brief Function used to reset data
+ */
+static void resetData(void){
+    int16_t i;
+
+    for (i = 0; i < 14; i++){
+        AhData.DOD_c[i] = AhData.DOD_0[i];
+    }
 }
 
 int main(void)
 {
   /* Write your local variable definition here */
-    bcc_status_t bccStatus;
-    int i;
+    bmsSystemState bmsNextState = Idle_State;
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   #ifdef PEX_RTOS_INIT
     PEX_RTOS_INIT();                   /* Initialization of the selected RTOS. Macro is defined by the RTOS component. */
@@ -677,15 +837,23 @@ int main(void)
 
   /* Write your code here */
   /* For example: for(;;) { } */
-  if (initDemo() == STATUS_SUCCESS)
+  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
+
+  if (initDemo() == STATUS_SUCCESS) // Initialize peripherals
   {
+      /* Get the initial value of SoC through lookup table */
+      Ah_integral_initialize();
+
       /* Infinite loop for the real-time processing routines. */
       while (1)
       {
-    	  /* The initial timeout value is set to 10, since the lpit period is set to 200000 (20ms)
-    	   * 10*20ms = 200ms, so the do while will be ended every 200ms
+    	  /* The initial timeout value is set to 200, since the lpit period is set to 1000 (1ms)
+    	   * 200*1ms = 200ms, so the do while will be ended every 200ms
     	   */
-          initTimeout(10);
+          initTimeout(200);
+        
+          //Read system Events
+          bmsSystemEvent bmsNewEvent = monitorBattery();
 
           /* Loops until specified timeout expires. */
           do
@@ -697,45 +865,92 @@ int main(void)
                   /* To prevent communication loss. */
                   if (BCC_SendNop(&drvConfig, BCC_CID_DEV1) != BCC_STATUS_SUCCESS)
                   {
-                      PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
+                	  PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
                   }
               }
           } while (timeoutExpired() == false);
 
           if (!sleepMode)
           {
-              /* Update measurements once per 200 ms. */
-              bccStatus = updateMeasurements();
+              switch(bmsNextState)
+                {
+                case Idle_State:
+                {
+                    if (Discharge_Event == bmsNewEvent)
+                    {
+                        bmsNextState = Discharge_State;
+                        DischargeHandler();
+                    }
+                    else if (Charge_Event == bmsNewEvent)
+                    {
+                        bmsNextState = Charge_State;
+                        ChargeHandler();
+                    }
+                    else if (OpenCircuit_Event == bmsNewEvent)
+                    {
+                        bmsNextState = OpenCircuit_State;
+                        OpenCircuitHandler();
+                    }
+                }
+                break;
 
-              if (bccStatus != BCC_STATUS_SUCCESS)
-              {
-            	  PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
-              }
+                case Discharge_State:
+                {
+                    DischargeHandler();
 
-              /* Integration of the current */
-        	  Ah_integral_step();
+                    if(bmsNewEvent == Charge_Event)
+                    {
+                        bmsNextState = Charge_State;
+                    }
+                    else if (bmsNewEvent == OpenCircuit_Event)
+                    {
+                        bmsNextState = OpenCircuit_State;
+                    }
+                }
+                break;
 
-        	  /* Calculate the current SOC value */
-        	  getCurrentSOC();
+                case Charge_State:
+                {
+                    ChargeHandler();
 
-              /* Rearrange data */
-			  for (i = 0; i < 17; i++){
-			    transmitData[i] = cellData[i];
-			  }
+                    if(bmsNewEvent == Discharge_Event)
+                    {
+                        bmsNextState = Discharge_State;
+                    }
+                    else if (bmsNewEvent == OpenCircuit_Event)
+                    {
+                        bmsNextState = OpenCircuit_State;
+                    }
+                }
+                break;
 
-			  for (i = 17; i < 31; i++){
-				transmitData[i] = AhData.SOC_c[i - 17];
-			  }
+                case OpenCircuit_State:
+                {
+                    OpenCircuitHandler();
+
+                    if(bmsNewEvent == Charge_Event)
+                    {
+                        bmsNextState = Charge_State;
+                    }
+                    else if (bmsNewEvent == Discharge_Event)
+                    {
+                        bmsNextState = Discharge_State;
+                    } 
+                }
+                break;
+
+                default:
+                    break;
+                }
+                
+                dataTransmit();
+                resetData();
           }
-
-          LPUART_DRV_SendData(INST_LPUART1, (uint8_t *)cellData, sizeof(cellData)); // Transmit the data through UART
-
-          clearAhData(); // Clear the current SOC value to avoid mistake
       }
   }
   else
   {
-      PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
+	  PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
   }
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
   /*** RTOS startup code. Macro PEX_RTOS_START is defined by the RTOS component. DON'T MODIFY THIS CODE!!! ***/
