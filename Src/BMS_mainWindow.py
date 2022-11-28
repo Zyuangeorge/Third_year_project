@@ -1,7 +1,7 @@
 """
-BMS GUI Version 6
+BMS GUI Version 7
 Features:
-*Update open file
+*Update SoC and SoH plot
 """
 # Import functions in other folders
 import sys
