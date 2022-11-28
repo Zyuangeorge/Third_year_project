@@ -237,25 +237,40 @@ static const bcc_init_reg_t s_initRegsMc33771c[BCC_INIT_CONF_REG_CNT] = {
 /*******************************************************************************
  * Global variables
  ******************************************************************************/
+/* Final transmitted data */
+/*
+ * [0] Pack voltge
+ * [1:14] Cell voltage 1 to 14
+ * [15] IC temperature
+ * [16] Current
+ * [17:30] SOC: Cell 1 to 14
+ * [31:44] SOH: Cell 1 to `4
+ */
+uint32_t transmittedData[45];
 
-bcc_drv_config_t drvConfig;  /* BCC driver configuration. */
+/* BCC driver configuration. */
+bcc_drv_config_t drvConfig;
 
-uint32_t cellData[17]; /* Array used in UART communication */
+/* Array used in UART communication */
+uint32_t cellData[17];
 
-uint16_t measurements[BCC_MEAS_CNT]; /* Array needed to store all measured values. */
+/* Array needed to store all measured values. */
+uint16_t measurements[BCC_MEAS_CNT];
 
-Ah_integral_data AhData; /* Ah intergal data*/
+/* Ah intergal data*/
+Ah_integral_data AhData;
 
-uint32_t transmittedData[45]; /* Final transmitted data */
-
-uint32_t g_ocvTable[OCV_TABLE_SIZE]; /* The OCV-SOC lookup table */
+/* The OCV-SOC lookup table */
+uint32_t g_ocvTable[OCV_TABLE_SIZE];
 
 /* State variable (used as indication if SPI is accessible or not). */
 bool sleepMode = false;
 
-int32_t timeout = 0; /* Timeout value of the lpit */
+/* Timeout value of the lpit */
+int32_t timeout = 0;
 
-int16_t currentDirectionFlag = 0; /* Current direction flag: 0 is discharge, 1 is charge */
+/* Current direction flag: 0 is discharge, 1 is charge */
+int16_t currentDirectionFlag = 0;
 
 /*******************************************************************************
  * Function prototypes
