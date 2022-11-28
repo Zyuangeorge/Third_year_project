@@ -32,7 +32,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox,
 # Import util functions
 import util.util as util
 # Import graph window
-from BMS_plotWindow import loadGraphWindow, plotWindow, zoomWindow
+from BMS_plotWindow import loadGraphWindow, plotWindow, zoomWindow, SOCPlotWindow, SOHPlotWindow
 # Import UI file
 from UI.BMS_GUI import Ui_MainWindow
 
@@ -97,8 +97,11 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.cellData = {'voltage': [],
                          'voltageStatus': [], 'currentStatus': []}
 
-        # Raw data in integer form
+        # Raw battery data in integer form
         self.bccData = [0 for i in range(0,17)]
+
+        # SOC and SOH data
+        self.SOC_SOHData = [0 for i in range(0,27)]
 
         # Initialisation of cell data
         for num in range(0, 14):
@@ -115,7 +118,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             'cellVoltage_10','cellVoltage_11','cellVoltage_12','cellVoltage_13','cellVoltage_14',
             'ICTemperature','cellCurrent','Date'])
         
-        self.graphData = np.zeros((17,1))
+        self.graphData = np.zeros((45,1))
 
         # ===================================================================
 
@@ -124,6 +127,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Initialisation of graph window
         self.graphWindow = plotWindow()
+        self.graphWindow_SOC = SOCPlotWindow()
+        self.graphWindow_SOH = SOHPlotWindow()
 
         # Three timers
         self.timer = QTimer() # Timer for GUI data displaying
@@ -145,18 +150,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
 # ===================Class initialisation====================
 
-    def init(self):
-        """GUI initialisation"""
+    def initGraphPage_1(self):
         # Init graph page layout
         graphPageLayout = QVBoxLayout()
-        plotButtonLayout = QHBoxLayout()
-
-        # Add stop and start plotting button
-        self.startPlotButton = QPushButton("Start Plotting")
-        self.stopPlotButton = QPushButton("Stop Plotting")
-
-        graphSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        zoomLabel = QLabel("Choose to zoom")
 
         # Add zoom item combo box
         self.zoomGraphComboBox = QComboBox()
@@ -180,17 +176,107 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         self.zoomButton = QPushButton("Zoom Graph")
 
+        graphPageLayout.addWidget(self.graphWindow)
+        
+        zoomLayout = QHBoxLayout()
+        zoomLabel = QLabel("Choose to zoom")
+        zoomLayout.addWidget(zoomLabel)
+        zoomLayout.addWidget(self.zoomGraphComboBox)
+        zoomLayout.addWidget(self.zoomButton)
+
+        # Add graph panels
+        self.batteryData_3Layout.addLayout(graphPageLayout)
+        self.batteryData_3Layout.addLayout(zoomLayout)
+
+    def initGraphPage_2(self):
+        # Init graph page layout
+        graphPageLayout = QVBoxLayout()
+        graphPageLayout.addWidget(self.graphWindow_SOC)
+
+        # Add zoom item combo box
+        self.zoomGraphComboBox_2 = QComboBox()
+        self.zoomGraphComboBox_2.addItem('Cell 1 SoC')
+        self.zoomGraphComboBox_2.addItem('Cell 2 SoC')
+        self.zoomGraphComboBox_2.addItem('Cell 3 SoC')
+        self.zoomGraphComboBox_2.addItem('Cell 4 SoC')
+        self.zoomGraphComboBox_2.addItem('Cell 5 SoC')
+        self.zoomGraphComboBox_2.addItem('Cell 6 SoC')
+        self.zoomGraphComboBox_2.addItem('Cell 7 SoC')
+        self.zoomGraphComboBox_2.addItem('Cell 8 SoC')
+        self.zoomGraphComboBox_2.addItem('Cell 9 SoC')
+        self.zoomGraphComboBox_2.addItem('Cell 10 SoC')
+        self.zoomGraphComboBox_2.addItem('Cell 11 SoC')
+        self.zoomGraphComboBox_2.addItem('Cell 12 SoC')
+        self.zoomGraphComboBox_2.addItem('Cell 13 SoC')
+        self.zoomGraphComboBox_2.addItem('Cell 14 SoC')
+
+        self.zoomButton_2 = QPushButton("Zoom Graph")
+        
+        zoomLayout = QHBoxLayout()
+        zoomLabel = QLabel("Choose to zoom")
+        zoomLayout.addWidget(zoomLabel)
+        zoomLayout.addWidget(self.zoomGraphComboBox_2)
+        zoomLayout.addWidget(self.zoomButton_2)
+
+        # Add graph panels
+        self.batteryData_4Layout.addLayout(graphPageLayout)
+        self.batteryData_4Layout.addLayout(zoomLayout)
+
+    def initGraphPage_3(self):
+        # Init graph page layout
+        graphPageLayout = QVBoxLayout()
+        graphPageLayout.addWidget(self.graphWindow_SOH)
+
+        # Add zoom item combo box
+        self.zoomGraphComboBox_3 = QComboBox()
+        self.zoomGraphComboBox_3.addItem('Cell 1 SoH')
+        self.zoomGraphComboBox_3.addItem('Cell 2 SoH')
+        self.zoomGraphComboBox_3.addItem('Cell 3 SoH')
+        self.zoomGraphComboBox_3.addItem('Cell 4 SoH')
+        self.zoomGraphComboBox_3.addItem('Cell 5 SoH')
+        self.zoomGraphComboBox_3.addItem('Cell 6 SoH')
+        self.zoomGraphComboBox_3.addItem('Cell 7 SoH')
+        self.zoomGraphComboBox_3.addItem('Cell 8 SoH')
+        self.zoomGraphComboBox_3.addItem('Cell 9 SoH')
+        self.zoomGraphComboBox_3.addItem('Cell 10 SoH')
+        self.zoomGraphComboBox_3.addItem('Cell 11 SoH')
+        self.zoomGraphComboBox_3.addItem('Cell 12 SoH')
+        self.zoomGraphComboBox_3.addItem('Cell 13 SoH')
+        self.zoomGraphComboBox_3.addItem('Cell 14 SoH')
+
+        self.zoomButton_3 = QPushButton("Zoom Graph")
+        
+        zoomLayout = QHBoxLayout()
+        zoomLabel = QLabel("Choose to zoom")
+        zoomLayout.addWidget(zoomLabel)
+        zoomLayout.addWidget(self.zoomGraphComboBox_3)
+        zoomLayout.addWidget(self.zoomButton_3)
+
+        # Add graph panels
+        self.batteryData_5Layout.addLayout(graphPageLayout)
+        self.batteryData_5Layout.addLayout(zoomLayout)
+
+    def init(self):
+        """GUI initialisation"""
+        self.initGraphPage_1()
+        self.initGraphPage_2()
+        self.initGraphPage_3()
+
+        # Init plot button
+        plotButtonLayout = QHBoxLayout()
+
+        # Add stop and start plotting button
+        self.startPlotButton = QPushButton("Start Plotting")
+        self.stopPlotButton = QPushButton("Stop Plotting")
+
+        graphSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        
         # Set layouts
+        plotButtonLayout.addItem(graphSpacer)
         plotButtonLayout.addWidget(self.startPlotButton)
         plotButtonLayout.addWidget(self.stopPlotButton)
 
-        plotButtonLayout.addItem(graphSpacer)
-
-        plotButtonLayout.addWidget(zoomLabel)
-        plotButtonLayout.addWidget(self.zoomGraphComboBox)
-        plotButtonLayout.addWidget(self.zoomButton)
-
-        graphPageLayout.addWidget(self.graphWindow)
+        self.monitorGroupBoxLayout.addLayout(plotButtonLayout)
 
         # Init record button
         self.startRecordButton.setEnabled(False)
@@ -199,10 +285,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Add print button
         self.printButton = QPushButton("Print Data")
         self.recordGroupBoxLayout.addWidget(self.printButton)
-
-        # Add graph panels
-        self.batteryData_3Layout.addLayout(graphPageLayout)
-        self.batteryData_3Layout.addLayout(plotButtonLayout)
         
         # Set QLineEdit restrictions
         self.voltageMaxLineEdit.setValidator(QIntValidator())
@@ -298,6 +380,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Connect zoom button functions
         self.zoomButton.clicked.connect(self.zoomGraph)
+        self.zoomButton_2.clicked.connect(self.zoomGraph_2)
+        self.zoomButton_3.clicked.connect(self.zoomGraph_3)
 
         # Connect load button function
         self.loadingButton.clicked.connect(self.openFile)
@@ -347,7 +431,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.portStatusDisplay.setEnabled(False)
 
         # Clear output data and graph data
-        self.graphData = np.zeros((17,1))
+        self.graphData = np.zeros((45,1))
         self.outputData =self.outputData.drop(index = self.outputData.index)
         self.updateGraphData()
 
@@ -515,38 +599,20 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
 # ===================Data graph plotting====================
 
-    def updateGraphData(self):
-        """Handler for updating curve data"""
-        insertData = list(i / 1000000 for i in self.bccData) # All element divided by 1000000
-        insertData[15] = insertData[15] * 100000 # xxx/1000000*10000=xxx/10
-        insertData[16] = insertData[16] * 1000000 # xx/1000000*1000000=xx
-
-        insertData = np.array(insertData).reshape((17,1))
-
-        self.graphData = np.append(self.graphData, insertData, axis = 1)
-
-        for i in range(0,17):
-            self.curveList[i].setData(self.graphData[i])
-        
-        self.graphWindow.setGraphs()
-
     def plotGraph(self):
         """Show cell status, pack status, IC temperature in a graph"""
         self.cellCurve1 = self.graphWindow.p0.plot() # plotDataItem
         self.cellCurve2 = self.graphWindow.p1.plot()
         self.cellCurve3 = self.graphWindow.p2.plot()
         self.cellCurve4 = self.graphWindow.p3.plot()
-
         self.cellCurve5 = self.graphWindow.p4.plot()
         self.cellCurve6 = self.graphWindow.p5.plot()
         self.cellCurve7 = self.graphWindow.p6.plot()
         self.cellCurve8 = self.graphWindow.p7.plot()
-        
         self.cellCurve9 = self.graphWindow.p8.plot()
         self.cellCurve10 = self.graphWindow.p9.plot()
         self.cellCurve11 = self.graphWindow.p10.plot()
         self.cellCurve12 = self.graphWindow.p11.plot()
-
         self.cellCurve13 = self.graphWindow.p12.plot()
         self.cellCurve14 = self.graphWindow.p13.plot()
         
@@ -554,12 +620,54 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.ICTempCurve = self.graphWindow.ICTempP.plot()
         self.packCurrentCurve = self.graphWindow.packCurrentP.plot()
 
+        self.cellCurve18 = self.graphWindow_SOC.p0.plot()
+        self.cellCurve19 = self.graphWindow_SOC.p1.plot()
+        self.cellCurve20 = self.graphWindow_SOC.p2.plot()
+        self.cellCurve21 = self.graphWindow_SOC.p3.plot()
+        self.cellCurve22 = self.graphWindow_SOC.p4.plot()
+        self.cellCurve23 = self.graphWindow_SOC.p5.plot()
+        self.cellCurve24 = self.graphWindow_SOC.p6.plot()
+        self.cellCurve25 = self.graphWindow_SOC.p7.plot()
+        self.cellCurve26 = self.graphWindow_SOC.p8.plot()
+        self.cellCurve27 = self.graphWindow_SOC.p9.plot()
+        self.cellCurve28 = self.graphWindow_SOC.p10.plot()
+        self.cellCurve29 = self.graphWindow_SOC.p11.plot()
+        self.cellCurve30 = self.graphWindow_SOC.p12.plot()
+        self.cellCurve31 = self.graphWindow_SOC.p13.plot()
+
+        self.cellCurve32 = self.graphWindow_SOH.p0.plot()
+        self.cellCurve33 = self.graphWindow_SOH.p1.plot()
+        self.cellCurve34 = self.graphWindow_SOH.p2.plot()
+        self.cellCurve35 = self.graphWindow_SOH.p3.plot()
+        self.cellCurve36 = self.graphWindow_SOH.p4.plot()
+        self.cellCurve37 = self.graphWindow_SOH.p5.plot()
+        self.cellCurve38 = self.graphWindow_SOH.p6.plot()
+        self.cellCurve39 = self.graphWindow_SOH.p7.plot()
+        self.cellCurve40 = self.graphWindow_SOH.p8.plot()
+        self.cellCurve41 = self.graphWindow_SOH.p9.plot()
+        self.cellCurve42 = self.graphWindow_SOH.p10.plot()
+        self.cellCurve43 = self.graphWindow_SOH.p11.plot()
+        self.cellCurve44 = self.graphWindow_SOH.p12.plot()
+        self.cellCurve45 = self.graphWindow_SOH.p13.plot()
+
         self.curveList = [self.packVoltageCurve,
             self.cellCurve1, self.cellCurve2, self.cellCurve3,
             self.cellCurve4, self.cellCurve5, self.cellCurve6,
             self.cellCurve7, self.cellCurve8, self.cellCurve9,
             self.cellCurve10, self.cellCurve11, self.cellCurve12,
-            self.cellCurve13, self.cellCurve14, self.ICTempCurve, self.packCurrentCurve]
+            self.cellCurve13, self.cellCurve14, self.ICTempCurve, self.packCurrentCurve,
+
+            self.cellCurve18, self.cellCurve19, self.cellCurve20,
+            self.cellCurve21, self.cellCurve22, self.cellCurve23,
+            self.cellCurve24, self.cellCurve25, self.cellCurve26,
+            self.cellCurve27, self.cellCurve28, self.cellCurve29,
+            self.cellCurve30, self.cellCurve31,
+
+            self.cellCurve32, self.cellCurve33, self.cellCurve34,
+            self.cellCurve35, self.cellCurve36, self.cellCurve37,
+            self.cellCurve38, self.cellCurve39, self.cellCurve40,
+            self.cellCurve41, self.cellCurve42, self.cellCurve43,
+            self.cellCurve44, self.cellCurve45]
 
         if self.serial.isOpen():
             self.timer2.timeout.connect(self.updateGraphData)
@@ -567,6 +675,25 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         else:
             QMessageBox.critical(
                 self, 'COM error', 'COM data error, please reconnect the port')
+
+    def updateGraphData(self):
+        """Handler for updating curve data"""
+        insertData = list(i / 1000000 for i in self.bccData) # All bcc element divided by 1000000
+        insertData[15] = insertData[15] * 100000 # xxx/1000000*10000=xxx/10
+        insertData[16] = insertData[16] * 1000000 # xx/1000000*1000000=xx
+
+        insertData.extend(self.SOC_SOHData)
+
+        insertData = np.array(insertData).reshape((45,1))
+
+        self.graphData = np.append(self.graphData, insertData, axis = 1)
+
+        for i in range(0,45):
+            self.curveList[i].setData(self.graphData[i])
+        
+        self.graphWindow.setGraphs()
+        self.graphWindow_SOC.setGraphs()
+        self.graphWindow_SOH.setGraphs()
 
     def stopPlotting(self):
         """Handler for stop plotting data"""
@@ -610,6 +737,78 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 yLabel = "Temperature (°C)"
             else:
                 yLabel = "Current (mA)"
+
+            graphWindow = zoomWindow() # Init zoom window
+            graphWindow.labels = [title, yLabel]
+            graphWindow.plot.plot(self.graphData[graphItemIndex]) # Plot Curve
+            graphWindow.updateGraph() # Update labels
+            graphWindow.exec()
+        else:
+            QMessageBox.critical(
+                self, 'Data error', 'No curve data, please restart plotting')
+
+    def zoomGraph_2(self):
+        """Handler for zooming graph 2"""
+        zoomedGraph = self.zoomGraphComboBox_2.currentText()
+        zoomedGraphDict = {
+            'Cell 1 SoC': 17,
+            'Cell 2 SoC': 18,
+            'Cell 3 SoC': 19,
+            'Cell 4 SoC': 20,
+            'Cell 5 SoC': 21,
+            'Cell 6 SoC': 22,
+            'Cell 7 SoC': 23,
+            'Cell 8 SoC': 24,
+            'Cell 9 SoC': 25,
+            'Cell 10 SoC': 26,
+            'Cell 11 SoC': 27,
+            'Cell 12 SoC': 28,
+            'Cell 13 SoC': 29,
+            'Cell 14 SoC': 30,
+        }
+
+        if self.graphData.shape[1] > 2:
+            graphItemIndex = zoomedGraphDict.get(zoomedGraph)
+            
+            title = self.zoomGraphComboBox_2.currentText()
+
+            yLabel = "SoC (%)"
+
+            graphWindow = zoomWindow() # Init zoom window
+            graphWindow.labels = [title, yLabel]
+            graphWindow.plot.plot(self.graphData[graphItemIndex]) # Plot Curve
+            graphWindow.updateGraph() # Update labels
+            graphWindow.exec()
+        else:
+            QMessageBox.critical(
+                self, 'Data error', 'No curve data, please restart plotting')
+
+    def zoomGraph_3(self):
+        """Handler for zooming graph 3"""
+        zoomedGraph = self.zoomGraphComboBox_3.currentText()
+        zoomedGraphDict = {
+            'Cell 1 SoH': 31,
+            'Cell 2 SoH': 32,
+            'Cell 3 SoH': 33,
+            'Cell 4 SoH': 34,
+            'Cell 5 SoH': 35,
+            'Cell 6 SoH': 36,
+            'Cell 7 SoH': 37,
+            'Cell 8 SoH': 38,
+            'Cell 9 SoH': 39,
+            'Cell 10 SoH': 40,
+            'Cell 11 SoH': 41,
+            'Cell 12 SoH': 42,
+            'Cell 13 SoH': 43,
+            'Cell 14 SoH': 44,
+        }
+
+        if self.graphData.shape[1] > 2:
+            graphItemIndex = zoomedGraphDict.get(zoomedGraph)
+            
+            title = self.zoomGraphComboBox_3.currentText()
+            
+            yLabel = "SoH (%)"
 
             graphWindow = zoomWindow() # Init zoom window
             graphWindow.labels = [title, yLabel]
@@ -818,8 +1017,12 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             dataList = list(hex(data) for data in list(bccRawData))
 
             # Filter out incorrect inputs
-            if len(dataList) == 68:
-                self.bccData = util.listData2strData(dataList)
+            if len(dataList) == 180:
+                data = util.listData2strData(dataList)
+
+                self.bccData = data[0:17]
+                self.SOC_SOHData = list(i / 10 for i in data[17:45])
+
                 self.updateData()
                 self.updateGUIData()
             else:

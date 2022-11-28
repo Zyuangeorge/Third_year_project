@@ -258,3 +258,107 @@ class loadGraphWindow(QDialog):
         else:
             QMessageBox.critical(
                 self, 'Data error', 'No curve data, please restart plotting')
+
+class SOCPlotWindow(pg.GraphicsLayoutWidget):
+    """Window for plotting graphs"""
+
+    def __init__(self):
+        super().__init__()
+        
+        self.setPlotPanels()
+        self.initCurves()
+        self.setGraphs()
+
+    def setPlotPanels(self):
+        """Handler for setting battery data graphs"""
+
+        # Set plot windows
+        self.p0 = self.addPlot(title="Cell 1 SoC")
+        self.p1 = self.addPlot(title="Cell 2 SoC")
+        self.p2 = self.addPlot(title="Cell 3 SoC")
+        self.p3 = self.addPlot(title="Cell 4 SoC")
+
+        self.nextRow()
+        self.p4 = self.addPlot(title="Cell 5 SoC")
+        self.p5 = self.addPlot(title="Cell 6 SoC")
+        self.p6 = self.addPlot(title="Cell 7 SoC")
+        self.p7 = self.addPlot(title="Cell 8 SoC")
+
+        self.nextRow()
+        self.p8 = self.addPlot(title="Cell 9 SoC")
+        self.p9 = self.addPlot(title="Cell 10 SoC")
+        self.p10 = self.addPlot(title="Cell 11 SoC")
+        self.p11 = self.addPlot(title="Cell 12 SoC")
+
+        self.nextRow()
+        self.p12 = self.addPlot(title="Cell 13 SoC")
+        self.p13 = self.addPlot(title="Cell 14 SoC")
+
+        self.SoCCurves = [
+            self.p0,self.p1,self.p2,self.p3,
+            self.p4,self.p5,self.p6,self.p7,
+            self.p8,self.p9,self.p10,self.p11,
+            self.p12,self.p13]
+
+    def initCurves(self):
+        """Handler for curve initialisation"""
+        for curve in self.SoCCurves:
+            curve.setLabel('bottom', "Time (s) * 5")
+            curve.setLabel('left', "SoC (%)")
+        
+    def setGraphs(self):
+        """Handler for setting panels"""
+        for curve in self.SoCCurves:
+            curve.autoRange()
+
+class SOHPlotWindow(pg.GraphicsLayoutWidget):
+    """Window for plotting graphs"""
+
+    def __init__(self):
+        super().__init__()
+        
+        self.setPlotPanels()
+        self.initCurves()
+        self.setGraphs()
+
+    def setPlotPanels(self):
+        """Handler for setting battery data graphs"""
+
+        # Set plot windows
+        self.p0 = self.addPlot(title="Cell 1 SoH")
+        self.p1 = self.addPlot(title="Cell 2 SoH")
+        self.p2 = self.addPlot(title="Cell 3 SoH")
+        self.p3 = self.addPlot(title="Cell 4 SoH")
+
+        self.nextRow()
+        self.p4 = self.addPlot(title="Cell 5 SoH")
+        self.p5 = self.addPlot(title="Cell 6 SoH")
+        self.p6 = self.addPlot(title="Cell 7 SoH")
+        self.p7 = self.addPlot(title="Cell 8 SoH")
+
+        self.nextRow()
+        self.p8 = self.addPlot(title="Cell 9 SoH")
+        self.p9 = self.addPlot(title="Cell 10 SoH")
+        self.p10 = self.addPlot(title="Cell 11 SoH")
+        self.p11 = self.addPlot(title="Cell 12 SoH")
+
+        self.nextRow()
+        self.p12 = self.addPlot(title="Cell 13 SoH")
+        self.p13 = self.addPlot(title="Cell 14 SoH")
+
+        self.SoHCurves = [
+            self.p0,self.p1,self.p2,self.p3,
+            self.p4,self.p5,self.p6,self.p7,
+            self.p8,self.p9,self.p10,self.p11,
+            self.p12,self.p13]
+
+    def initCurves(self):
+        """Handler for curve initialisation"""
+        for curve in self.SoHCurves:
+            curve.setLabel('bottom', "Time (s) * 5")
+            curve.setLabel('left', "SoH (%)")
+        
+    def setGraphs(self):
+        """Handler for setting panels"""
+        for curve in self.SoHCurves:
+            curve.autoRange()

@@ -724,6 +724,16 @@ class Ui_MainWindow(object):
         self.batteryData_3Layout = QVBoxLayout(self.batteryData_3)
         self.batteryData_3Layout.setObjectName(u"batteryData_3Layout")
         self.monitorWindowTab.addTab(self.batteryData_3, "")
+        self.batteryData_4 = QWidget()
+        self.batteryData_4.setObjectName(u"batteryData_4")
+        self.batteryData_4Layout = QVBoxLayout(self.batteryData_4)
+        self.batteryData_4Layout.setObjectName(u"batteryData_4Layout")
+        self.monitorWindowTab.addTab(self.batteryData_4, "")
+        self.batteryData_5 = QWidget()
+        self.batteryData_5.setObjectName(u"batteryData_5")
+        self.batteryData_5Layout = QVBoxLayout(self.batteryData_5)
+        self.batteryData_5Layout.setObjectName(u"batteryData_5Layout")
+        self.monitorWindowTab.addTab(self.batteryData_5, "")
 
         self.monitorGroupBoxLayout.addWidget(self.monitorWindowTab)
 
@@ -735,7 +745,7 @@ class Ui_MainWindow(object):
         font4.setItalic(True)
         self.nameLabel.setFont(font4)
 
-        self.monitorGroupBoxLayout.addWidget(self.nameLabel, 0, Qt.AlignRight)
+        self.monitorGroupBoxLayout.addWidget(self.nameLabel)
 
 
         self.centralWidgetLayout.addWidget(self.monitorGroupBox)
@@ -928,6 +938,8 @@ class Ui_MainWindow(object):
         self.ICStatusLabel.setText(QCoreApplication.translate("MainWindow", u"IC Status:", None))
         self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_2), QCoreApplication.translate("MainWindow", u"Pack Data and Status", None))
         self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_3), QCoreApplication.translate("MainWindow", u"Battery Data Graph", None))
+        self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_4), QCoreApplication.translate("MainWindow", u"SoC Estimation", None))
+        self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_5), QCoreApplication.translate("MainWindow", u"SoH Estimation", None))
         self.nameLabel.setText(QCoreApplication.translate("MainWindow", u"Made by Zhe Yuan", None))
         self.menuSetting.setTitle(QCoreApplication.translate("MainWindow", u"Setting", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))

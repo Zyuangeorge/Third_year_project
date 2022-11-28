@@ -1267,9 +1267,21 @@
           </attribute>
           <layout class="QVBoxLayout" name="batteryData_3Layout"/>
          </widget>
+         <widget class="QWidget" name="batteryData_4">
+          <attribute name="title">
+           <string>SoC Estimation</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="batteryData_4Layout"/>
+         </widget>
+         <widget class="QWidget" name="batteryData_5">
+          <attribute name="title">
+           <string>SoH Estimation</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="batteryData_5Layout"/>
+         </widget>
         </widget>
        </item>
-       <item alignment="Qt::AlignRight">
+       <item>
         <widget class="QLabel" name="nameLabel">
          <property name="font">
           <font>
