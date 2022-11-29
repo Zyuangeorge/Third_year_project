@@ -6,22 +6,8 @@ from PySide6.QtWidgets import (QComboBox, QDialog, QHBoxLayout, QMessageBox,
 
 class plotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
-
     def __init__(self):
         super().__init__()
-        
-        # Battery data
-        self.batteryDataBuffer = [] # Data buffer
-
-        # Panel list
-        self.voltagePanels = []
-        
-        self.setPlotPanels()
-        self.initCurves()
-        self.setGraphs()
-
-    def setPlotPanels(self):
-        """Handler for setting battery data graphs"""
 
         # Set plot windows
         self.p0 = self.addPlot(title="Cell 1 Voltage")
@@ -55,6 +41,10 @@ class plotWindow(pg.GraphicsLayoutWidget):
             self.p8,self.p9,self.p10,self.p11,
             self.p12,self.p13]
 
+        # self.setPlotPanels()
+        self.initCurves()
+        self.setGraphs()
+
     def initCurves(self):
         """Handler for curve initialisation"""
         for curve in self.voltageCurves:
@@ -80,23 +70,6 @@ class plotWindow(pg.GraphicsLayoutWidget):
         self.ICTempP.autoRange()
 
         self.packCurrentP.autoRange()
-        
-    def updateThresholdLines(self, voltageThreshold, tempThreshold, packVoltageThreshold):
-        """Handler for adding threshold lines"""
-        pen = pg.mkPen(color=(255, 0, 0))
-
-        for curve in self.voltageCurves:
-            curve.addLine(y=voltageThreshold[0],pen=pen)
-            curve.addLine(y=voltageThreshold[1],pen=pen)
-
-        self.ICTempP.addLine(y=tempThreshold[0],pen=pen)
-        self.ICTempP.addLine(y=tempThreshold[1],pen=pen)
-
-        self.packVoltageP.addLine(y=packVoltageThreshold[0],pen=pen)
-        self.packVoltageP.addLine(y=packVoltageThreshold[1],pen=pen)
-
-        self.packCurrentP.addLine(y=packVoltageThreshold[0],pen=pen)
-        self.packCurrentP.addLine(y=packVoltageThreshold[1],pen=pen)
 
 
 class zoomWindow(QDialog):
@@ -135,6 +108,7 @@ class zoomWindow(QDialog):
 
 class loadGraphWindow(QDialog):
     """Window for zooming graphs"""
+
     def __init__(self):
         super().__init__()
 
@@ -191,6 +165,7 @@ class loadGraphWindow(QDialog):
     
     def loadGraphData(self, readFile):
         """Handler for loading curve data"""
+
         readFile = readFile.drop('Date', axis=1) # Remove time column to get value
 
         self.data = readFile.values # Set data frame as matrix
@@ -261,16 +236,8 @@ class loadGraphWindow(QDialog):
 
 class SOCPlotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
-
     def __init__(self):
         super().__init__()
-        
-        self.setPlotPanels()
-        self.initCurves()
-        self.setGraphs()
-
-    def setPlotPanels(self):
-        """Handler for setting battery data graphs"""
 
         # Set plot windows
         self.p0 = self.addPlot(title="Cell 1 SoC")
@@ -300,6 +267,9 @@ class SOCPlotWindow(pg.GraphicsLayoutWidget):
             self.p8,self.p9,self.p10,self.p11,
             self.p12,self.p13]
 
+        self.initCurves()
+        self.setGraphs()
+
     def initCurves(self):
         """Handler for curve initialisation"""
         for curve in self.SoCCurves:
@@ -313,17 +283,8 @@ class SOCPlotWindow(pg.GraphicsLayoutWidget):
 
 class SOHPlotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
-
     def __init__(self):
         super().__init__()
-        
-        self.setPlotPanels()
-        self.initCurves()
-        self.setGraphs()
-
-    def setPlotPanels(self):
-        """Handler for setting battery data graphs"""
-
         # Set plot windows
         self.p0 = self.addPlot(title="Cell 1 SoH")
         self.p1 = self.addPlot(title="Cell 2 SoH")
@@ -351,6 +312,9 @@ class SOHPlotWindow(pg.GraphicsLayoutWidget):
             self.p4,self.p5,self.p6,self.p7,
             self.p8,self.p9,self.p10,self.p11,
             self.p12,self.p13]
+
+        self.initCurves()
+        self.setGraphs()
 
     def initCurves(self):
         """Handler for curve initialisation"""
