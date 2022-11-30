@@ -1,5 +1,5 @@
 """
-BMS GUI Version 7
+BMS GUI Version 7.1
 Features:
 *Update SoC and SoH plot
 """
@@ -57,7 +57,6 @@ class tempStatus(Enum):
 
 class mainWindow(QMainWindow, Ui_MainWindow):
     """Main window widget for BMS GUI"""
-
     def __init__(self):
         super(mainWindow, self).__init__()
 
@@ -98,10 +97,10 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                          'voltageStatus': [], 'currentStatus': []}
 
         # Raw battery data in integer form
-        self.bccData = [0 for i in range(0,17)]
+        self.bccData = [0 for _ in range(17)]
 
         # SOC and SOH data
-        self.SOC_SOHData = [0 for i in range(0,27)]
+        self.SOC_SOHData = [0 for _ in range(27)]
 
         # Initialisation of cell data
         for num in range(0, 14):
@@ -109,15 +108,27 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.cellData['voltageStatus'].append(voltageStatus.DEFAULT)
             self.cellData['currentStatus'].append(currentStatus.DEFAULT)
 
-        # ===================Data used for graph plotting and recording====================
+        # ===================Real time data====================
 
-        self.outputData = pd.DataFrame(
+        """ self.outputData = pd.DataFrame(
         columns=[
             'packVoltage','cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
             'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 'cellVoltage_9',
             'cellVoltage_10','cellVoltage_11','cellVoltage_12','cellVoltage_13','cellVoltage_14',
-            'ICTemperature','cellCurrent','Date'])
+            'ICTemperature','cellCurrent','Date']) """
         
+        self.outputData = pd.DataFrame(
+        columns=[
+            'cellSoC_1','cellSoC_2','cellSoC_3','cellSoC_4',
+            'cellSoC_5','cellSoC_6','cellSoC_7','cellSoC_8',
+            'cellSoC_9','cellSoC_10','cellSoC_11','cellSoC_12',
+            'cellSoC_13','cellSoC_14',
+            'cellSoH_1','cellSoH_2','cellSoH_3','cellSoH_4',
+            'cellSoH_5','cellSoH_6','cellSoH_7','cellSoH_8',
+            'cellSoH_9','cellSoH_10','cellSoH_11','cellSoH_12',
+            'cellSoH_13','cellSoH_14',
+            'Date'])
+
         self.graphData = np.zeros((45,1))
 
         # ===================================================================
@@ -432,8 +443,14 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Clear output data and graph data
         self.graphData = np.zeros((45,1))
-        self.outputData =self.outputData.drop(index = self.outputData.index)
-        self.updateGraphData()
+        self.outputData = self.outputData.drop(index = self.outputData.index)
+
+        # Clear battery data
+        self.bccData = [0 for i in range(0,17)]
+        self.SOC_SOHData = [0 for i in range(0,27)]
+
+        for i in range(0,45):
+            self.curveList[i].setData(self.graphData[i], _callSync='off')
 
     def resetStatus(self):
         """Reset cell, pack and IC status as well as the button colours"""
@@ -559,7 +576,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """Handler for start data recording"""
         # Detect port status
         self.timer3.timeout.connect(self.recordData)
-        self.timer3.start(200)
+        self.timer3.start(1000) # 1s
 
     def stopRecording(self):
         """Handler for stop data recording"""
@@ -568,19 +585,23 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def recordData(self):
         """Handler for updating data"""
         # Update real time data
-        if self.waitBits > 0:
+        if self.serial.isOpen():
             # Set time information
             timeInfo = QDateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz")
 
             # Add realtime data
             index = self.outputData.index.size
-            realTimeData = self.bccData
-            realTimeData.append(timeInfo)
+            realTimeData = [0 for _ in range(29)]
+
+            # realTimeData = self.bccData
+            realTimeData[0:28] = self.SOC_SOHData
+            realTimeData[28] = timeInfo
+
             self.outputData.loc[index] = realTimeData
             self.outputData.index = self.outputData.index + 1
             
     def printData(self):
-        """Handler for saving data as zip"""
+        """Handler for saving data"""
         self.stopRecordButton.setChecked(True)
 
         if self.serial.isOpen() and self.outputData.size > 2:
@@ -601,6 +622,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
     def plotGraph(self):
         """Show cell status, pack status, IC temperature in a graph"""
+        self.cellCurve0 = self.graphWindow.packVoltageP.plot()
         self.cellCurve1 = self.graphWindow.p0.plot() # plotDataItem
         self.cellCurve2 = self.graphWindow.p1.plot()
         self.cellCurve3 = self.graphWindow.p2.plot()
@@ -615,11 +637,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.cellCurve12 = self.graphWindow.p11.plot()
         self.cellCurve13 = self.graphWindow.p12.plot()
         self.cellCurve14 = self.graphWindow.p13.plot()
-        
-        self.packVoltageCurve = self.graphWindow.packVoltageP.plot()
-        self.ICTempCurve = self.graphWindow.ICTempP.plot()
-        self.packCurrentCurve = self.graphWindow.packCurrentP.plot()
-
+        self.cellCurve15 = self.graphWindow.ICTempP.plot()
+        self.cellCurve16 = self.graphWindow.packCurrentP.plot()
         self.cellCurve18 = self.graphWindow_SOC.p0.plot()
         self.cellCurve19 = self.graphWindow_SOC.p1.plot()
         self.cellCurve20 = self.graphWindow_SOC.p2.plot()
@@ -634,7 +653,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.cellCurve29 = self.graphWindow_SOC.p11.plot()
         self.cellCurve30 = self.graphWindow_SOC.p12.plot()
         self.cellCurve31 = self.graphWindow_SOC.p13.plot()
-
         self.cellCurve32 = self.graphWindow_SOH.p0.plot()
         self.cellCurve33 = self.graphWindow_SOH.p1.plot()
         self.cellCurve34 = self.graphWindow_SOH.p2.plot()
@@ -650,19 +668,17 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.cellCurve44 = self.graphWindow_SOH.p12.plot()
         self.cellCurve45 = self.graphWindow_SOH.p13.plot()
 
-        self.curveList = [self.packVoltageCurve,
+        self.curveList = [self.cellCurve0,
             self.cellCurve1, self.cellCurve2, self.cellCurve3,
             self.cellCurve4, self.cellCurve5, self.cellCurve6,
             self.cellCurve7, self.cellCurve8, self.cellCurve9,
             self.cellCurve10, self.cellCurve11, self.cellCurve12,
-            self.cellCurve13, self.cellCurve14, self.ICTempCurve, self.packCurrentCurve,
-
-            self.cellCurve18, self.cellCurve19, self.cellCurve20,
-            self.cellCurve21, self.cellCurve22, self.cellCurve23,
-            self.cellCurve24, self.cellCurve25, self.cellCurve26,
-            self.cellCurve27, self.cellCurve28, self.cellCurve29,
-            self.cellCurve30, self.cellCurve31,
-
+            self.cellCurve13, self.cellCurve14, self.cellCurve15, 
+            self.cellCurve16, self.cellCurve18, self.cellCurve19, 
+            self.cellCurve20, self.cellCurve21, self.cellCurve22, 
+            self.cellCurve23, self.cellCurve24, self.cellCurve25, 
+            self.cellCurve26, self.cellCurve27, self.cellCurve28, 
+            self.cellCurve29, self.cellCurve30, self.cellCurve31,
             self.cellCurve32, self.cellCurve33, self.cellCurve34,
             self.cellCurve35, self.cellCurve36, self.cellCurve37,
             self.cellCurve38, self.cellCurve39, self.cellCurve40,
@@ -671,6 +687,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         if self.serial.isOpen():
             self.timer2.timeout.connect(self.updateGraphData)
+
             self.timer2.start(200)
         else:
             QMessageBox.critical(
@@ -682,14 +699,14 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         insertData[15] = insertData[15] * 100000 # xxx/1000000*10000=xxx/10
         insertData[16] = insertData[16] * 1000000 # xx/1000000*1000000=xx
 
-        insertData.extend(self.SOC_SOHData)
+        insertData.extend(list(i / 10 for i in self.SOC_SOHData))
 
         insertData = np.array(insertData).reshape((45,1))
 
         self.graphData = np.append(self.graphData, insertData, axis = 1)
 
         for i in range(0,45):
-            self.curveList[i].setData(self.graphData[i])
+            self.curveList[i].setData(self.graphData[i], _callSync='off')
         
         self.graphWindow.setGraphs()
         self.graphWindow_SOC.setGraphs()
@@ -699,6 +716,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """Handler for stop plotting data"""
         if self.serial.isOpen():
             self.timer2.stop()
+
         else:
             QMessageBox.critical(
                 self, 'COM error', 'COM data error, please reconnect the port')
@@ -726,7 +744,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             'Pack Current': 16,
         }
 
-        if self.graphData.shape[1] > 2:
+        if self.graphData.shape[0] > 2:
             graphItemIndex = zoomedGraphDict.get(zoomedGraph)
             
             title = self.zoomGraphComboBox.currentText()
@@ -767,7 +785,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             'Cell 14 SoC': 30,
         }
 
-        if self.graphData.shape[1] > 2:
+        if self.graphData.shape[0] > 2:
             graphItemIndex = zoomedGraphDict.get(zoomedGraph)
             
             title = self.zoomGraphComboBox_2.currentText()
@@ -803,7 +821,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             'Cell 14 SoH': 44,
         }
 
-        if self.graphData.shape[1] > 2:
+        if self.graphData.shape[0] > 2:
             graphItemIndex = zoomedGraphDict.get(zoomedGraph)
             
             title = self.zoomGraphComboBox_3.currentText()
@@ -829,13 +847,13 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             readFile = pd.read_csv(openFileName[0])
 
-            if readFile.shape[1] > 2:
+            if readFile.shape[0] > 2 and readFile.shape[1] < 18:
                 loadWindow = loadGraphWindow()
                 loadWindow.loadGraphData(readFile)
                 loadWindow.exec()
             else:
                 QMessageBox.critical(
-                    self, 'Data error', 'No curve data, please check file')
+                    self, 'Data error', 'Invalid data, please check file')
         except:
             pass
 
@@ -1021,7 +1039,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 data = util.listData2strData(dataList)
 
                 self.bccData = data[0:17]
-                self.SOC_SOHData = list(i / 10 for i in data[17:45])
+                self.SOC_SOHData = data[17:45]
 
                 self.updateData()
                 self.updateGUIData()
