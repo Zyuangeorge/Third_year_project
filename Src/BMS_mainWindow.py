@@ -1,7 +1,7 @@
 """
-BMS GUI Version 7.1
+BMS GUI Version 7.2
 Features:
-*Update SoC and SoH plot
+*Update automatic data output
 """
 # Import functions in other folders
 import sys
@@ -22,7 +22,7 @@ import pandas as pd
 import serial
 import serial.tools.list_ports
 # Import PyQt widgets: PySide6
-from PySide6.QtCore import QDateTime, QTimer
+from PySide6.QtCore import QDateTime, QTimer, Qt
 from PySide6.QtGui import QIcon, QIntValidator
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox,
                                QFileDialog, QHBoxLayout, QLabel, QMainWindow,
@@ -110,26 +110,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # ===================Real time data====================
 
-        """ self.outputData = pd.DataFrame(
-        columns=[
-            'packVoltage','cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
-            'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 'cellVoltage_9',
-            'cellVoltage_10','cellVoltage_11','cellVoltage_12','cellVoltage_13','cellVoltage_14',
-            'ICTemperature','cellCurrent','Date']) """
-        
-        self.outputData = pd.DataFrame(
-        columns=[
-            'cellSoC_1','cellSoC_2','cellSoC_3','cellSoC_4',
-            'cellSoC_5','cellSoC_6','cellSoC_7','cellSoC_8',
-            'cellSoC_9','cellSoC_10','cellSoC_11','cellSoC_12',
-            'cellSoC_13','cellSoC_14',
-            'cellSoH_1','cellSoH_2','cellSoH_3','cellSoH_4',
-            'cellSoH_5','cellSoH_6','cellSoH_7','cellSoH_8',
-            'cellSoH_9','cellSoH_10','cellSoH_11','cellSoH_12',
-            'cellSoH_13','cellSoH_14',
-            'Date'])
+        self.outputData = np.zeros((1,44)).astype(np.int32)
 
-        self.graphData = np.zeros((45,1))
+        self.graphData = np.zeros((45,1)).astype(np.float32)
 
         # ===================================================================
 
@@ -443,14 +426,18 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Clear output data and graph data
         self.graphData = np.zeros((45,1))
-        self.outputData = self.outputData.drop(index = self.outputData.index)
+        # self.outputData = self.outputData.drop(index = self.outputData.index)
+        self.outputData = np.zeros((1,44)).astype(np.int32)
 
         # Clear battery data
         self.bccData = [0 for i in range(0,17)]
         self.SOC_SOHData = [0 for i in range(0,27)]
-
-        for i in range(0,45):
-            self.curveList[i].setData(self.graphData[i], _callSync='off')
+        
+        try:
+            for i in range(0,45):
+                self.curveList[i].setData(self.graphData[i], _callSync='off')
+        except:
+            pass
 
     def resetStatus(self):
         """Reset cell, pack and IC status as well as the button colours"""
@@ -587,31 +574,76 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Update real time data
         if self.serial.isOpen():
             # Set time information
-            timeInfo = QDateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz")
+            timeInfo = QDateTime.currentDateTime().toSecsSinceEpoch()
 
             # Add realtime data
-            index = self.outputData.index.size
-            realTimeData = [0 for _ in range(29)]
+            realTimeData = [0 for _ in range(43)]
+            realTimeData[0:13] = self.bccData[1:15] # Cell Voltage Data
+            realTimeData[14] = self.bccData[16] # Pack Current Data
+            realTimeData[15:43] = self.SOC_SOHData # SoC and SoH Data
+            realTimeData[43] = timeInfo # Time information
 
-            # realTimeData = self.bccData
-            realTimeData[0:28] = self.SOC_SOHData
-            realTimeData[28] = timeInfo
-
-            self.outputData.loc[index] = realTimeData
-            self.outputData.index = self.outputData.index + 1
+            self.outputData = np.append(self.outputData, [realTimeData], axis = 0) # Convert to two dimension and add to output data
             
+            if self.outputData.shape[0] > 3000:
+                columnName = [
+                            'cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
+                            'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 
+                            'cellVoltage_9','cellVoltage_10','cellVoltage_11','cellVoltage_12',
+                            'cellVoltage_13','cellVoltage_14','packCurrent',
+
+                            'cellSoC_1','cellSoC_2','cellSoC_3','cellSoC_4',
+                            'cellSoC_5','cellSoC_6','cellSoC_7','cellSoC_8',
+                            'cellSoC_9','cellSoC_10','cellSoC_11','cellSoC_12',
+                            'cellSoC_13','cellSoC_14',
+
+                            'cellSoH_1','cellSoH_2','cellSoH_3','cellSoH_4',
+                            'cellSoH_5','cellSoH_6','cellSoH_7','cellSoH_8',
+                            'cellSoH_9','cellSoH_10','cellSoH_11','cellSoH_12',
+                            'cellSoH_13','cellSoH_14',
+                            'Date']
+                
+                fileName = "Data/" + str(timeInfo) + ".csv" # Address name
+                self.outputData = np.delete(self.outputData, 0, axis = 0) # Remove first line
+
+                df = pd.DataFrame(self.outputData, columns = columnName) 
+                df.to_csv(fileName, index=False, line_terminator='\n')
+
+                self.outputData = np.zeros((1,44)).astype(np.int32)
+
     def printData(self):
         """Handler for saving data"""
         self.stopRecordButton.setChecked(True)
-
-        if self.serial.isOpen() and self.outputData.size > 2:
+        
+        if self.serial.isOpen() and self.outputData.shape[0] > 1:
             fileName = QFileDialog.getSaveFileName(self, "Save File", ".", ("*.csv"))
-            
+
+            self.outputData = np.delete(self.outputData, 0, axis = 0) # Delete 0 line
+
+            columnName = [
+            'cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
+            'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 
+            'cellVoltage_9','cellVoltage_10','cellVoltage_11','cellVoltage_12',
+            'cellVoltage_13','cellVoltage_14','packCurrent',
+
+            'cellSoC_1','cellSoC_2','cellSoC_3','cellSoC_4',
+            'cellSoC_5','cellSoC_6','cellSoC_7','cellSoC_8',
+            'cellSoC_9','cellSoC_10','cellSoC_11','cellSoC_12',
+            'cellSoC_13','cellSoC_14',
+
+            'cellSoH_1','cellSoH_2','cellSoH_3','cellSoH_4',
+            'cellSoH_5','cellSoH_6','cellSoH_7','cellSoH_8',
+            'cellSoH_9','cellSoH_10','cellSoH_11','cellSoH_12',
+            'cellSoH_13','cellSoH_14',
+            'Date']
+
+            df = pd.DataFrame(self.outputData, columns = columnName)
+
             with open(fileName[0],'w') as f:
-                self.outputData.to_csv(f, index=False, line_terminator='\n')
+                df.to_csv(f, index=False, line_terminator='\n')
                 f.close()
-            
-            self.outputData = self.outputData.drop(index = self.outputData.index)
+
+            self.outputData = np.zeros((1,44)).astype(np.int32)
 
         else:
             self.stopRecordButton.setChecked(True)
