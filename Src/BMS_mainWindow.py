@@ -1026,9 +1026,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.packData['voltageStatus'] = voltageStatus.DEFAULT
 
         self.packData['current'] = self.bccData[16]
-        if self.packData['current'] > self.currentThreshold[1]:
+        if abs(self.packData['current']) > self.currentThreshold[1]:
             self.packData['currentStatus'] = currentStatus.OVERCURRENT
-        elif self.packData['current'] < self.currentThreshold[0]:
+        elif abs(self.packData['current']) < self.currentThreshold[0]:
             self.packData['currentStatus'] = currentStatus.UNDERCURRENT
         else:
             self.packData['currentStatus'] = currentStatus.DEFAULT
@@ -1042,9 +1042,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             else:
                 self.cellData['voltageStatus'][i] = voltageStatus.DEFAULT
 
-            if self.packData['current'] > self.currentThreshold[1]:
+            if abs(self.packData['current']) > self.currentThreshold[1]:
                 self.cellData['currentStatus'][i] = currentStatus.OVERCURRENT
-            elif self.packData['current'] < self.currentThreshold[0]:
+            elif abs(self.packData['current']) < self.currentThreshold[0]:
                 self.cellData['currentStatus'][i] = currentStatus.UNDERCURRENT
             else:
                 self.cellData['currentStatus'][i] = currentStatus.DEFAULT
