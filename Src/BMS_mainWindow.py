@@ -1,7 +1,7 @@
 """
-BMS GUI Version 7.2
+BMS GUI Version 8
 Features:
-*Update automatic data output
+*Update loading data
 """
 # Import functions in other folders
 import sys
@@ -113,6 +113,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.outputData = np.zeros((1,44)).astype(np.int32)
 
         self.graphData = np.zeros((45,1)).astype(np.float32)
+
+        self.xaxis = np.zeros(1).astype(np.float32)
 
         # ===================================================================
 
@@ -426,6 +428,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Clear output data and graph data
         self.graphData = np.zeros((45,1))
+        self.xaxis = np.zeros(1)
+
         # self.outputData = self.outputData.drop(index = self.outputData.index)
         self.outputData = np.zeros((1,44)).astype(np.int32)
 
@@ -435,7 +439,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         
         try:
             for i in range(0,45):
-                self.curveList[i].setData(self.graphData[i], _callSync='off')
+                self.curveList[i].setData(self.xaxis,self.graphData[i], _callSync='off')
         except:
             pass
 
@@ -737,8 +741,10 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         self.graphData = np.append(self.graphData, insertData, axis = 1)
 
+        self.xaxis = np.append(self.xaxis,(self.xaxis[-1] + 0.2))
+
         for i in range(0,45):
-            self.curveList[i].setData(self.graphData[i], _callSync='off')
+            self.curveList[i].setData(self.xaxis,self.graphData[i], _callSync='off')
         
         self.graphWindow.setGraphs()
         self.graphWindow_SOC.setGraphs()
@@ -790,7 +796,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             graphWindow = zoomWindow() # Init zoom window
             graphWindow.labels = [title, yLabel]
-            graphWindow.plot.plot(self.graphData[graphItemIndex]) # Plot Curve
+            graphWindow.plot.plot(self.xaxis,self.graphData[graphItemIndex]) # Plot Curve
             graphWindow.updateGraph() # Update labels
             graphWindow.exec()
         else:
@@ -826,7 +832,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             graphWindow = zoomWindow() # Init zoom window
             graphWindow.labels = [title, yLabel]
-            graphWindow.plot.plot(self.graphData[graphItemIndex]) # Plot Curve
+            graphWindow.plot.plot(self.xaxis,self.graphData[graphItemIndex]) # Plot Curve
             graphWindow.updateGraph() # Update labels
             graphWindow.exec()
         else:
@@ -862,7 +868,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             graphWindow = zoomWindow() # Init zoom window
             graphWindow.labels = [title, yLabel]
-            graphWindow.plot.plot(self.graphData[graphItemIndex]) # Plot Curve
+            graphWindow.plot.plot(self.xaxis,self.graphData[graphItemIndex]) # Plot Curve
             graphWindow.updateGraph() # Update labels
             graphWindow.exec()
         else:

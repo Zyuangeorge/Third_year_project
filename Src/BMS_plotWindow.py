@@ -49,16 +49,16 @@ class plotWindow(pg.GraphicsLayoutWidget):
     def initCurves(self):
         """Handler for curve initialisation"""
         for curve in self.voltageCurves:
-            curve.setLabel('bottom', "Time (s) * 5")
+            curve.setLabel('bottom', "Time (s)")
             curve.setLabel('left', "Voltage (V)")
         
-        self.ICTempP.setLabel('bottom', "Time (s) * 5")
+        self.ICTempP.setLabel('bottom', "Time (s)")
         self.ICTempP.setLabel('left', "Temperature (°C)")
 
-        self.packVoltageP.setLabel('bottom', "Time (s) * 5")
+        self.packVoltageP.setLabel('bottom', "Time (s)")
         self.packVoltageP.setLabel('left', "Voltage (V)")
 
-        self.packCurrentP.setLabel('bottom', "Time (s) * 5")
+        self.packCurrentP.setLabel('bottom', "Time (s)")
         self.packCurrentP.setLabel('left', "Current (mA)")
 
     def setGraphs(self):
@@ -94,7 +94,7 @@ class zoomWindow(QDialog):
         self.canvas.resize(800, 600)
         
         self.plot.setLabel('left', self.labels[1])
-        self.plot.setLabel('bottom', "Time (s) * 5")
+        self.plot.setLabel('bottom', "Time (s)")
 
         layout = QHBoxLayout()
         layout.addWidget(self.canvas)
@@ -118,6 +118,17 @@ class loadGraphWindow(QDialog):
 
         self.plotTabWindow_2 = SOCPlotWindow()
         self.plotTabWindow_3 = SOHPlotWindow()
+        
+        # Reset x axis
+        for curve in self.plotTabWindow.voltageCurves:
+            curve.setLabel('bottom', "Time (s)")
+        self.plotTabWindow.packCurrentP.setLabel('bottom', "Time (s)")
+        
+        for curve in self.plotTabWindow_2.SoCCurves:
+            curve.setLabel('bottom', "Time (s)")
+        
+        for curve in self.plotTabWindow_3.SoHCurves:
+            curve.setLabel('bottom', "Time (s)")
 
         self.tabWidget = QTabWidget()
 
@@ -431,7 +442,7 @@ class SOCPlotWindow(pg.GraphicsLayoutWidget):
     def initCurves(self):
         """Handler for curve initialisation"""
         for curve in self.SoCCurves:
-            curve.setLabel('bottom', "Time (s) * 5")
+            curve.setLabel('bottom', "Time (s)")
             curve.setLabel('left', "SoC (%)")
         
     def setGraphs(self):
@@ -477,7 +488,7 @@ class SOHPlotWindow(pg.GraphicsLayoutWidget):
     def initCurves(self):
         """Handler for curve initialisation"""
         for curve in self.SoHCurves:
-            curve.setLabel('bottom', "Time (s) * 5")
+            curve.setLabel('bottom', "Time (s)")
             curve.setLabel('left', "SoH (%)")
         
     def setGraphs(self):
