@@ -1,7 +1,7 @@
 """
-BMS GUI Version 8
+BMS GUI Version 8.1
 Features:
-*Update loading data
+*Update auto axis
 """
 # Import functions in other folders
 import sys
@@ -112,9 +112,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         self.outputData = np.zeros((1,44)).astype(np.int32)
 
-        self.graphData = np.zeros((45,1)).astype(np.float32)
+        self.graphData = np.zeros((45,1)).astype(np.float16)
 
-        self.xaxis = np.zeros(1).astype(np.float32)
+        self.xaxis = np.zeros(1).astype(np.float16)
 
         # ===================================================================
 
@@ -427,10 +427,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.portStatusDisplay.setEnabled(False)
 
         # Clear output data and graph data
-        self.graphData = np.zeros((45,1))
-        self.xaxis = np.zeros(1)
+        self.graphData = np.zeros((45,1)).astype(np.float16)
+        self.xaxis = np.zeros(1).astype(np.float16)
 
-        # self.outputData = self.outputData.drop(index = self.outputData.index)
         self.outputData = np.zeros((1,44)).astype(np.int32)
 
         # Clear battery data
@@ -740,15 +739,14 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         insertData = np.array(insertData).reshape((45,1))
 
         self.graphData = np.append(self.graphData, insertData, axis = 1)
-
         self.xaxis = np.append(self.xaxis,(self.xaxis[-1] + 0.2))
+
+        if self.graphData.shape[1] >= 3000:
+            self.xaxis = self.xaxis[1:]  # Remove the first x element.
+            self.graphData = np.delete(self.graphData, 0, axis = 1) # Remove first column
 
         for i in range(0,45):
             self.curveList[i].setData(self.xaxis,self.graphData[i], _callSync='off')
-        
-        self.graphWindow.setGraphs()
-        self.graphWindow_SOC.setGraphs()
-        self.graphWindow_SOH.setGraphs()
 
     def stopPlotting(self):
         """Handler for stop plotting data"""
@@ -782,7 +780,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             'Pack Current': 16,
         }
 
-        if self.graphData.shape[0] > 2:
+        if self.graphData.shape[1] > 2:
             graphItemIndex = zoomedGraphDict.get(zoomedGraph)
             
             title = self.zoomGraphComboBox.currentText()
@@ -823,7 +821,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             'Cell 14 SoC': 30,
         }
 
-        if self.graphData.shape[0] > 2:
+        if self.graphData.shape[1] > 2:
             graphItemIndex = zoomedGraphDict.get(zoomedGraph)
             
             title = self.zoomGraphComboBox_2.currentText()
@@ -859,7 +857,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             'Cell 14 SoH': 44,
         }
 
-        if self.graphData.shape[0] > 2:
+        if self.graphData.shape[1] > 2:
             graphItemIndex = zoomedGraphDict.get(zoomedGraph)
             
             title = self.zoomGraphComboBox_3.currentText()

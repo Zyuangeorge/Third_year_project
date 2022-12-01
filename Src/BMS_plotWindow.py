@@ -42,35 +42,26 @@ class plotWindow(pg.GraphicsLayoutWidget):
             self.p8,self.p9,self.p10,self.p11,
             self.p12,self.p13]
 
-        # self.setPlotPanels()
         self.initCurves()
-        self.setGraphs()
 
     def initCurves(self):
         """Handler for curve initialisation"""
         for curve in self.voltageCurves:
             curve.setLabel('bottom', "Time (s)")
             curve.setLabel('left', "Voltage (V)")
+            curve.enableAutoRange(axis='y')
         
         self.ICTempP.setLabel('bottom', "Time (s)")
         self.ICTempP.setLabel('left', "Temperature (°C)")
+        self.ICTempP.enableAutoRange(axis='y')
 
         self.packVoltageP.setLabel('bottom', "Time (s)")
         self.packVoltageP.setLabel('left', "Voltage (V)")
+        self.packVoltageP.enableAutoRange(axis='y')
 
         self.packCurrentP.setLabel('bottom', "Time (s)")
         self.packCurrentP.setLabel('left', "Current (mA)")
-
-    def setGraphs(self):
-        """Handler for setting panels"""
-        for curve in self.voltageCurves:
-            curve.autoRange()
-
-        self.packVoltageP.autoRange()
-
-        self.ICTempP.autoRange()
-
-        self.packCurrentP.autoRange()
+        self.packCurrentP.enableAutoRange(axis='y')
 
 
 class zoomWindow(QDialog):
@@ -286,10 +277,6 @@ class loadGraphWindow(QDialog):
             self.plotTabWindow_3.SoHCurves[j].plot(list(i / 10 for i in self.data[j+29]))
         self.plotTabWindow.packCurrentP.plot(list(i for i in self.data[14]))
 
-        self.plotTabWindow.setGraphs()
-        self.plotTabWindow_2.setGraphs()
-        self.plotTabWindow_3.setGraphs()
-    
     def zoomGraph(self):
         """Handler for zooming graph"""
         zoomedGraph = self.zoomGraphComboBox.currentText()
@@ -437,18 +424,14 @@ class SOCPlotWindow(pg.GraphicsLayoutWidget):
             self.p12,self.p13]
 
         self.initCurves()
-        self.setGraphs()
 
     def initCurves(self):
         """Handler for curve initialisation"""
         for curve in self.SoCCurves:
             curve.setLabel('bottom', "Time (s)")
             curve.setLabel('left', "SoC (%)")
-        
-    def setGraphs(self):
-        """Handler for setting panels"""
-        for curve in self.SoCCurves:
-            curve.autoRange()
+            curve.enableAutoRange(axis='y')
+
 
 class SOHPlotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
@@ -483,15 +466,10 @@ class SOHPlotWindow(pg.GraphicsLayoutWidget):
             self.p12,self.p13]
 
         self.initCurves()
-        self.setGraphs()
 
     def initCurves(self):
         """Handler for curve initialisation"""
         for curve in self.SoHCurves:
             curve.setLabel('bottom', "Time (s)")
             curve.setLabel('left', "SoH (%)")
-        
-    def setGraphs(self):
-        """Handler for setting panels"""
-        for curve in self.SoHCurves:
-            curve.autoRange()
+            curve.enableAutoRange(axis='y')
