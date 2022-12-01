@@ -443,38 +443,6 @@ class Ui_MainWindow(object):
         self.packMonitoringGroupBox.setObjectName(u"packMonitoringGroupBox")
         self.packMonitoringGroupBoxLayout = QGridLayout(self.packMonitoringGroupBox)
         self.packMonitoringGroupBoxLayout.setObjectName(u"packMonitoringGroupBoxLayout")
-        self.packCurrentUnit = QLabel(self.packMonitoringGroupBox)
-        self.packCurrentUnit.setObjectName(u"packCurrentUnit")
-
-        self.packMonitoringGroupBoxLayout.addWidget(self.packCurrentUnit, 1, 7, 1, 1)
-
-        self.ICTempUnit = QLabel(self.packMonitoringGroupBox)
-        self.ICTempUnit.setObjectName(u"ICTempUnit")
-
-        self.packMonitoringGroupBoxLayout.addWidget(self.ICTempUnit, 2, 7, 1, 1)
-
-        self.packCurrentLabel = QLabel(self.packMonitoringGroupBox)
-        self.packCurrentLabel.setObjectName(u"packCurrentLabel")
-
-        self.packMonitoringGroupBoxLayout.addWidget(self.packCurrentLabel, 1, 0, 1, 1)
-
-        self.packVoltageLabel = QLabel(self.packMonitoringGroupBox)
-        self.packVoltageLabel.setObjectName(u"packVoltageLabel")
-
-        self.packMonitoringGroupBoxLayout.addWidget(self.packVoltageLabel, 0, 0, 1, 3)
-
-        self.ICTempLineEdit = QLineEdit(self.packMonitoringGroupBox)
-        self.ICTempLineEdit.setObjectName(u"ICTempLineEdit")
-        self.ICTempLineEdit.setFocusPolicy(Qt.NoFocus)
-        self.ICTempLineEdit.setAcceptDrops(False)
-
-        self.packMonitoringGroupBoxLayout.addWidget(self.ICTempLineEdit, 2, 6, 1, 1)
-
-        self.ICTempLabel = QLabel(self.packMonitoringGroupBox)
-        self.ICTempLabel.setObjectName(u"ICTempLabel")
-
-        self.packMonitoringGroupBoxLayout.addWidget(self.ICTempLabel, 2, 0, 1, 4)
-
         self.packVoltageUnit = QLabel(self.packMonitoringGroupBox)
         self.packVoltageUnit.setObjectName(u"packVoltageUnit")
 
@@ -484,6 +452,36 @@ class Ui_MainWindow(object):
 
         self.packMonitoringGroupBoxLayout.addItem(self.horizontalSpacer_10, 2, 5, 1, 1)
 
+        self.packCurrentUnit = QLabel(self.packMonitoringGroupBox)
+        self.packCurrentUnit.setObjectName(u"packCurrentUnit")
+
+        self.packMonitoringGroupBoxLayout.addWidget(self.packCurrentUnit, 1, 7, 1, 1)
+
+        self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.packMonitoringGroupBoxLayout.addItem(self.horizontalSpacer_9, 1, 1, 1, 5)
+
+        self.ICTempLineEdit = QLineEdit(self.packMonitoringGroupBox)
+        self.ICTempLineEdit.setObjectName(u"ICTempLineEdit")
+        self.ICTempLineEdit.setFocusPolicy(Qt.NoFocus)
+        self.ICTempLineEdit.setAcceptDrops(False)
+
+        self.packMonitoringGroupBoxLayout.addWidget(self.ICTempLineEdit, 2, 6, 1, 1)
+
+        self.packVoltageLabel = QLabel(self.packMonitoringGroupBox)
+        self.packVoltageLabel.setObjectName(u"packVoltageLabel")
+
+        self.packMonitoringGroupBoxLayout.addWidget(self.packVoltageLabel, 0, 0, 1, 3)
+
+        self.horizontalSpacer_8 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.packMonitoringGroupBoxLayout.addItem(self.horizontalSpacer_8, 0, 3, 1, 3)
+
+        self.ICTempUnit = QLabel(self.packMonitoringGroupBox)
+        self.ICTempUnit.setObjectName(u"ICTempUnit")
+
+        self.packMonitoringGroupBoxLayout.addWidget(self.ICTempUnit, 2, 7, 1, 1)
+
         self.packCurrentLineEdit = QLineEdit(self.packMonitoringGroupBox)
         self.packCurrentLineEdit.setObjectName(u"packCurrentLineEdit")
         self.packCurrentLineEdit.setFocusPolicy(Qt.NoFocus)
@@ -491,9 +489,10 @@ class Ui_MainWindow(object):
 
         self.packMonitoringGroupBoxLayout.addWidget(self.packCurrentLineEdit, 1, 6, 1, 1)
 
-        self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.packCurrentLabel = QLabel(self.packMonitoringGroupBox)
+        self.packCurrentLabel.setObjectName(u"packCurrentLabel")
 
-        self.packMonitoringGroupBoxLayout.addItem(self.horizontalSpacer_9, 1, 1, 1, 5)
+        self.packMonitoringGroupBoxLayout.addWidget(self.packCurrentLabel, 1, 0, 1, 1)
 
         self.packVoltageLineEdit = QLineEdit(self.packMonitoringGroupBox)
         self.packVoltageLineEdit.setObjectName(u"packVoltageLineEdit")
@@ -503,9 +502,29 @@ class Ui_MainWindow(object):
 
         self.packMonitoringGroupBoxLayout.addWidget(self.packVoltageLineEdit, 0, 6, 1, 1)
 
-        self.horizontalSpacer_8 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.ICTempLabel = QLabel(self.packMonitoringGroupBox)
+        self.ICTempLabel.setObjectName(u"ICTempLabel")
 
-        self.packMonitoringGroupBoxLayout.addItem(self.horizontalSpacer_8, 0, 3, 1, 3)
+        self.packMonitoringGroupBoxLayout.addWidget(self.ICTempLabel, 2, 0, 1, 4)
+
+        self.efcLineEdit = QLineEdit(self.packMonitoringGroupBox)
+        self.efcLineEdit.setObjectName(u"efcLineEdit")
+
+        self.packMonitoringGroupBoxLayout.addWidget(self.efcLineEdit, 3, 6, 1, 1)
+
+        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.packMonitoringGroupBoxLayout.addItem(self.horizontalSpacer_6, 3, 5, 1, 1)
+
+        self.efcLabel = QLabel(self.packMonitoringGroupBox)
+        self.efcLabel.setObjectName(u"efcLabel")
+
+        self.packMonitoringGroupBoxLayout.addWidget(self.efcLabel, 3, 0, 1, 3)
+
+        self.efcUnit = QLabel(self.packMonitoringGroupBox)
+        self.efcUnit.setObjectName(u"efcUnit")
+
+        self.packMonitoringGroupBoxLayout.addWidget(self.efcUnit, 3, 7, 1, 1)
 
 
         self.batteryData_2Layout.addWidget(self.packMonitoringGroupBox)
@@ -640,22 +659,6 @@ class Ui_MainWindow(object):
 
         self.PackStatusLayout = QGridLayout()
         self.PackStatusLayout.setObjectName(u"PackStatusLayout")
-        self.packStatusLabel = QLabel(self.statusGroupBox)
-        self.packStatusLabel.setObjectName(u"packStatusLabel")
-        self.packStatusLabel.setFont(font2)
-
-        self.PackStatusLayout.addWidget(self.packStatusLabel, 0, 0, 4, 1)
-
-        self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.PackStatusLayout.addItem(self.horizontalSpacer_11, 0, 1, 2, 1)
-
-        self.packCurrentStatusLabel = QLabel(self.statusGroupBox)
-        self.packCurrentStatusLabel.setObjectName(u"packCurrentStatusLabel")
-        self.packCurrentStatusLabel.setFont(font2)
-
-        self.PackStatusLayout.addWidget(self.packCurrentStatusLabel, 2, 2, 2, 1)
-
         self.packVoltageStatusDisplay = QLineEdit(self.statusGroupBox)
         self.packVoltageStatusDisplay.setObjectName(u"packVoltageStatusDisplay")
         self.packVoltageStatusDisplay.setMouseTracking(False)
@@ -664,6 +667,32 @@ class Ui_MainWindow(object):
         self.packVoltageStatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.PackStatusLayout.addWidget(self.packVoltageStatusDisplay, 0, 3, 2, 1)
+
+        self.packCurrentStatusLabel = QLabel(self.statusGroupBox)
+        self.packCurrentStatusLabel.setObjectName(u"packCurrentStatusLabel")
+        self.packCurrentStatusLabel.setFont(font2)
+
+        self.PackStatusLayout.addWidget(self.packCurrentStatusLabel, 2, 2, 2, 1)
+
+        self.horizontalSpacer_12 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.PackStatusLayout.addItem(self.horizontalSpacer_12, 2, 1, 2, 1)
+
+        self.packVoltageStatusLabel = QLabel(self.statusGroupBox)
+        self.packVoltageStatusLabel.setObjectName(u"packVoltageStatusLabel")
+        self.packVoltageStatusLabel.setFont(font2)
+
+        self.PackStatusLayout.addWidget(self.packVoltageStatusLabel, 0, 2, 2, 1)
+
+        self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.PackStatusLayout.addItem(self.horizontalSpacer_11, 0, 1, 2, 1)
+
+        self.packStatusLabel = QLabel(self.statusGroupBox)
+        self.packStatusLabel.setObjectName(u"packStatusLabel")
+        self.packStatusLabel.setFont(font2)
+
+        self.PackStatusLayout.addWidget(self.packStatusLabel, 0, 0, 4, 1)
 
         self.packCurrentStatusDisplay = QLineEdit(self.statusGroupBox)
         self.packCurrentStatusDisplay.setObjectName(u"packCurrentStatusDisplay")
@@ -678,16 +707,6 @@ class Ui_MainWindow(object):
         self.packCurrentStatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
         self.PackStatusLayout.addWidget(self.packCurrentStatusDisplay, 2, 3, 2, 1)
-
-        self.horizontalSpacer_12 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.PackStatusLayout.addItem(self.horizontalSpacer_12, 2, 1, 2, 1)
-
-        self.packVoltageStatusLabel = QLabel(self.statusGroupBox)
-        self.packVoltageStatusLabel.setObjectName(u"packVoltageStatusLabel")
-        self.packVoltageStatusLabel.setFont(font2)
-
-        self.PackStatusLayout.addWidget(self.packVoltageStatusLabel, 0, 2, 2, 1)
 
 
         self.verticalLayout.addLayout(self.PackStatusLayout)
@@ -911,12 +930,14 @@ class Ui_MainWindow(object):
 
         self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_1), QCoreApplication.translate("MainWindow", u"Cell Voltage Data", None))
         self.packMonitoringGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Pack Monitoring", None))
+        self.packVoltageUnit.setText(QCoreApplication.translate("MainWindow", u"mV", None))
         self.packCurrentUnit.setText(QCoreApplication.translate("MainWindow", u"mA", None))
+        self.packVoltageLabel.setText(QCoreApplication.translate("MainWindow", u"StackVoltage:", None))
         self.ICTempUnit.setText(QCoreApplication.translate("MainWindow", u"\u2103", None))
         self.packCurrentLabel.setText(QCoreApplication.translate("MainWindow", u"Current:", None))
-        self.packVoltageLabel.setText(QCoreApplication.translate("MainWindow", u"StackVoltage:", None))
         self.ICTempLabel.setText(QCoreApplication.translate("MainWindow", u"MC33771C temperature:", None))
-        self.packVoltageUnit.setText(QCoreApplication.translate("MainWindow", u"mV", None))
+        self.efcLabel.setText(QCoreApplication.translate("MainWindow", u"Equivalent Full Cycle: ", None))
+        self.efcUnit.setText(QCoreApplication.translate("MainWindow", u"Cycles", None))
         self.statusGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Status", None))
         self.Cell12StatusDisplay.setText(QCoreApplication.translate("MainWindow", u"Cell12", None))
         self.Cell5StatusDisplay.setText(QCoreApplication.translate("MainWindow", u"Cell5", None))
@@ -932,9 +953,9 @@ class Ui_MainWindow(object):
         self.Cell9StatusDisplay.setText(QCoreApplication.translate("MainWindow", u"Cell9", None))
         self.Cell11StatusDisplay.setText(QCoreApplication.translate("MainWindow", u"Cell11", None))
         self.Cell13StatusDisplay.setText(QCoreApplication.translate("MainWindow", u"Cell13", None))
-        self.packStatusLabel.setText(QCoreApplication.translate("MainWindow", u"Pack Status:", None))
         self.packCurrentStatusLabel.setText(QCoreApplication.translate("MainWindow", u"Current:", None))
         self.packVoltageStatusLabel.setText(QCoreApplication.translate("MainWindow", u"Voltage:", None))
+        self.packStatusLabel.setText(QCoreApplication.translate("MainWindow", u"Pack Status:", None))
         self.ICStatusLabel.setText(QCoreApplication.translate("MainWindow", u"IC Status:", None))
         self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_2), QCoreApplication.translate("MainWindow", u"Pack Data and Status", None))
         self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_3), QCoreApplication.translate("MainWindow", u"Battery Data Graph", None))

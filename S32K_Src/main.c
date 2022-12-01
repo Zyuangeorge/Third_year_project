@@ -60,6 +60,7 @@
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 #include <math.h>
+#include <stdlib.h>
 #include "bcc/bcc.h"
 #include "bcc_s32k144/bcc_wait.h"
 #include "common.h"
@@ -84,7 +85,7 @@
 #define LPIT0_CHANNEL_BCCDRV   3U
 
 /* Battery rated capacitance */
-#define RATEDCAPACITANCE 0.5
+#define RATEDCAPACITANCE    0.5
 
 /* The minimum value of OCV */
 #define OCV_MINSOC          0
@@ -103,6 +104,8 @@
 #define MIN_VOLTAGE 3000000 // In micro volt
 #define MAX_VOLTAGE 4200000 // In micro volt
 
+/* Current threshold for determining the current direction */
+#define currentThreshold 15 // 15mA
 /*******************************************************************************
 * Enum definition
 ******************************************************************************/
@@ -138,22 +141,26 @@ typedef struct
     int16_t DOD_c[14]; // Current depth of Discharge: 100 permille
 
     int16_t SOH[14]; // State of health: 100 permille
+    
+    float efcCounter;
 
-	double integratedCurrent; // The integral value of current: A*s
+    float absIntegratedCurent;
+
+	float integratedCurrent; // The integral value of current: A*s
 } Ah_integral_data;
 
 /* Define a struct used in OCV_SOC lookup table */
 typedef struct
 {
-    double coefficient_4th; // 4th order coefficient
+    float coefficient_4th; // 4th order coefficient
 
-    double coefficient_3rd; // 3rd order coefficient
+    float coefficient_3rd; // 3rd order coefficient
 
-    double coefficient_2nd; // 2nd order coefficient
+    float coefficient_2nd; // 2nd order coefficient
 
-    double coefficient_1st; // 1st order coefficient
+    float coefficient_1st; // 1st order coefficient
 
-    double constant; // constant value
+    float constant; // constant value
 } ocv_config_t;
 
 /*******************************************************************************
@@ -244,9 +251,10 @@ static const bcc_init_reg_t s_initRegsMc33771c[BCC_INIT_CONF_REG_CNT] = {
  * [15] IC temperature
  * [16] Current
  * [17:30] SOC: Cell 1 to 14
- * [31:44] SOH: Cell 1 to `4
+ * [31:44] SOH: Cell 1 to 14
+ * [45] EFC: Equivalent Full Cycle
  */
-uint32_t transmittedData[45];
+uint32_t transmittedData[46];
 
 /* BCC driver configuration. */
 bcc_drv_config_t drvConfig;
@@ -271,6 +279,10 @@ int32_t timeout = 0;
 
 /* Current direction flag: 0 is discharge, 1 is charge */
 int16_t currentDirectionFlag = 0;
+
+/* Charging and discharging counter used for EFC Calculation */
+int16_t chargingDischargingCounter = 0;
+int16_t chargingDischargingFlag = 0;
 
 /*******************************************************************************
  * Function prototypes
@@ -442,7 +454,7 @@ void fillOcvTable(const ocv_config_t* const ocvConfig)
 {
     uint16_t i = 0;
     uint16_t soc;
-    double term_1, term_2, term_3, term_4, sum;
+    float term_1, term_2, term_3, term_4, sum;
 
     for (soc = OCV_MINSOC; soc <= OCV_MAXSOC; soc++)
     {
@@ -564,6 +576,11 @@ static status_t initDemo(void)
     status_t status;
     bcc_status_t bccStatus;
 
+    // Reset AhData values
+    AhData.efcCounter = 0;
+    AhData.integratedCurrent = 0.0;
+    AhData.absIntegratedCurent = 0.0;
+
     CLOCK_SYS_Init(g_clockManConfigsArr, CLOCK_MANAGER_CONFIG_CNT,
             g_clockManCallbacksArr, CLOCK_MANAGER_CALLBACK_CNT);
     CLOCK_SYS_UpdateConfiguration(0U, CLOCK_MANAGER_POLICY_FORCIBLE);
@@ -677,12 +694,17 @@ static bcc_status_t updateMeasurements(void)
 	cellData[16] = BCC_GET_ISENSE_AMP(DEMO_RSHUNT, measurements[BCC_MSR_ISENSE1], measurements[BCC_MSR_ISENSE2]);
 
 	currentValue = cellData[16];
-	if (currentValue >= 0){
+	if (currentValue > currentThreshold){
 		currentDirectionFlag = 0; // Discharge
+        chargingDischargingFlag = 0;
 	}
-	else{
-		currentDirectionFlag = 1; // Charge
+	else if(abs(currentValue) < currentThreshold){
+		currentDirectionFlag = 2; // Open circuit
 	}
+    else{
+        currentDirectionFlag = 1; // Charge 
+        chargingDischargingFlag = 0;
+    }
 
 	return BCC_STATUS_SUCCESS;
 }
@@ -692,11 +714,12 @@ static bcc_status_t updateMeasurements(void)
  */
 void Ah_integral_step(void)
 {
-    int32_t current_c; // Current current
+    int16_t current_c; // Current current
 
     current_c = cellData[16];
 
 	AhData.integratedCurrent += 0.001 * current_c * 0.2; //convert to 1A, and 200ms = 0.2s
+    AhData.absIntegratedCurent += abs(0.001 * current_c * 0.2);
 }
 
 /*
@@ -704,7 +727,7 @@ void Ah_integral_step(void)
  */
 static void getCurrentDOD(void)
 {
-	double deltaDOD;
+	float deltaDOD;
 	int i;
 
 	deltaDOD = AhData.integratedCurrent / (RATEDCAPACITANCE * 3600.0) * 1000;
@@ -784,7 +807,16 @@ static void ChargeHandler(void)
  */
 static void OpenCircuitHandler(void)
 {
-    // Compensation of self-discharging loss
+	if (chargingDischargingFlag == 0){
+        chargingDischargingCounter += 1;
+        chargingDischargingFlag = 1;
+    }
+
+    if (chargingDischargingCounter == 4){
+        AhData.efcCounter += AhData.absIntegratedCurent / (2*RATEDCAPACITANCE*3600);
+        chargingDischargingCounter = 0;
+    }
+
     BCC_SendNop(&drvConfig, BCC_CID_DEV1);
 }
 
@@ -826,6 +858,8 @@ void dataTransmit(void)
         transmittedData[i] = AhData.SOH[i - 31]; // SOH data
     }
 
+    transmittedData[45] = (uint32_t)round(AhData.efcCounter); // Rount the EFC number
+
     LPUART_DRV_SendData(INST_LPUART1, (uint8_t *)transmittedData, sizeof(transmittedData)); // Transmit the data through UART
 }
 
@@ -852,8 +886,6 @@ int main(void)
 
   /* Write your code here */
   /* For example: for(;;) { } */
-  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
-
   if (initDemo() == STATUS_SUCCESS) // Initialize peripherals
   {
       /* Get the initial value of SoC through lookup table */
@@ -867,6 +899,11 @@ int main(void)
     	   */
           initTimeout(200);
         
+          if (PTC->PDIR & (1<<12)){ /* If Pad Data Input = 1 (BTN0 [SW2] pushed) */
+        	  chargingDischargingCounter = 0; /* Clear EFC counter */
+              chargingDischargingFlag = 1;
+          }
+
           //Read system Events
           bmsSystemEvent bmsNewEvent = monitorBattery();
 

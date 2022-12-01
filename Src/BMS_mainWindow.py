@@ -1,7 +1,7 @@
 """
-BMS GUI Version 8.1
+BMS GUI Version 8.2
 Features:
-*Update auto axis
+*Update EFC measurement
 """
 # Import functions in other folders
 import sys
@@ -110,11 +110,13 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # ===================Real time data====================
 
-        self.outputData = np.zeros((1,44)).astype(np.int32)
+        self.outputData = np.zeros((1,45)).astype(np.int32)
 
         self.graphData = np.zeros((45,1)).astype(np.float16)
 
         self.xaxis = np.zeros(1).astype(np.float16)
+
+        self.EFC_Data = 0
 
         # ===================================================================
 
@@ -430,7 +432,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.graphData = np.zeros((45,1)).astype(np.float16)
         self.xaxis = np.zeros(1).astype(np.float16)
 
-        self.outputData = np.zeros((1,44)).astype(np.int32)
+        self.outputData = np.zeros((1,45)).astype(np.int32)
 
         # Clear battery data
         self.bccData = [0 for i in range(0,17)]
@@ -580,20 +582,22 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             timeInfo = QDateTime.currentDateTime().toSecsSinceEpoch()
 
             # Add realtime data
-            realTimeData = [0 for _ in range(43)]
+            realTimeData = [0 for _ in range(44)]
             realTimeData[0:13] = self.bccData[1:15] # Cell Voltage Data
             realTimeData[14] = self.bccData[16] # Pack Current Data
             realTimeData[15:43] = self.SOC_SOHData # SoC and SoH Data
-            realTimeData[43] = timeInfo # Time information
+            realTimeData[43] = self.EFC_Data
+            realTimeData[44] = timeInfo # Time information
 
             self.outputData = np.append(self.outputData, [realTimeData], axis = 0) # Convert to two dimension and add to output data
             
-            if self.outputData.shape[0] > 3600:
+            if self.outputData.shape[0] > 3600: # Automatic Recording
                 columnName = [
                             'cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
                             'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 
                             'cellVoltage_9','cellVoltage_10','cellVoltage_11','cellVoltage_12',
-                            'cellVoltage_13','cellVoltage_14','packCurrent',
+                            'cellVoltage_13','cellVoltage_14',
+                            'packCurrent',
 
                             'cellSoC_1','cellSoC_2','cellSoC_3','cellSoC_4',
                             'cellSoC_5','cellSoC_6','cellSoC_7','cellSoC_8',
@@ -604,6 +608,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                             'cellSoH_5','cellSoH_6','cellSoH_7','cellSoH_8',
                             'cellSoH_9','cellSoH_10','cellSoH_11','cellSoH_12',
                             'cellSoH_13','cellSoH_14',
+                            'equivalentFullCycle',
+
                             'Date']
                 
                 fileName = "Data/" + str(timeInfo) + ".csv" # Address name
@@ -612,7 +618,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 df = pd.DataFrame(self.outputData, columns = columnName) 
                 df.to_csv(fileName, index=False, line_terminator='\n')
 
-                self.outputData = np.zeros((1,44)).astype(np.int32)
+                self.outputData = np.zeros((1,45)).astype(np.int32)
 
     def printData(self):
         """Handler for saving data"""
@@ -638,15 +644,19 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             'cellSoH_5','cellSoH_6','cellSoH_7','cellSoH_8',
             'cellSoH_9','cellSoH_10','cellSoH_11','cellSoH_12',
             'cellSoH_13','cellSoH_14',
+            'equivalentFullCycle',
+
             'Date']
 
             df = pd.DataFrame(self.outputData, columns = columnName)
+            try:
+                with open(fileName[0],'w') as f:
+                    df.to_csv(f, index=False, line_terminator='\n')
+                    f.close()
+            except:
+                pass
 
-            with open(fileName[0],'w') as f:
-                df.to_csv(f, index=False, line_terminator='\n')
-                f.close()
-
-            self.outputData = np.zeros((1,44)).astype(np.int32)
+            self.outputData = np.zeros((1,45)).astype(np.int32)
 
         else:
             self.stopRecordButton.setChecked(True)
@@ -965,6 +975,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         self.ICStatusDisplay.setText(self.ICData['tempStatus'].value)
 
+        self.efcLineEdit.setText(str(self.EFC_Data))
+
 # ===================GUI pop-up dialogues====================
 
     def helpAction(self):
@@ -1071,11 +1083,12 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             dataList = list(hex(data) for data in list(bccRawData))
 
             # Filter out incorrect inputs
-            if len(dataList) == 180:
+            if len(dataList) == 184:
                 data = util.listData2strData(dataList)
 
                 self.bccData = data[0:17]
                 self.SOC_SOHData = data[17:45]
+                self.EFC_Data = data[45]
 
                 self.updateData()
                 self.updateGUIData()

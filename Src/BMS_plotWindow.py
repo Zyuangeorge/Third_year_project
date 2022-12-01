@@ -264,6 +264,7 @@ class loadGraphWindow(QDialog):
         """Handler for loading curve data"""
 
         readFile = readFile.drop('Date', axis=1) # Remove time column to get value
+        readFile = readFile.drop('equivalentFullCycle', axis=1) # Remove EFC column to get value
 
         self.data = readFile.values # Set data frame as matrix
 
