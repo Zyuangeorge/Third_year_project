@@ -22,7 +22,7 @@ import pandas as pd
 import serial
 import serial.tools.list_ports
 # Import PyQt widgets: PySide6
-from PySide6.QtCore import QDateTime, QTimer, Qt
+from PySide6.QtCore import QDateTime, QTimer
 from PySide6.QtGui import QIcon, QIntValidator
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox,
                                QFileDialog, QHBoxLayout, QLabel, QMainWindow,
@@ -65,7 +65,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Set up window logo and disable window size modification
         self.setWindowIcon(QIcon("./UI/sheffield_logo.jpg"))
-        self.setMinimumWidth(1200)
+        self.setMinimumWidth(1100)
 
         # Threshold variables
         self.currentThreshold = [0, 1600]
@@ -585,7 +585,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             self.outputData = np.append(self.outputData, [realTimeData], axis = 0) # Convert to two dimension and add to output data
             
-            if self.outputData.shape[0] > 3000:
+            if self.outputData.shape[0] > 3600:
                 columnName = [
                             'cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
                             'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 
@@ -879,7 +879,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             readFile = pd.read_csv(openFileName[0])
 
-            if readFile.shape[0] > 2 and readFile.shape[1] < 18:
+            if readFile.shape[0] > 2: # Larger than 2 lines
                 loadWindow = loadGraphWindow()
                 loadWindow.loadGraphData(readFile)
                 loadWindow.exec()
