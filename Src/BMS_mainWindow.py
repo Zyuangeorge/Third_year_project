@@ -396,13 +396,11 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         self.voltageThreshold = [int(self.voltageMiniLineEdit.text()), int(
             self.voltageMaxLineEdit.text())]
-
         #print("Voltage threshold: ")
         #print(self.voltageThreshold)
         
         self.tempThreshold = [int(self.tempMiniLineEdit.text()), int(
             self.tempMaxLineEdit.text())]
-        
         #print("Temperature threshold: ")
         #print(self.tempThreshold)
 
@@ -624,8 +622,10 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 df.to_csv(fileName, index=False, line_terminator='\n')
 
                 self.outputData = np.zeros((1,45)).astype(np.int32)
+                del df
 
-                gc.collect() # Collect garbage
+        del realTimeData
+        gc.collect() # Collect garbage
 
     def printData(self):
         """Handler for saving data"""
@@ -661,11 +661,12 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 with open(fileName[0],'w') as f:
                     df.to_csv(f, index=False, line_terminator='\n')
                     f.close()
+                    del df
             except:
                 pass
 
-            gc.collect() # Collect garbage
             self.outputData = np.zeros((1,45)).astype(np.int32)
+            gc.collect() # Collect garbage
 
         else:
             self.stopRecordButton.setChecked(True)
@@ -760,12 +761,15 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.graphData = np.append(self.graphData, insertData, axis = 1)
         self.xaxis = np.append(self.xaxis,(self.xaxis[-1] + 0.2))
 
-        if self.graphData.shape[1] >= 3000:
+        if self.graphData.shape[1] >= 10:
             self.xaxis = self.xaxis[1:]  # Remove the first x element.
             self.graphData = np.delete(self.graphData, 0, axis = 1) # Remove first column
 
         for i in range(0,45):
             self.curveList[i].setData(self.xaxis,self.graphData[i], _callSync='off')
+
+        del insertData
+        gc.collect()
 
     def stopPlotting(self):
         """Handler for stop plotting data"""
@@ -909,6 +913,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             else:
                 QMessageBox.critical(
                     self, 'Data error', 'Invalid data, please check file')
+            
+            del readFile
+            gc.collect()
         except:
             pass
 

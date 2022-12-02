@@ -69,9 +69,19 @@
 * Definitions
 ******************************************************************************/
 
-/* Red on-board LED. */
+/* On-board LED.
+ * Blue: Charging
+ * Green: Discharging
+ * White: OC
+ * Red: error
+ */
+
 #define RED_LED_PORT         PTD
 #define RED_LED_PIN          15U
+#define BLUE_LED_PORT        PTD
+#define BLUE_LED_PIN         0U
+#define GREEN_LED_PORT        PTD
+#define GREEN_LED_PIN         16U
 
 /* LPSPI_TX configuration. */
 #define BCC_TX_LPSPI_DELAY_PCS_TO_SCLK         3U  /* 3us (f >= 1.75us) */
@@ -105,7 +115,7 @@
 #define MAX_VOLTAGE 4200000 // In micro volt
 
 /* Current threshold for determining the current direction */
-#define currentThreshold 15 // 15mA
+#define currentThreshold 35 // In mA
 /*******************************************************************************
 * Enum definition
 ******************************************************************************/
@@ -625,6 +635,10 @@ static status_t initDemo(void)
 
     LPIT_DRV_StartTimerChannels(INST_LPIT1, (1 << LPIT0_CHANNEL_TYPGUI));
 
+    PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
+    PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+    PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+
     bccStatus = BCC_Init(&drvConfig);
     if (bccStatus != BCC_STATUS_SUCCESS)
     {
@@ -719,7 +733,17 @@ void Ah_integral_step(void)
     current_c = cellData[16];
 
 	AhData.integratedCurrent += 0.001 * current_c * 0.2; //convert to 1A, and 200ms = 0.2s
-    AhData.absIntegratedCurent += abs(0.001 * current_c * 0.2);
+
+	if (currentDirectionFlag == 1){
+		AhData.absIntegratedCurent -= 0.001 * current_c * 0.2;
+	}
+	else if (currentDirectionFlag == 0){
+		AhData.absIntegratedCurent += 0.001 * current_c * 0.2;
+	}
+	else{
+		AhData.absIntegratedCurent += 0;
+	}
+
 }
 
 /*
@@ -907,6 +931,9 @@ int main(void)
           if (PTC->PDIR & (1<<12)){ /* If Pad Data Input = 1 (BTN0 [SW2] pushed) */
         	  chargingDischargingCounter = 0; /* Clear EFC counter */
               chargingDischargingFlag = 1;
+  	  		  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
+  	  		  PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+  	  		  PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
           }
 
           //Read system Events
@@ -915,8 +942,44 @@ int main(void)
           /* Loops until specified timeout expires. */
           do
           {
-        	  PINS_DRV_TogglePins(RED_LED_PORT, 1U << RED_LED_PIN);
+        	  switch(bmsNextState){
+        	  	case Idle_State:
+        	          	  	      {
+        	          	  	    	  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
+        	          	  	    	  PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+        	          	  	    	  PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+        	          	  	      }
+        	          	  	      break;
+        	  	case Discharge_State:
+        	  	        	  	  {
+        	  	        	  		  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
+        	  	        	  		  PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+        	  	        	  		  PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
 
+        	  	        	  		  PINS_DRV_ClearPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+        	  	        	  	  }
+        	  	        	  	  break;
+        	  	case Charge_State:
+        	  	        	  	  {
+        	  	        	  		  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
+        	  	        	  		  PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+        	  	        	  		  PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+
+        	  	        	  		  PINS_DRV_ClearPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+        	  	        	  	  }
+        	  	        	  	  break;
+        	  	case OpenCircuit_State:
+        	  	        	  	  {
+        	  	        	  		  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
+        	  	        	  		  PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+        	  	        	  		  PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+
+        	  	        	  		  PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
+        	  	        	  		  PINS_DRV_ClearPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+        	  	        	  		  PINS_DRV_ClearPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+        	  	        	  	  }
+        	  	        	  	  break;
+        	  }
               if (!sleepMode)
               {
                   /* To prevent communication loss. */
