@@ -417,6 +417,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Clear pack data
         self.packData['voltage'] = 0
         self.packData['current'] = 0
+        self.EFC_Data = 0
         self.packVoltageLineEdit.setText(str(self.packData['voltage']))
         self.packCurrentLineEdit.setText(str(self.packData['current']))
 

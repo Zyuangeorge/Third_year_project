@@ -509,6 +509,7 @@ class Ui_MainWindow(object):
 
         self.efcLineEdit = QLineEdit(self.packMonitoringGroupBox)
         self.efcLineEdit.setObjectName(u"efcLineEdit")
+        self.efcLineEdit.setFocusPolicy(Qt.NoFocus)
 
         self.packMonitoringGroupBoxLayout.addWidget(self.efcLineEdit, 3, 6, 1, 1)
 
