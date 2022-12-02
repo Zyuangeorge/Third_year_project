@@ -872,6 +872,11 @@ static void resetData(void){
     for (i = 0; i < 14; i++){
         AhData.DOD_c[i] = AhData.DOD_0[i];
     }
+
+    if (AhData.efcCounter > 3000){ // Clear efc Data in case memory leaking
+    	AhData.absIntegratedCurent = 0.0;
+    	AhData.efcCounter = 0;
+    }
 }
 
 int main(void)
