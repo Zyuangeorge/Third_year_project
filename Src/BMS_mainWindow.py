@@ -69,8 +69,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.setMinimumWidth(1100)
 
         # Threshold variables
-        self.currentThreshold = [0, 1600]
-        self.voltageThreshold = [2800, 4300]
+        self.currentThreshold = [0, 1500]
+        self.voltageThreshold = [3000, 4200]
         self.tempThreshold = [20, 105]
         self.packVoltageThreshold = [i * 14 for i in self.voltageThreshold]
 
@@ -286,12 +286,12 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.recordGroupBoxLayout.addWidget(self.printButton)
         
         # Set QLineEdit restrictions
-        self.voltageMaxLineEdit.setValidator(QIntValidator())
-        self.voltageMiniLineEdit.setValidator(QIntValidator())
-        self.currentMaxLineEdit.setValidator(QIntValidator())
-        self.currentMiniLineEdit.setValidator(QIntValidator())
-        self.tempMaxLineEdit.setValidator(QIntValidator())
-        self.tempMiniLineEdit.setValidator(QIntValidator())
+        self.voltageMaxLineEdit.setValidator(QIntValidator(0,4200))
+        self.voltageMiniLineEdit.setValidator(QIntValidator(0,4200))
+        self.currentMaxLineEdit.setValidator(QIntValidator(0,1500))
+        self.currentMiniLineEdit.setValidator(QIntValidator(0,1500))
+        self.tempMaxLineEdit.setValidator(QIntValidator(-40,120))
+        self.tempMiniLineEdit.setValidator(QIntValidator(-40,120))
 
         # Disable the change of the table item
         self.voltageTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -391,18 +391,18 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """This function is used to update the threshold values"""
         self.currentThreshold = [int(self.currentMiniLineEdit.text()), int(
             self.currentMaxLineEdit.text())]
-        #print("Current threshold: ")
-        #print(self.currentThreshold)
+        print("Current threshold: ")
+        print(self.currentThreshold)
 
         self.voltageThreshold = [int(self.voltageMiniLineEdit.text()), int(
             self.voltageMaxLineEdit.text())]
-        #print("Voltage threshold: ")
-        #print(self.voltageThreshold)
+        print("Voltage threshold: ")
+        print(self.voltageThreshold)
         
         self.tempThreshold = [int(self.tempMiniLineEdit.text()), int(
             self.tempMaxLineEdit.text())]
-        #print("Temperature threshold: ")
-        #print(self.tempThreshold)
+        print("Temperature threshold: ")
+        print(self.tempThreshold)
 
 # ===================Clear and reset data====================
 
