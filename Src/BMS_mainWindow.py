@@ -5,6 +5,7 @@ Features:
 """
 # Import functions in other folders
 import sys
+import gc
 
 # Expend file path
 sys.path.append('.')
@@ -100,7 +101,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.bccData = [0 for _ in range(17)]
 
         # SOC and SOH data
-        self.SOC_SOHData = [0 for _ in range(27)]
+        self.SOC_SOHData = [0 for _ in range(28)]
 
         # Initialisation of cell data
         for num in range(0, 14):
@@ -390,20 +391,20 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """This function is used to update the threshold values"""
         self.currentThreshold = [int(self.currentMiniLineEdit.text()), int(
             self.currentMaxLineEdit.text())]
-        print("Current threshold: ")
-        print(self.currentThreshold)
+        #print("Current threshold: ")
+        #print(self.currentThreshold)
 
         self.voltageThreshold = [int(self.voltageMiniLineEdit.text()), int(
             self.voltageMaxLineEdit.text())]
 
-        print("Voltage threshold: ")
-        print(self.voltageThreshold)
+        #print("Voltage threshold: ")
+        #print(self.voltageThreshold)
         
         self.tempThreshold = [int(self.tempMiniLineEdit.text()), int(
             self.tempMaxLineEdit.text())]
         
-        print("Temperature threshold: ")
-        print(self.tempThreshold)
+        #print("Temperature threshold: ")
+        #print(self.tempThreshold)
 
 # ===================Clear and reset data====================
 
@@ -444,6 +445,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 self.curveList[i].setData(self.xaxis,self.graphData[i], _callSync='off')
         except:
             pass
+
+        gc.collect()
 
     def resetStatus(self):
         """Reset cell, pack and IC status as well as the button colours"""
@@ -497,7 +500,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Set Baud rate
         self.serial.baudrate = int(self.baudRateComboBox.currentText())
-        print("Baud rate: " + str(self.serial.baudrate))
+        # print("Baud rate: " + str(self.serial.baudrate))
 
         # Set Parity
         parity = self.parityComboBox.currentText()
@@ -578,13 +581,14 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def recordData(self):
         """Handler for updating data"""
         # Update real time data
+        realTimeData = [0 for _ in range(45)]
+
         if self.serial.isOpen():
             # Set time information
             timeInfo = QDateTime.currentDateTime().toSecsSinceEpoch()
 
             # Add realtime data
-            realTimeData = [0 for _ in range(44)]
-            realTimeData[0:13] = self.bccData[1:15] # Cell Voltage Data
+            realTimeData[0:14] = self.bccData[1:15] # Cell Voltage Data
             realTimeData[14] = self.bccData[16] # Pack Current Data
             realTimeData[15:43] = self.SOC_SOHData # SoC and SoH Data
             realTimeData[43] = self.EFC_Data
@@ -592,7 +596,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             self.outputData = np.append(self.outputData, [realTimeData], axis = 0) # Convert to two dimension and add to output data
             
-            if self.outputData.shape[0] > 3600: # Automatic Recording
+            if self.outputData.shape[0] > 1800: # Automatic Recording
                 columnName = [
                             'cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
                             'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 
@@ -621,6 +625,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
                 self.outputData = np.zeros((1,45)).astype(np.int32)
 
+                gc.collect() # Collect garbage
+
     def printData(self):
         """Handler for saving data"""
         self.stopRecordButton.setChecked(True)
@@ -634,7 +640,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             'cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
             'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 
             'cellVoltage_9','cellVoltage_10','cellVoltage_11','cellVoltage_12',
-            'cellVoltage_13','cellVoltage_14','packCurrent',
+            'cellVoltage_13','cellVoltage_14',
+            'packCurrent',
 
             'cellSoC_1','cellSoC_2','cellSoC_3','cellSoC_4',
             'cellSoC_5','cellSoC_6','cellSoC_7','cellSoC_8',
@@ -657,6 +664,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             except:
                 pass
 
+            gc.collect() # Collect garbage
             self.outputData = np.zeros((1,45)).astype(np.int32)
 
         else:
