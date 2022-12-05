@@ -2,13 +2,16 @@ import numpy as np
 import pyqtgraph as pg
 from PySide6.QtWidgets import (QComboBox, QDialog, QHBoxLayout, QMessageBox,
                                QPushButton, QVBoxLayout,QTabWidget,QLabel,QWidget)
+from PySide6.QtGui import QIcon
 
+# Expend file path
+import sys
+sys.path.append('.')
 
 class plotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
     def __init__(self):
         super().__init__()
-
         # Set plot windows
         self.p0 = self.addPlot(title="Cell 1 Voltage")
         self.p1 = self.addPlot(title="Cell 2 Voltage")
@@ -68,6 +71,7 @@ class zoomWindow(QDialog):
     """Window for zooming graphs"""
     def __init__(self):
         super().__init__()
+        self.setWindowIcon(QIcon("./UI/sheffield_logo.jpg"))
 
         self.canvas = pg.GraphicsLayoutWidget()
 
@@ -102,7 +106,7 @@ class loadGraphWindow(QDialog):
     """Window for zooming graphs"""
     def __init__(self):
         super().__init__()
-
+        self.setWindowIcon(QIcon("./UI/sheffield_logo.jpg"))
         self.plotTabWindow = plotWindow()
         self.plotTabWindow.removeItem(self.plotTabWindow.packVoltageP)
         self.plotTabWindow.removeItem(self.plotTabWindow.ICTempP)

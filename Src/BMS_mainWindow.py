@@ -761,7 +761,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.graphData = np.append(self.graphData, insertData, axis = 1)
         self.xaxis = np.append(self.xaxis,(self.xaxis[-1] + 0.2))
 
-        if self.graphData.shape[1] >= 10:
+        if self.graphData.shape[1] >= 4500: # Remove the first value after 4500*0.2/60=15mins
             self.xaxis = self.xaxis[1:]  # Remove the first x element.
             self.graphData = np.delete(self.graphData, 0, axis = 1) # Remove first column
 
@@ -982,6 +982,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         else:
             pass
         
+        # Set EFC value
+        self.efcLineEdit.setText(str(self.EFC_Data))
+        
         # Set status
         self.packVoltageStatusDisplay.setText(
             self.packData['voltageStatus'].value)
@@ -990,8 +993,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.packData['currentStatus'].value)
 
         self.ICStatusDisplay.setText(self.ICData['tempStatus'].value)
-
-        self.efcLineEdit.setText(str(self.EFC_Data))
 
 # ===================GUI pop-up dialogues====================
 

@@ -110,12 +110,13 @@
 #define KC 1 // Charging efficiency
 #define KD 1 // Discharging efficiency
 
-/* Battery minimum and maximum voltages */
-#define MIN_VOLTAGE 3000000 // In micro volt
-#define MAX_VOLTAGE 4200000 // In micro volt
-
 /* Current threshold for determining the current direction */
-#define currentThreshold 35 // In mA
+#define CURRENTTHRESHOLD 35 // In mA
+
+/* Battery minimum and maximum voltages */
+#define MC33771C_TH_ALL_CT_UV_TH 2500 // In mV
+#define MC33771C_TH_ALL_CT_OV_TH 4700 // In mV
+
 /*******************************************************************************
 * Enum definition
 ******************************************************************************/
@@ -125,7 +126,8 @@ typedef enum
     Idle_State,
     Charge_State,
     Discharge_State,
-    OpenCircuit_State
+    OpenCircuit_State,
+	Fault_State
 } bmsSystemState;
 
 //Different type events
@@ -133,7 +135,8 @@ typedef enum
 {
     Discharge_Event,
     Charge_Event,
-    OpenCircuit_Event
+    OpenCircuit_Event,
+	Fault_Event
 } bmsSystemEvent;
 
 /*******************************************************************************
@@ -294,6 +297,9 @@ int16_t currentDirectionFlag = 0;
 int16_t chargingDischargingCounter = 0;
 int16_t chargingDischargingFlag = 0;
 
+/* Fault status */
+uint16_t faultStatusValue[2]={0,0}; // [0]: overvoltage [1]: undervoltage
+
 /*******************************************************************************
  * Function prototypes
  ******************************************************************************/
@@ -309,6 +315,7 @@ static void getSOCResult(uint32_t cellVoltage, int16_t *soc);
 
 static status_t initDemo(void);
 static bcc_status_t Ah_integral_initialize(void);
+static bcc_status_t updateThreshold(void);
 
 static bcc_status_t updateMeasurements(void);
 
@@ -320,16 +327,18 @@ static void getCurrentSOC(void);
 static void DischargeHandler(void);
 static void ChargeHandler(void);
 static void OpenCircuitHandler(void);
+static bmsSystemState FaultHandler(void);
 
 static bmsSystemEvent monitorBattery(void);
 
 static void dataTransmit(void);
 static void resetData(void);
 
+static bcc_status_t updateFaultStatus(void);
+
 /*******************************************************************************
  * Functions
  ******************************************************************************/
-
 /*!
  * @brief Initializes BCC device registers according to BCC_INIT_CONF.
  * Registers having the wanted content already after POR are not rewritten.
@@ -579,6 +588,26 @@ static bcc_status_t Ah_integral_initialize(void)
 }
 
 /*!
+* @brief This function is used to update threshold value register on MC33771C.
+*
+* @return bccStatus.
+*/
+static bcc_status_t updateThreshold(void)
+{
+	bcc_status_t error;
+    error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_ALL_CT_OFFSET,
+            MC33771C_TH_ALL_CT_ALL_CT_OV_TH_MASK, MC33771C_TH_ALL_CT_ALL_CT_OV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_OV_TH)));
+    error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_ALL_CT_OFFSET,
+            MC33771C_TH_ALL_CT_ALL_CT_UV_TH_MASK, MC33771C_TH_ALL_CT_ALL_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
+    if (error != BCC_STATUS_SUCCESS)
+    {
+        return error;
+    }
+
+    return BCC_STATUS_SUCCESS;
+}
+
+/*!
  * @brief MCU and BCC initialization.
  */
 static status_t initDemo(void)
@@ -657,6 +686,12 @@ static status_t initDemo(void)
         return STATUS_ERROR;
     }
 
+    bccStatus = updateThreshold();
+    if (bccStatus != BCC_STATUS_SUCCESS)
+    {
+        return STATUS_ERROR;
+    }
+
     return STATUS_SUCCESS;
 }
 
@@ -708,11 +743,11 @@ static bcc_status_t updateMeasurements(void)
 	cellData[16] = BCC_GET_ISENSE_AMP(DEMO_RSHUNT, measurements[BCC_MSR_ISENSE1], measurements[BCC_MSR_ISENSE2]);
 
 	currentValue = cellData[16];
-	if (currentValue > currentThreshold){
+	if (currentValue > CURRENTTHRESHOLD){
 		currentDirectionFlag = 0; // Discharge
         chargingDischargingFlag = 0;
 	}
-	else if(abs(currentValue) < currentThreshold){
+	else if(abs(currentValue) < CURRENTTHRESHOLD){
 		currentDirectionFlag = 2; // Open circuit
 	}
     else{
@@ -787,7 +822,7 @@ static void DischargeHandler(void)
     int16_t flag;
 
     for (i = 0; i < 14; i++){
-        if (cellData[i + 1] <= MIN_VOLTAGE){
+        if (cellData[i + 1] <= (MC33771C_TH_ALL_CT_UV_TH + 500) * 1000){ // 500 margin
             AhData.SOH[i] = AhData.DOD_c[i]; // Calibrate SOH for each cell
             flag = 1;
         }
@@ -811,7 +846,7 @@ static void ChargeHandler(void)
     int16_t flag;
 
     for (i = 0; i < 14; i++){
-        if (cellData[i + 1] >= MAX_VOLTAGE){
+        if (cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 500) * 1000){ // 500 margin
             AhData.SOH[i] = AhData.SOC_c[i] - AhData.DOD_c[i];
             AhData.DOD_c[i] = 0.0;
         }
@@ -845,21 +880,45 @@ static void OpenCircuitHandler(void)
 }
 
 /*
+ * @brief Handler for fault state
+ */
+static bmsSystemState FaultHandler(void)
+{
+	uint16_t i;
+
+	if (PTC->PDIR & (1<<12)){
+		clearFaultRegs();
+		for (i = 0; i < 2; i++){
+			faultStatusValue[i] = 0;
+		}
+		return Idle_State;
+	}
+
+	return Fault_State;
+}
+
+/*
  * @brief Handler for battery monitoring
  */
 static bmsSystemEvent monitorBattery(void)
 {
     updateMeasurements();
+    updateFaultStatus();
 
-    if (currentDirectionFlag == 0){
-        return Discharge_Event;
-    }
-    else if (currentDirectionFlag == 1){
-        return Charge_Event;
-    }
-    else{
-        return OpenCircuit_Event;
-    }
+	if (faultStatusValue[0] > 0 || faultStatusValue[1] > 0){
+		return Fault_Event;
+	}
+	else{
+	    if (currentDirectionFlag == 0){
+	        return Discharge_Event;
+	    }
+	    else if (currentDirectionFlag == 1){
+	        return Charge_Event;
+	    }
+	    else{
+	        return OpenCircuit_Event;
+	    }
+	}
 }
 
 /*
@@ -901,6 +960,29 @@ static void resetData(void){
     	AhData.absIntegratedCurent = 0.0;
     	AhData.efcCounter = 0;
     }
+}
+
+/*!
+ * @brief This function reads summary fault status registers of BCC
+ * device via SPI.
+ *
+ * @return bcc_status_t Error code.
+ */
+static bcc_status_t updateFaultStatus(void)
+{
+    bcc_status_t error;
+    uint16_t faultStatus[BCC_STAT_CNT];
+
+    error = BCC_Fault_GetStatus(&drvConfig, BCC_CID_DEV1, faultStatus);
+    if (error != BCC_STATUS_SUCCESS)
+    {
+        return error;
+    }
+
+    faultStatusValue[0] = faultStatus[BCC_FS_CELL_OV];
+    faultStatusValue[1] = faultStatus[BCC_FS_CELL_UV];
+
+    return BCC_STATUS_SUCCESS;
 }
 
 int main(void)
@@ -979,6 +1061,14 @@ int main(void)
         	  	        	  		  PINS_DRV_ClearPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
         	  	        	  	  }
         	  	        	  	  break;
+        	  	case Fault_State:
+							      {
+									  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
+									  PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+									  PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+
+									  PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
+								  }
         	  }
               if (!sleepMode)
               {
@@ -996,21 +1086,25 @@ int main(void)
                 {
                 case Idle_State:
                 {
-                    if (Discharge_Event == bmsNewEvent)
+                    if (bmsNewEvent == Discharge_Event)
                     {
                         bmsNextState = Discharge_State;
                         DischargeHandler();
                     }
-                    else if (Charge_Event == bmsNewEvent)
+                    else if (bmsNewEvent == Charge_Event)
                     {
                         bmsNextState = Charge_State;
                         ChargeHandler();
                     }
-                    else if (OpenCircuit_Event == bmsNewEvent)
+                    else if (bmsNewEvent == OpenCircuit_Event)
                     {
                         bmsNextState = OpenCircuit_State;
                         OpenCircuitHandler();
                     }
+                    else if (bmsNewEvent == Fault_Event)
+					{
+						bmsNextState = FaultHandler();
+					}
                 }
                 break;
 
@@ -1026,6 +1120,10 @@ int main(void)
                     {
                         bmsNextState = OpenCircuit_State;
                     }
+                    else if (bmsNewEvent == Fault_Event)
+					{
+						bmsNextState = Fault_State;
+					}
                 }
                 break;
 
@@ -1041,6 +1139,10 @@ int main(void)
                     {
                         bmsNextState = OpenCircuit_State;
                     }
+                    else if (bmsNewEvent == Fault_Event)
+					{
+						bmsNextState = Fault_State;
+					}
                 }
                 break;
 
@@ -1055,8 +1157,18 @@ int main(void)
                     else if (bmsNewEvent == Discharge_Event)
                     {
                         bmsNextState = Discharge_State;
-                    } 
+                    }
+                    else if (bmsNewEvent == Fault_Event)
+					{
+						bmsNextState = Fault_State;
+					}
                 }
+                break;
+
+                case Fault_State:
+				{
+					bmsNextState = FaultHandler();
+				}
                 break;
 
                 default:
