@@ -109,6 +109,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.cellData['voltageStatus'].append(voltageStatus.DEFAULT)
             self.cellData['currentStatus'].append(currentStatus.DEFAULT)
 
+        self.statusUpdateFlag = [0 for _ in range(17)]
+
         # ===================Real time data====================
 
         self.outputData = np.zeros((1,45)).astype(np.int32)
@@ -474,6 +476,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.ICStatusDisplay.setText(self.ICData['tempStatus'].value)
         self.ICStatusDisplay.setStyleSheet(
             "background-color: rgb(0, 255, 0)")
+
+        # Clear status
+        self.statusUpdateFlag = [0 for _ in range(17)]
 
 # ===================Port configuration and communication====================
 
@@ -984,7 +989,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         
         # Set EFC value
         self.efcLineEdit.setText(str(self.EFC_Data))
-        
+
         # Set status
         self.packVoltageStatusDisplay.setText(
             self.packData['voltageStatus'].value)
@@ -1033,46 +1038,59 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
     def updateData(self):
         """This function is used to update the data as well as the status"""
-        # Update data and status
+        # Update pack voltage
         self.packData['voltage'] = self.bccData[0] / 1000
-        if self.packData['voltage'] > self.packVoltageThreshold[1]:
-            self.packData['voltageStatus'] = voltageStatus.OVERVOLTAGE
-        elif self.packData['voltage'] < self.packVoltageThreshold[0]:
-            self.packData['voltageStatus'] = voltageStatus.UNDERVOLTAGE
-        else:
-            self.packData['voltageStatus'] = voltageStatus.DEFAULT
 
+        if self.statusUpdateFlag[0] == 0:
+            if self.packData['voltage'] > self.packVoltageThreshold[1]:
+                self.packData['voltageStatus'] = voltageStatus.OVERVOLTAGE
+                self.statusUpdateFlag[0] = 1
+            elif self.packData['voltage'] < self.packVoltageThreshold[0]:
+                self.packData['voltageStatus'] = voltageStatus.UNDERVOLTAGE
+                self.statusUpdateFlag[0] = 1
+            else:
+                self.packData['voltageStatus'] = voltageStatus.DEFAULT
+
+        # Update pack current
         self.packData['current'] = self.bccData[16]
-        if abs(self.packData['current']) > self.currentThreshold[1]:
-            self.packData['currentStatus'] = currentStatus.OVERCURRENT
-        elif abs(self.packData['current']) < self.currentThreshold[0]:
-            self.packData['currentStatus'] = currentStatus.UNDERCURRENT
-        else:
-            self.packData['currentStatus'] = currentStatus.DEFAULT
 
+        if self.statusUpdateFlag[16] == 0:
+            if abs(self.packData['current']) > self.currentThreshold[1]:
+                self.packData['currentStatus'] = currentStatus.OVERCURRENT
+                self.statusUpdateFlag[16] = 1
+            elif abs(self.packData['current']) < self.currentThreshold[0]:
+                self.packData['currentStatus'] = currentStatus.UNDERCURRENT
+                self.statusUpdateFlag[16] = 1
+            else:
+                self.packData['currentStatus'] = currentStatus.DEFAULT
+
+        # Update cell voltage
         for i in range(0, 14):
             self.cellData['voltage'][i] = self.bccData[i+1] / 1000
-            if self.cellData['voltage'][i] > self.voltageThreshold[1]:
-                self.cellData['voltageStatus'][i] = voltageStatus.OVERVOLTAGE
-            elif self.cellData['voltage'][i] < self.voltageThreshold[0]:
-                self.cellData['voltageStatus'][i] = voltageStatus.UNDERVOLTAGE
-            else:
-                self.cellData['voltageStatus'][i] = voltageStatus.DEFAULT
+            self.cellData['currentStatus'][i] = self.packData['currentStatus']
 
-            if abs(self.packData['current']) > self.currentThreshold[1]:
-                self.cellData['currentStatus'][i] = currentStatus.OVERCURRENT
-            elif abs(self.packData['current']) < self.currentThreshold[0]:
-                self.cellData['currentStatus'][i] = currentStatus.UNDERCURRENT
-            else:
-                self.cellData['currentStatus'][i] = currentStatus.DEFAULT
+            if self.statusUpdateFlag[i + 1] == 0:
+                if self.cellData['voltage'][i] > self.voltageThreshold[1]:
+                    self.cellData['voltageStatus'][i] = voltageStatus.OVERVOLTAGE
+                    self.statusUpdateFlag[i + 1] = 1
+                elif self.cellData['voltage'][i] < self.voltageThreshold[0]:
+                    self.cellData['voltageStatus'][i] = voltageStatus.UNDERVOLTAGE
+                    self.statusUpdateFlag[i + 1] = 1
+                else:
+                    self.cellData['voltageStatus'][i] = voltageStatus.DEFAULT
 
+        # Update IC Temperature
         self.ICData['temp'] = self.bccData[15] / 10
-        if self.ICData['temp'] > self.tempThreshold[1]:
-            self.ICData['tempStatus'] = tempStatus.OVERTEMPERATURE
-        elif self.ICData['temp'] < self.tempThreshold[0]:
-            self.ICData['tempStatus'] = tempStatus.UNDERTEMPERATURE
-        else:
-            self.ICData['tempStatus'] = tempStatus.DEFAULT
+
+        if self.statusUpdateFlag[15] == 0:
+            if self.ICData['temp'] > self.tempThreshold[1]:
+                self.ICData['tempStatus'] = tempStatus.OVERTEMPERATURE
+                self.statusUpdateFlag[15] = 1
+            elif self.ICData['temp'] < self.tempThreshold[0]:
+                self.ICData['tempStatus'] = tempStatus.UNDERTEMPERATURE
+                self.statusUpdateFlag[15] = 1
+            else:
+                self.ICData['tempStatus'] = tempStatus.DEFAULT
 
     def receiveData(self):
         """Handler for receiving data"""
