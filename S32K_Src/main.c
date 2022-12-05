@@ -114,8 +114,8 @@
 #define CURRENTTHRESHOLD 35 // In mA
 
 /* Battery minimum and maximum voltages */
-#define MC33771C_TH_ALL_CT_UV_TH 2500 // In mV
-#define MC33771C_TH_ALL_CT_OV_TH 4700 // In mV
+#define MC33771C_TH_ALL_CT_UV_TH 2990 // In mV
+#define MC33771C_TH_ALL_CT_OV_TH 4210 // In mV
 
 /*******************************************************************************
 * Enum definition
@@ -822,7 +822,7 @@ static void DischargeHandler(void)
     int16_t flag;
 
     for (i = 0; i < 14; i++){
-        if (cellData[i + 1] <= (MC33771C_TH_ALL_CT_UV_TH + 500) * 1000){ // 500 margin
+        if (cellData[i + 1] <= (MC33771C_TH_ALL_CT_UV_TH + 10) * 1000){ // 10mV margin
             AhData.SOH[i] = AhData.DOD_c[i]; // Calibrate SOH for each cell
             flag = 1;
         }
@@ -846,7 +846,7 @@ static void ChargeHandler(void)
     int16_t flag;
 
     for (i = 0; i < 14; i++){
-        if (cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 500) * 1000){ // 500 margin
+        if (cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 10) * 1000){ // 10mV margin
             AhData.SOH[i] = AhData.SOC_c[i] - AhData.DOD_c[i];
             AhData.DOD_c[i] = 0.0;
         }
