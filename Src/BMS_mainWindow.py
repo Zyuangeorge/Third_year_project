@@ -432,6 +432,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.portStatusDisplay.setEnabled(False)
 
         # Clear output data and graph data
+        self.stopRecordButton.setChecked(True)
         self.graphData = np.zeros((45,1)).astype(np.float16)
         self.xaxis = np.zeros(1).astype(np.float16)
 
