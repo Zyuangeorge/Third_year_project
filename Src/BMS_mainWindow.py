@@ -429,7 +429,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.ICTempLineEdit.setText(str(self.ICData['temp']))
 
         # Clear port status
-        self.portStatusDisplay.setChecked(False)
         self.portStatusDisplay.setEnabled(False)
 
         # Clear output data and graph data
@@ -601,7 +600,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             self.outputData = np.append(self.outputData, [realTimeData], axis = 0) # Convert to two dimension and add to output data
             
-            if self.outputData.shape[0] > 1800: # Automatic Recording
+            if self.outputData.shape[0] > 3600: # Automatic Recording
                 columnName = [
                             'cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
                             'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 
