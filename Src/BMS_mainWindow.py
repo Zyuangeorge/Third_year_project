@@ -68,22 +68,14 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowIcon(QIcon("./UI/sheffield_logo.jpg"))
         self.setMinimumWidth(1100)
 
+        # ===================Data used for GUI displaying====================
+
         # Threshold variables
         self.currentThreshold = [0, 1500]
         self.voltageThreshold = [3000, 4200]
         self.tempThreshold = [20, 105]
         self.packVoltageThreshold = [i * 14 for i in self.voltageThreshold]
 
-        # Status button list
-        self.statusButtonList = [
-            self.Cell1StatusDisplay, self.Cell2StatusDisplay, self.Cell3StatusDisplay,
-            self.Cell4StatusDisplay, self.Cell5StatusDisplay, self.Cell6StatusDisplay,
-            self.Cell7StatusDisplay, self.Cell8StatusDisplay, self.Cell9StatusDisplay,
-            self.Cell10StatusDisplay, self.Cell11StatusDisplay, self.Cell12StatusDisplay,
-            self.Cell13StatusDisplay, self.Cell14StatusDisplay,
-        ]
-
-        # ===================Data used for GUI displaying====================
         # Pack data
         self.packData = {'voltage': 0, 'current': 0,
                          'voltageStatus': voltageStatus.DEFAULT,
@@ -109,6 +101,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.cellData['voltageStatus'].append(voltageStatus.DEFAULT)
             self.cellData['currentStatus'].append(currentStatus.DEFAULT)
 
+        # Battery status flag
         self.statusUpdateFlag = [0 for _ in range(17)]
 
         # ===================Real time data====================
@@ -121,7 +114,16 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         self.EFC_Data = 0
 
-        # ===================================================================
+        # ===================GUI Widgets====================
+
+        # Status button list
+        self.statusButtonList = [
+            self.Cell1StatusDisplay, self.Cell2StatusDisplay, self.Cell3StatusDisplay,
+            self.Cell4StatusDisplay, self.Cell5StatusDisplay, self.Cell6StatusDisplay,
+            self.Cell7StatusDisplay, self.Cell8StatusDisplay, self.Cell9StatusDisplay,
+            self.Cell10StatusDisplay, self.Cell11StatusDisplay, self.Cell12StatusDisplay,
+            self.Cell13StatusDisplay, self.Cell14StatusDisplay,
+        ]
 
         # Initialisation of serial
         self.serial = serial.Serial()
@@ -138,16 +140,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Initialisation of the GUI
         self.init()
-
-        # Update threshold values
-        self.voltageMaxLineEdit.textChanged.connect(self.updateThreshold)
-        self.voltageMiniLineEdit.textChanged.connect(self.updateThreshold)
-
-        self.currentMaxLineEdit.textChanged.connect(self.updateThreshold)
-        self.currentMiniLineEdit.textChanged.connect(self.updateThreshold)
-
-        self.tempMaxLineEdit.textChanged.connect(self.updateThreshold)
-        self.tempMiniLineEdit.textChanged.connect(self.updateThreshold)
 
 # ===================Class initialisation====================
 
@@ -386,6 +378,16 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Connect load button function
         self.loadingButton.clicked.connect(self.openFile)
+
+        # Update threshold values
+        self.voltageMaxLineEdit.textChanged.connect(self.updateThreshold)
+        self.voltageMiniLineEdit.textChanged.connect(self.updateThreshold)
+
+        self.currentMaxLineEdit.textChanged.connect(self.updateThreshold)
+        self.currentMiniLineEdit.textChanged.connect(self.updateThreshold)
+
+        self.tempMaxLineEdit.textChanged.connect(self.updateThreshold)
+        self.tempMiniLineEdit.textChanged.connect(self.updateThreshold)
 
 # ===================Update threshold values====================
 
@@ -682,16 +684,16 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
     def plotGraph(self):
         """Show cell status, pack status, IC temperature in a graph"""
-        self.cellCurve0 = self.graphWindow.packVoltageP.plot()
-        self.cellCurve1 = self.graphWindow.p0.plot() # plotDataItem
-        self.cellCurve2 = self.graphWindow.p1.plot()
-        self.cellCurve3 = self.graphWindow.p2.plot()
-        self.cellCurve4 = self.graphWindow.p3.plot()
-        self.cellCurve5 = self.graphWindow.p4.plot()
-        self.cellCurve6 = self.graphWindow.p5.plot()
-        self.cellCurve7 = self.graphWindow.p6.plot()
-        self.cellCurve8 = self.graphWindow.p7.plot()
-        self.cellCurve9 = self.graphWindow.p8.plot()
+        self.cellCurve0  = self.graphWindow.packVoltageP.plot()
+        self.cellCurve1  = self.graphWindow.p0.plot() # plotDataItem
+        self.cellCurve2  = self.graphWindow.p1.plot()
+        self.cellCurve3  = self.graphWindow.p2.plot()
+        self.cellCurve4  = self.graphWindow.p3.plot()
+        self.cellCurve5  = self.graphWindow.p4.plot()
+        self.cellCurve6  = self.graphWindow.p5.plot()
+        self.cellCurve7  = self.graphWindow.p6.plot()
+        self.cellCurve8  = self.graphWindow.p7.plot()
+        self.cellCurve9  = self.graphWindow.p8.plot()
         self.cellCurve10 = self.graphWindow.p9.plot()
         self.cellCurve11 = self.graphWindow.p10.plot()
         self.cellCurve12 = self.graphWindow.p11.plot()
@@ -728,22 +730,22 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.cellCurve44 = self.graphWindow_SOH.p12.plot()
         self.cellCurve45 = self.graphWindow_SOH.p13.plot()
 
-        self.curveList = [self.cellCurve0,
-            self.cellCurve1, self.cellCurve2, self.cellCurve3,
-            self.cellCurve4, self.cellCurve5, self.cellCurve6,
-            self.cellCurve7, self.cellCurve8, self.cellCurve9,
-            self.cellCurve10, self.cellCurve11, self.cellCurve12,
-            self.cellCurve13, self.cellCurve14, self.cellCurve15, 
-            self.cellCurve16, self.cellCurve18, self.cellCurve19, 
-            self.cellCurve20, self.cellCurve21, self.cellCurve22, 
-            self.cellCurve23, self.cellCurve24, self.cellCurve25, 
-            self.cellCurve26, self.cellCurve27, self.cellCurve28, 
-            self.cellCurve29, self.cellCurve30, self.cellCurve31,
-            self.cellCurve32, self.cellCurve33, self.cellCurve34,
-            self.cellCurve35, self.cellCurve36, self.cellCurve37,
-            self.cellCurve38, self.cellCurve39, self.cellCurve40,
-            self.cellCurve41, self.cellCurve42, self.cellCurve43,
-            self.cellCurve44, self.cellCurve45]
+        self.curveList = [
+            self.cellCurve0, self.cellCurve1,  self.cellCurve2, 
+            self.cellCurve3, self.cellCurve4,  self.cellCurve5, 
+            self.cellCurve6, self.cellCurve7,  self.cellCurve8, 
+            self.cellCurve9, self.cellCurve10, self.cellCurve11, 
+            self.cellCurve12,self.cellCurve13, self.cellCurve14, 
+            self.cellCurve15,self.cellCurve16, self.cellCurve18, 
+            self.cellCurve19,self.cellCurve20, self.cellCurve21, 
+            self.cellCurve22,self.cellCurve23, self.cellCurve24, 
+            self.cellCurve25,self.cellCurve26, self.cellCurve27, 
+            self.cellCurve28,self.cellCurve29, self.cellCurve30, 
+            self.cellCurve31,self.cellCurve32, self.cellCurve33, 
+            self.cellCurve34,self.cellCurve35, self.cellCurve36, 
+            self.cellCurve37,self.cellCurve38, self.cellCurve39, 
+            self.cellCurve40,self.cellCurve41, self.cellCurve42, 
+            self.cellCurve43,self.cellCurve44, self.cellCurve45]
 
         if self.serial.isOpen():
             self.timer2.timeout.connect(self.updateGraphData)

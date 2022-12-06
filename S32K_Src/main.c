@@ -722,22 +722,22 @@ static bcc_status_t updateMeasurements(void)
 
     /* You can use bcc_measurements_t enumeration to index array with raw values. */
     /* Useful macros can be found in bcc.h or bcc_MC3377x.h. */
-    cellData[0]= BCC_GET_STACK_VOLT(measurements[BCC_MSR_STACK_VOLT]);
-	cellData[1]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT1]);
-	cellData[2]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT2]);
-	cellData[3]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT3]);
-	cellData[4]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT4]);
-	cellData[5]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT5]);
-	cellData[6]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT6]);
-	cellData[7]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT7]);
-	cellData[8]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT8]);
-	cellData[9]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT9]);
+    cellData[0] = BCC_GET_STACK_VOLT(measurements[BCC_MSR_STACK_VOLT]);
+	cellData[1] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT1]);
+	cellData[2] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT2]);
+	cellData[3] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT3]);
+	cellData[4] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT4]);
+	cellData[5] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT5]);
+	cellData[6] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT6]);
+	cellData[7] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT7]);
+	cellData[8] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT8]);
+	cellData[9] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT9]);
 	cellData[10]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT10]);
 	cellData[11]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT11]);
 	cellData[12]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT12]);
 	cellData[13]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT13]);
 	cellData[14]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT14]);
-	cellData[15] = BCC_GET_IC_TEMP_C(measurements[BCC_MSR_ICTEMP]);
+	cellData[15]= BCC_GET_IC_TEMP_C(measurements[BCC_MSR_ICTEMP]);
 
 	/* ISENCE data (current measurement) */
 	cellData[16] = BCC_GET_ISENSE_AMP(DEMO_RSHUNT, measurements[BCC_MSR_ISENSE1], measurements[BCC_MSR_ISENSE2]);
