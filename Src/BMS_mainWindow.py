@@ -6,7 +6,7 @@ Features:
 # Import functions in other folders
 import sys
 import gc
-
+import os
 # Expend file path
 sys.path.append('.')
 
@@ -601,7 +601,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             self.outputData = np.append(self.outputData, [realTimeData], axis = 0) # Convert to two dimension and add to output data
             
-            if self.outputData.shape[0] > 3600: # Automatic Recording
+            if self.outputData.shape[0] > 10: # Automatic Recording
                 columnName = [
                             'cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
                             'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 
@@ -621,8 +621,12 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                             'equivalentFullCycle',
 
                             'Date']
-                
-                fileName = "Data/" + str(timeInfo) + ".csv" # Address name
+
+                outputDir = './Data'
+                if not os.path.exists(outputDir):
+                    os.mkdir(outputDir)
+
+                fileName = "./Data/" + str(timeInfo) + ".csv" # Address name
                 self.outputData = np.delete(self.outputData, 0, axis = 0) # Remove first line
 
                 df = pd.DataFrame(self.outputData, columns = columnName) 
