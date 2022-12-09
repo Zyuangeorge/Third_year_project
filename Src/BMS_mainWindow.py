@@ -72,7 +72,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Threshold variables
         self.currentThreshold = [0, 1500]
-        self.voltageThreshold = [3000, 4200]
+        self.voltageThreshold = [1800, 2400]
         self.tempThreshold = [20, 105]
         self.packVoltageThreshold = [i * 14 for i in self.voltageThreshold]
 
@@ -280,8 +280,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.recordGroupBoxLayout.addWidget(self.printButton)
         
         # Set QLineEdit restrictions
-        self.voltageMaxLineEdit.setValidator(QIntValidator(0,4200))
-        self.voltageMiniLineEdit.setValidator(QIntValidator(0,4200))
+        self.voltageMaxLineEdit.setValidator(QIntValidator(0,2400))
+        self.voltageMiniLineEdit.setValidator(QIntValidator(0,2400))
         self.currentMaxLineEdit.setValidator(QIntValidator(0,1500))
         self.currentMiniLineEdit.setValidator(QIntValidator(0,1500))
         self.tempMaxLineEdit.setValidator(QIntValidator(-40,120))
