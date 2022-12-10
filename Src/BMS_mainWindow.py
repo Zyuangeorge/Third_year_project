@@ -622,11 +622,26 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
                             'Date']
 
-                outputDir = './Data'
-                if not os.path.exists(outputDir):
-                    os.mkdir(outputDir)
+                outputDir_1 = './Data/Charging'
+                outputDir_2 = './Data/Discharging'
+                outputDir_3 = './Data/OpenCircuit'
 
-                fileName = "./Data/" + str(timeInfo) + ".csv" # Address name
+                if not os.path.exists(outputDir_1):
+                    os.mkdir(outputDir_1)
+                
+                if not os.path.exists(outputDir_2):
+                    os.mkdir(outputDir_2)
+
+                if not os.path.exists(outputDir_3):
+                    os.mkdir(outputDir_3)
+
+                if self.outputData[14][0] < 0:
+                    fileName = outputDir_1 + "/" + str(timeInfo) + ".csv" # Address name
+                elif self.outputData[14][0] > 0:
+                    fileName = outputDir_2 + "/" + str(timeInfo) + ".csv" # Address name
+                else:
+                    fileName = outputDir_3 + "/" + str(timeInfo) + ".csv" # Address name
+
                 self.outputData = np.delete(self.outputData, 0, axis = 0) # Remove first line
 
                 df = pd.DataFrame(self.outputData, columns = columnName) 
