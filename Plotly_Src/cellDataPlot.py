@@ -74,9 +74,3 @@ class cellDataPlotting:
         )
 
         fig.show()
-
-chargingPlot = cellDataPlotting('.\Data\Charging')
-dischargingPlot = cellDataPlotting('.\Data\Discharging')
-
-chargingPlot.plotBatteryData()
-dischargingPlot.plotBatteryData()

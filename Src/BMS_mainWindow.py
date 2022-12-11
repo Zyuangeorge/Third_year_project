@@ -36,7 +36,8 @@ import util.util as util
 from BMS_plotWindow import loadGraphWindow, plotWindow, zoomWindow, SOCPlotWindow, SOHPlotWindow
 # Import UI file
 from UI.BMS_GUI import Ui_MainWindow
-
+# Import Plotly file
+from Plotly_Src import cellDataPlot
 
 class voltageStatus(Enum):
     DEFAULT = "NORMAL"
@@ -279,6 +280,10 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.printButton = QPushButton("Print Data")
         self.recordGroupBoxLayout.addWidget(self.printButton)
         
+        # Add Plotly button
+        self.plotlyButton = QPushButton("Plot by Plotly")
+        self.verticalLayout_2.addWidget(self.plotlyButton)
+
         # Set QLineEdit restrictions
         self.voltageMaxLineEdit.setValidator(QIntValidator(0,2400))
         self.voltageMiniLineEdit.setValidator(QIntValidator(0,2400))
@@ -378,6 +383,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Connect load button function
         self.loadingButton.clicked.connect(self.openFile)
+        self.plotlyButton.clicked.connect(self.plotByPlotly)
 
         # Update threshold values
         self.voltageMaxLineEdit.textChanged.connect(self.updateThreshold)
@@ -944,6 +950,17 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             gc.collect()
         except:
             pass
+    
+    def plotByPlotly(self):
+        """Handler for Plotly plotting"""
+        try:
+            chargingPlot = cellDataPlot.cellDataPlotting('.\Data\Charging')
+            dischargingPlot = cellDataPlot.cellDataPlotting('.\Data\Discharging')
+            chargingPlot.plotBatteryData()
+            dischargingPlot.plotBatteryData()
+        except:
+            QMessageBox.critical(
+                self, 'Data error', 'No data, please check folder')
 
 # ===================Status display====================
 
