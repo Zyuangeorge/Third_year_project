@@ -641,9 +641,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 if not os.path.exists(outputDir_3):
                     os.mkdir(outputDir_3)
 
-                if self.outputData[14][0] < 0: # Current smaller then 0
+                if self.outputData[1][14] < 0: # Current smaller then 0
                     fileName = outputDir_1 + "/" + str(timeInfo) + ".csv" # Address name
-                elif self.outputData[14][0] > 0:
+                elif self.outputData[1][14] > 20:
                     fileName = outputDir_2 + "/" + str(timeInfo) + ".csv" # Address name
                 else:
                     fileName = outputDir_3 + "/" + str(timeInfo) + ".csv" # Address name
@@ -956,8 +956,10 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         try:
             chargingPlot = cellDataPlot.cellDataPlotting('.\Data\Charging')
             dischargingPlot = cellDataPlot.cellDataPlotting('.\Data\Discharging')
+            openCircuitPlot = cellDataPlot.cellDataPlotting('.\Data\OpenCircuit')
             chargingPlot.plotBatteryData()
             dischargingPlot.plotBatteryData()
+            openCircuitPlot.plotBatteryData()
         except:
             QMessageBox.critical(
                 self, 'Data error', 'No data, please check folder')
