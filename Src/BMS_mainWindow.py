@@ -960,9 +960,16 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             chargingPlot.plotBatteryData()
             dischargingPlot.plotBatteryData()
             openCircuitPlot.plotBatteryData()
+
+            del chargingPlot
+            del dischargingPlot
+            del openCircuitPlot
+
         except:
             QMessageBox.critical(
                 self, 'Data error', 'No data, please check folder')
+        
+        gc.collect()
 
 # ===================Status display====================
 
