@@ -641,7 +641,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 if not os.path.exists(outputDir_3):
                     os.mkdir(outputDir_3)
 
-                if self.outputData[14][0] < 0:
+                if self.outputData[14][0] < 0: # Current smaller then 0
                     fileName = outputDir_1 + "/" + str(timeInfo) + ".csv" # Address name
                 elif self.outputData[14][0] > 0:
                     fileName = outputDir_2 + "/" + str(timeInfo) + ".csv" # Address name
