@@ -11,10 +11,11 @@
 ** ###################################################################*/
 /*!
 ** @file main.c
-** @version 03.00
+** @version 04.00
 ** @brief
 **         Main module.
 **         Enhanced CC method.
+**         Add fault state
 */         
 /*!
 **  @addtogroup main_module main module documentation
@@ -95,13 +96,13 @@
 #define LPIT0_CHANNEL_BCCDRV   3U
 
 /* Battery rated capacitance */
-#define RATEDCAPACITANCE    0.5
+#define RATEDCAPACITANCE    2.5
 
 /* The minimum value of OCV */
 #define OCV_MINSOC          0
 
 /* The maximum value of OCV */
-#define OCV_MAXSOC          1000 // 100 permille
+#define OCV_MAXSOC          1000 // permille
 
 /* The size of the lookup table*/
 #define OCV_TABLE_SIZE      (OCV_MAXSOC - OCV_MINSOC + 1) // 1000 sets of data in the lookupTable
@@ -111,11 +112,15 @@
 #define KD 1 // Discharging efficiency
 
 /* Current threshold for determining the current direction */
-#define CURRENTTHRESHOLD 35 // In mA
+#define ISENSETHRESHOLD 2500 // In uV
 
 /* Battery minimum and maximum voltages */
-#define MC33771C_TH_ALL_CT_UV_TH 2990 // In mV
-#define MC33771C_TH_ALL_CT_OV_TH 4210 // In mV
+#define MC33771C_TH_ALL_CT_UV_TH 1600 // In mV
+#define MC33771C_TH_ALL_CT_OV_TH 2500 // In mV
+
+/* Lookup table setup */
+//#define LINEAR
+#define POLYNOMIAL
 
 /*******************************************************************************
 * Enum definition
@@ -145,15 +150,15 @@ typedef enum
 
 typedef struct
 {
-	int16_t SOC_0[14]; // Initial SoC value: 100 permille
+	int16_t SOC_0[14]; // Initial SoC value: permille
 
-	int16_t SOC_c[14]; // Current SoC value: 100 permille
+	int16_t SOC_c[14]; // Current SoC value: permille
 
-    int16_t DOD_0[14]; // Inital depth of Discharge: 100 permille
+    int16_t DOD_0[14]; // Inital depth of Discharge: permille
 
-    int16_t DOD_c[14]; // Current depth of Discharge: 100 permille
+    int16_t DOD_c[14]; // Current depth of Discharge: permille
 
-    int16_t SOH[14]; // State of health: 100 permille
+    int16_t SOH[14]; // State of health: permille
     
     float efcCounter;
 
@@ -257,18 +262,6 @@ static const bcc_init_reg_t s_initRegsMc33771c[BCC_INIT_CONF_REG_CNT] = {
 /*******************************************************************************
  * Global variables
  ******************************************************************************/
-/* Final transmitted data */
-/*
- * [0] Pack voltge
- * [1:14] Cell voltage 1 to 14
- * [15] IC temperature
- * [16] Current
- * [17:30] SOC: Cell 1 to 14
- * [31:44] SOH: Cell 1 to 14
- * [45] EFC: Equivalent Full Cycle
- */
-uint32_t transmittedData[46];
-
 /* BCC driver configuration. */
 bcc_drv_config_t drvConfig;
 
@@ -299,6 +292,21 @@ int16_t chargingDischargingFlag = 0;
 
 /* Fault status */
 uint16_t faultStatusValue[2]={0,0}; // [0]: overvoltage [1]: undervoltage
+
+/* ISENSE voltage */
+int32_t isenseVolt;
+
+/* Final transmitted data */
+/*
+ * [0] Pack voltge
+ * [1:14] Cell voltage 1 to 14
+ * [15] IC temperature
+ * [16] Current
+ * [17:30] SOC: Cell 1 to 14
+ * [31:44] SOH: Cell 1 to 14
+ * [45] EFC: Equivalent Full Cycle
+ */
+uint32_t transmittedData[46];
 
 /*******************************************************************************
  * Function prototypes
@@ -550,22 +558,21 @@ static bcc_status_t Ah_integral_initialize(void)
 	}
 
     /* Initialise lookup table settings */
-	if (currentDirectionFlag == 0){ 
-        // Discharge
-		ocvConfig.coefficient_4th = -6.539e-08;
-		ocvConfig.coefficient_3rd = 1.512e-05;
-		ocvConfig.coefficient_2nd = -0.001177;
-		ocvConfig.coefficient_1st = 0.04344;
-		ocvConfig.constant = 3.006;
-	}
-	else{ 
-        // Charge
-		ocvConfig.coefficient_4th = -6.884e-08;
-		ocvConfig.coefficient_3rd = 1.577e-05;
-		ocvConfig.coefficient_2nd = -0.00121;
-		ocvConfig.coefficient_1st = 0.04339;
-		ocvConfig.constant = 3.044;
-	}
+	#ifdef POLYNOMIAL
+        // Polynomial
+		ocvConfig.coefficient_4th = -4.642e-09;
+		ocvConfig.coefficient_3rd = 1.241e-06;
+		ocvConfig.coefficient_2nd = -0.0001123;
+		ocvConfig.coefficient_1st = 0.006514;
+		ocvConfig.constant = 1.871;
+	#else
+        // Linear
+		ocvConfig.coefficient_4th = 0;
+		ocvConfig.coefficient_3rd = 0;
+		ocvConfig.coefficient_2nd = 0;
+		ocvConfig.coefficient_1st = 0.00211;
+		ocvConfig.constant = 1.95;
+	#endif
 
 	/* Initialize the OCV-SOC look up table */
 	fillOcvTable(&ocvConfig);
@@ -574,12 +581,13 @@ static bcc_status_t Ah_integral_initialize(void)
 		/* Get the initial SOC value */
 		getSOCResult(cellData[i + 1],&soc);
 		AhData.SOC_0[i] = soc;
-        
+		AhData.SOC_c[i] = AhData.SOC_0[i];
+
         AhData.SOH[i] = 1000; // Assume the initial health is 100%
 
         /* Calculate the initial DOD value */
-        AhData.DOD_0[i] = 1000 - AhData.SOC_0[i];
-        AhData.DOD_c[i] = 1000 - AhData.SOC_0[i];
+        AhData.DOD_0[i] = AhData.SOH[i] - AhData.SOC_0[i];
+        AhData.DOD_c[i] = AhData.DOD_0[i];
 	}
     
     AhData.integratedCurrent = 0.0;
@@ -704,7 +712,6 @@ static status_t initDemo(void)
 static bcc_status_t updateMeasurements(void)
 {
     bcc_status_t error;
-    int16_t currentValue; // In mA with sign
 
     /* Step 1: Start conversion and wait for the conversion time. */
     error = BCC_Meas_StartAndWait(&drvConfig, BCC_CID_DEV1, BCC_AVG_1);
@@ -722,32 +729,32 @@ static bcc_status_t updateMeasurements(void)
 
     /* You can use bcc_measurements_t enumeration to index array with raw values. */
     /* Useful macros can be found in bcc.h or bcc_MC3377x.h. */
-    cellData[0] = BCC_GET_STACK_VOLT(measurements[BCC_MSR_STACK_VOLT]);
-	cellData[1] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT1]);
-	cellData[2] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT2]);
-	cellData[3] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT3]);
-	cellData[4] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT4]);
-	cellData[5] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT5]);
-	cellData[6] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT6]);
-	cellData[7] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT7]);
-	cellData[8] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT8]);
-	cellData[9] = BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT9]);
+    cellData[0]= BCC_GET_STACK_VOLT(measurements[BCC_MSR_STACK_VOLT]);
+	cellData[1]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT1]);
+	cellData[2]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT2]);
+	cellData[3]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT3]);
+	cellData[4]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT4]);
+	cellData[5]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT5]);
+	cellData[6]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT6]);
+	cellData[7]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT7]);
+	cellData[8]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT8]);
+	cellData[9]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT9]);
 	cellData[10]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT10]);
 	cellData[11]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT11]);
 	cellData[12]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT12]);
 	cellData[13]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT13]);
 	cellData[14]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT14]);
-	cellData[15]= BCC_GET_IC_TEMP_C(measurements[BCC_MSR_ICTEMP]);
+	cellData[15] = BCC_GET_IC_TEMP_C(measurements[BCC_MSR_ICTEMP]);
 
 	/* ISENCE data (current measurement) */
 	cellData[16] = BCC_GET_ISENSE_AMP(DEMO_RSHUNT, measurements[BCC_MSR_ISENSE1], measurements[BCC_MSR_ISENSE2]);
+	isenseVolt = BCC_GET_ISENSE_VOLT(measurements[BCC_MSR_ISENSE1], measurements[BCC_MSR_ISENSE2]);
 
-	currentValue = cellData[16];
-	if (currentValue > CURRENTTHRESHOLD){
+	if (isenseVolt > ISENSETHRESHOLD){
 		currentDirectionFlag = 0; // Discharge
         chargingDischargingFlag = 0;
 	}
-	else if(abs(currentValue) < CURRENTTHRESHOLD){
+	else if(abs(isenseVolt) <= ISENSETHRESHOLD){
 		currentDirectionFlag = 2; // Open circuit
 	}
     else{
@@ -786,19 +793,42 @@ void Ah_integral_step(void)
  */
 static void getCurrentDOD(void)
 {
-	float deltaDOD;
+	float deltaDOD[14];
+	//float deltaDOD;
 	int i;
 
-	deltaDOD = AhData.integratedCurrent / (RATEDCAPACITANCE * 3600.0) * 1000;
-    
 	for (i = 0; i < 14; i++){
+
+		/*
+		 * deltaDoD = (Integrated Current (As))/(SOH (1000%_0 / 1000) * C_rated (Ah) * 3600) * 1000
+		 * deltaDoD = A * 1000 * 1000 / (1000%_0 * Ah * 3600)
+		 */
+
+		deltaDOD[i] = AhData.integratedCurrent * 1000 * 1000 / (AhData.SOH[i] * RATEDCAPACITANCE * 3600);
+
         if (currentDirectionFlag == 0){
-            AhData.DOD_c[i] = AhData.DOD_0[i] + KD * deltaDOD; // Discharge DOD
+            AhData.DOD_c[i] = AhData.DOD_0[i] + KD * deltaDOD[i]; // Discharge DOD
         }
         else{
-            AhData.DOD_c[i] = AhData.DOD_0[i] + KC * deltaDOD; // Charge DOD
+            AhData.DOD_c[i] = AhData.DOD_0[i] + KC * deltaDOD[i]; // Charge DOD
         }
+
 	}
+
+	/*
+	deltaDOD = AhData.integratedCurrent / (RATEDCAPACITANCE * 3600.0) * 1000;
+	for (i = 0; i < 14; i++){
+
+		if (currentDirectionFlag == 0){
+			AhData.DOD_c[i] = AhData.DOD_0[i] + KD * deltaDOD; // Discharge DOD
+		}
+		else{
+			AhData.DOD_c[i] = AhData.DOD_0[i] + KC * deltaDOD; // Charge DOD
+		}
+
+	}
+	*/
+
 }
 
 /*
@@ -822,8 +852,9 @@ static void DischargeHandler(void)
     int16_t flag;
 
     for (i = 0; i < 14; i++){
-        if (cellData[i + 1] <= (MC33771C_TH_ALL_CT_UV_TH + 10) * 1000){ // 10mV margin
-            AhData.SOH[i] = AhData.DOD_c[i]; // Calibrate SOH for each cell
+        if (cellData[i + 1] <= (MC33771C_TH_ALL_CT_UV_TH + 100) * 1000){ // 100mV margin
+            AhData.SOH[i] = AhData.DOD_c[i]; // DoD is equal to the maximum releasable capacity
+            AhData.SOC_c[i] = 0; // When the cell is fully discharged, the SoC is 0, DoD is not 0
             flag = 1;
         }
         else{
@@ -846,9 +877,11 @@ static void ChargeHandler(void)
     int16_t flag;
 
     for (i = 0; i < 14; i++){
-        if (cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 10) * 1000){ // 10mV margin
-            AhData.SOH[i] = AhData.SOC_c[i] - AhData.DOD_c[i];
-            AhData.DOD_c[i] = 0.0;
+        if ((cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 100) * 1000) && (-isenseVolt <= (ISENSETHRESHOLD + 1))){ // At the end of CV process (10mV and 1uV margin)
+            AhData.SOH[i] = AhData.SOC_c[i] - AhData.DOD_c[i]; // Calibrate SOH for each cell
+            AhData.SOC_c[i] = AhData.SOH[i]; // SoC equals to SoH
+            AhData.DOD_c[i] = 0; // When the battery is fully charged, the DoD is 0
+            flag = 1;
         }
         else{
         	flag = 0;
@@ -956,9 +989,9 @@ static void resetData(void){
         AhData.DOD_c[i] = AhData.DOD_0[i];
     }
 
-    if (AhData.efcCounter > 3000){ // Clear efc Data in case memory leaking
+    if (AhData.efcCounter > 1000){ // Clear efc Data in case memory leaking
     	AhData.absIntegratedCurent = 0.0;
-    	AhData.efcCounter = 0;
+    	AhData.efcCounter = 0.0;
     }
 }
 
