@@ -74,6 +74,6 @@ class ocvDataPlotting:
         fig.show()
 
 ocvPlot = ocvDataPlotting("./Data/CLN_char_25deg - 009.csv")
-ocvPlot_2 = ocvDataPlotting("./Data/CLN_char_25deg - 009.csv")
+ocvPlot_2 = ocvDataPlotting("./Data/BAK-2.9-char-25C - 009.csv")
 ocvPlot.plotBatteryData()
 ocvPlot_2.plotBatteryData()
