@@ -395,6 +395,11 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.tempMaxLineEdit.textChanged.connect(self.updateThreshold)
         self.tempMiniLineEdit.textChanged.connect(self.updateThreshold)
 
+        # Link the timer to functions
+        self.timer.timeout.connect(self.receiveData)
+        self.timer2.timeout.connect(self.updateGraphData)
+        self.timer3.timeout.connect(self.recordData)
+
 # ===================Update threshold values====================
 
     def updateThreshold(self):
@@ -445,9 +450,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.outputData = np.zeros((1,45)).astype(np.int32)
 
         # Clear battery data
-        self.bccData = [0 for i in range(0,17)]
-        self.SOC_SOHData = [0 for i in range(0,27)]
-        
+        self.bccData = [0 for _ in range(17)]
+        self.SOC_SOHData = [0 for _ in range(28)]
+
         try:
             for i in range(0,45):
                 self.curveList[i].setData(self.xaxis,self.graphData[i], _callSync='off')
@@ -556,9 +561,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.stopButton.setEnabled(True)
             self.portStatusDisplay.setChecked(True)
 
-        # Open the timer to receive data
-        self.timer.timeout.connect(self.receiveData)
-
         # Set the timer for receiving
         self.timer.start(1)  # 1ms/T
 
@@ -582,7 +584,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def startRecording(self):
         """Handler for start data recording"""
         # Detect port status
-        self.timer3.timeout.connect(self.recordData)
         self.timer3.start(1000) # 1s
 
     def stopRecording(self):
@@ -607,7 +608,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             self.outputData = np.append(self.outputData, [realTimeData], axis = 0) # Convert to two dimension and add to output data
             
-            if self.outputData.shape[0] > 3600: # Automatic Recording
+            if self.outputData.shape[0] > 60: # Automatic Recording
                 columnName = [
                             'cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
                             'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 
@@ -773,8 +774,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.cellCurve43,self.cellCurve44, self.cellCurve45]
 
         if self.serial.isOpen():
-            self.timer2.timeout.connect(self.updateGraphData)
-
             self.timer2.start(200)
         else:
             QMessageBox.critical(
@@ -954,20 +953,31 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def plotByPlotly(self):
         """Handler for Plotly plotting"""
         try:
-            chargingPlot = cellDataPlot.cellDataPlotting('.\Data\Charging')
+            
             dischargingPlot = cellDataPlot.cellDataPlotting('.\Data\Discharging')
-            openCircuitPlot = cellDataPlot.cellDataPlotting('.\Data\OpenCircuit')
-            chargingPlot.plotBatteryData()
             dischargingPlot.plotBatteryData()
-            openCircuitPlot.plotBatteryData()
 
-            del chargingPlot
-            del dischargingPlot
-            del openCircuitPlot
-
+            del dischargingPlot 
         except:
             QMessageBox.critical(
-                self, 'Data error', 'No data, please check folder')
+                self, 'Data error', 'No discharging data, please check folder')
+        
+        try:
+            chargingPlot = cellDataPlot.cellDataPlotting('.\Data\Charging')
+            chargingPlot.plotBatteryData()
+        
+            del chargingPlot
+        except:
+            QMessageBox.critical(
+                self, 'Data error', 'No charging data, please check folder')
+        try:
+            openCircuitPlot = cellDataPlot.cellDataPlotting('.\Data\OpenCircuit')
+            openCircuitPlot.plotBatteryData()
+
+            del openCircuitPlot
+        except:
+            QMessageBox.critical(
+                self, 'Data error', 'No open circuit data, please check folder')
         
         gc.collect()
 
