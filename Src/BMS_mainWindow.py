@@ -1164,7 +1164,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         except:
             QMessageBox.critical(
                 self, 'COM error', 'COM data error, please reconnect the port')
-            self.close()
+            self.stopMonitor()
             return None
 
         if self.waitBits > 0:
