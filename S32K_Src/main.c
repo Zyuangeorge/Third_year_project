@@ -112,7 +112,7 @@
 #define KD 1 // Discharging efficiency
 
 /* Current threshold for determining the current direction */
-#define ISENSETHRESHOLD 2500 // In uV
+#define ISENSETHRESHOLD 6700 // In uV
 
 /* Battery minimum and maximum voltages */
 #define MC33771C_TH_ALL_CT_UV_TH 1600 // In mV
@@ -877,7 +877,7 @@ static void ChargeHandler(void)
     int16_t flag;
 
     for (i = 0; i < 14; i++){
-        if ((cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 100) * 1000) && (-isenseVolt <= (ISENSETHRESHOLD + 1))){ // At the end of CV process (10mV and 1uV margin)
+        if ((cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 130) * 1000) && (-isenseVolt <= (ISENSETHRESHOLD + 50))){ // At the end of CV process (10mV and 50uV margin)
             AhData.SOH[i] = AhData.SOC_c[i] - AhData.DOD_c[i]; // Calibrate SOH for each cell
             AhData.SOC_c[i] = AhData.SOH[i]; // SoC equals to SoH
             AhData.DOD_c[i] = 0; // When the battery is fully charged, the DoD is 0

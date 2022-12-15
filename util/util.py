@@ -1,4 +1,3 @@
-
 def listData2strData(dataList):
     """This function is used to transfer the bcc UART data to bcc data list"""
     dataList.reverse()  # Reverse the UART data list
