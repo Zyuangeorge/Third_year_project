@@ -23,7 +23,7 @@ This GUI is built by PySide6.
 
  * PySide6       - GUI building
 
- * Serial        - serial communication
+ * PySerial        - serial communication
  
  * Plotly        - data plotting
  
