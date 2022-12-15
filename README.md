@@ -25,6 +25,8 @@ This GUI is built by PySide6.
 
  * Serial        - serial communication
  
+ * Plotly        - data plotting
+ 
 ## Main features
 1. Serial communication with configuration of serial port
 
@@ -48,5 +50,4 @@ This GUI is built by PySide6.
 
 11. Battery SOC and SOH information display
 
-## Further Improvements
-1. Minimising the memory while running
+12. Data plotting
