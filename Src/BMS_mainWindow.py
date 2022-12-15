@@ -37,7 +37,7 @@ from BMS_plotWindow import loadGraphWindow, plotWindow, zoomWindow, SOCPlotWindo
 # Import UI file
 from UI.BMS_GUI import Ui_MainWindow
 # Import Plotly file
-from Plotly_Src import cellDataPlot
+from Plotly_Src.cellDataPlot import cellDataPlotting
 
 class voltageStatus(Enum):
     DEFAULT = "NORMAL"
@@ -954,7 +954,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """Handler for Plotly plotting"""
         try:
             
-            dischargingPlot = cellDataPlot.cellDataPlotting('.\Data\Discharging')
+            dischargingPlot = cellDataPlotting('.\Data\Discharging')
             dischargingPlot.plotBatteryData()
 
             del dischargingPlot 
@@ -963,7 +963,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 self, 'Data error', 'No discharging data, please check folder')
         
         try:
-            chargingPlot = cellDataPlot.cellDataPlotting('.\Data\Charging')
+            chargingPlot = cellDataPlotting('.\Data\Charging')
             chargingPlot.plotBatteryData()
         
             del chargingPlot
@@ -971,7 +971,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.critical(
                 self, 'Data error', 'No charging data, please check folder')
         try:
-            openCircuitPlot = cellDataPlot.cellDataPlotting('.\Data\OpenCircuit')
+            openCircuitPlot = cellDataPlotting('.\Data\OpenCircuit')
             openCircuitPlot.plotBatteryData()
 
             del openCircuitPlot
