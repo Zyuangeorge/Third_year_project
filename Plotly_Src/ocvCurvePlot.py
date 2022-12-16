@@ -15,13 +15,12 @@ class ocvDataPlotting:
 
         data = pd.read_csv(self.fileName, header=2, index_col=0)
 
-        #data['Amps (mA)'] = data['Amps'].map(lambda x: x * 1000)
-        #data['Volts (mV)'] = data['Volts'].map(lambda x: x * 1000)
+        """ data['Amps (mA)'] = data['Amps'].map(lambda x: x * 1000)
+        data['Volts (mV)'] = data['Volts'].map(lambda x: x * 1000)
 
-        #fig = make_subplots(rows=2, cols=2, subplot_titles=("Cell Current", 'Cell Voltage', 'Cell Ah', 'Cell Wh'))
-        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig = make_subplots(rows=2, cols=2, subplot_titles=("Cell Current", 'Cell Voltage', 'Cell Ah', 'Cell Wh'))
 
-        """ # Update xaxis properties
+        # Update xaxis properties
         fig.update_xaxes(title_text="Time(s)", row=1, col=1)
         fig.update_xaxes(title_text="Time(s)", row=1, col=2)
         fig.update_xaxes(title_text="Time(s)", row=2, col=1)
@@ -53,6 +52,7 @@ class ocvDataPlotting:
                                 name='Watt-hr (Wh)'),
                                 row=2, col=2) """
 
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
         
         fig.add_trace(go.Scatter(x=data['TestTime'], y=data['Volts'],
                                 mode='lines',
