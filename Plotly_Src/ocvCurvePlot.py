@@ -62,10 +62,10 @@ class ocvDataPlotting:
                                 mode='lines',
                                 name='Current (A)'), secondary_y=True,)
 
-        fig.update_layout(title='Battery Data', hovermode='x', legend=dict(orientation="h", yanchor="bottom",y=1.02,xanchor="right",x=1))
+        fig.update_layout(title='Battery SoC-OCV Data', hovermode='x', legend=dict(orientation="h", yanchor="bottom",y=1.02,xanchor="right",x=1))
 
         # Set x-axis title
-        fig.update_xaxes(title_text="Time (s)")
+        fig.update_xaxes(title_text="Time (hr)")
 
         # Set y-axes titles
         fig.update_yaxes(title_text="Voltages (V)", secondary_y=False)
