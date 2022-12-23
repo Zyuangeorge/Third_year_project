@@ -1,7 +1,7 @@
 """
-BMS GUI Version 8.2
+BMS GUI Version 8.3
 Features:
-*Update EFC measurement
+*Improve stability and memory consumption
 """
 # Import functions in other folders
 import sys
