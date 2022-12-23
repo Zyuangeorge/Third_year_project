@@ -792,7 +792,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.graphData = np.append(self.graphData, insertData, axis = 1)
         self.xaxis = np.append(self.xaxis,(self.xaxis[-1] + 0.2))
 
-        if self.graphData.shape[1] >= 4500: # Remove the first value after 4500*0.2/60=15mins
+        if self.graphData.shape[1] >= 9000: # Remove the first value after 9000*0.2/60=30mins
             self.xaxis = self.xaxis[1:]  # Remove the first x element.
             self.graphData = np.delete(self.graphData, 0, axis = 1) # Remove first column
 
