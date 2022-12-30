@@ -1,7 +1,10 @@
 """
-BMS GUI Version 8.3
+BMS GUI Version 0.8.3
 Features:
 *Improve stability and memory consumption
+
+pipenv Install:
+pyinstaller --add-data="sheffield_logo.png;img" -w -i guiLogo.ico --distpath Release/ --clean BMS_TYP.py
 """
 # Import functions in other folders
 import sys

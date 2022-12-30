@@ -11,7 +11,7 @@
 ** ###################################################################*/
 /*!
 ** @file main.c
-** @version 04.00
+** @version 0.0.4
 ** @brief
 **         Main module.
 **         Enhanced CC method.
@@ -21,38 +21,8 @@
 **  @addtogroup main_module main module documentation
 **  @{
 */
-/*
- * Copyright 2016 - 2020 NXP
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * o Redistributions of source code must retain the above copyright notice, this list
- *   of conditions and the following disclaimer.
- *
- * o Redistributions in binary form must reproduce the above copyright notice, this
- *   list of conditions and the following disclaimer in the documentation and/or
- *   other materials provided with the distribution.
- *
- * o Neither the name of the copyright holder nor the names of its
- *   contributors may be used to endorse or promote products derived from this
- *   software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 
 /* MODULE main */
-
 
 /* Including necessary module. Cpu.h contains other modules needed for compiling.*/
 #include "Cpu.h"
@@ -76,7 +46,6 @@
  * White: OC
  * Red: error
  */
-
 #define RED_LED_PORT         PTD
 #define RED_LED_PIN          15U
 #define BLUE_LED_PORT        PTD
@@ -125,6 +94,7 @@
 /*******************************************************************************
 * Enum definition
 ******************************************************************************/
+
 //Different state of bms system
 typedef enum
 {   
@@ -262,6 +232,7 @@ static const bcc_init_reg_t s_initRegsMc33771c[BCC_INIT_CONF_REG_CNT] = {
 /*******************************************************************************
  * Global variables
  ******************************************************************************/
+
 /* BCC driver configuration. */
 bcc_drv_config_t drvConfig;
 
@@ -298,7 +269,7 @@ int32_t isenseVolt;
 
 /* Final transmitted data */
 /*
- * [0] Pack voltge
+ * [0] Pack voltage
  * [1:14] Cell voltage 1 to 14
  * [15] IC temperature
  * [16] Current
@@ -347,6 +318,7 @@ static bcc_status_t updateFaultStatus(void);
 /*******************************************************************************
  * Functions
  ******************************************************************************/
+
 /*!
  * @brief Initializes BCC device registers according to BCC_INIT_CONF.
  * Registers having the wanted content already after POR are not rewritten.
@@ -794,15 +766,9 @@ void Ah_integral_step(void)
 static void getCurrentDOD(void)
 {
 	float deltaDOD[14];
-	//float deltaDOD;
 	int i;
 
 	for (i = 0; i < 14; i++){
-
-		/*
-		 * deltaDoD = (Integrated Current (As))/(SOH (1000%_0 / 1000) * C_rated (Ah) * 3600) * 1000
-		 * deltaDoD = A * 1000 * 1000 / (1000%_0 * Ah * 3600)
-		 */
 
 		deltaDOD[i] = AhData.integratedCurrent * 1000 * 1000 / (AhData.SOH[i] * RATEDCAPACITANCE * 3600);
 
@@ -812,23 +778,7 @@ static void getCurrentDOD(void)
         else{
             AhData.DOD_c[i] = AhData.DOD_0[i] + KC * deltaDOD[i]; // Charge DOD
         }
-
 	}
-
-	/*
-	deltaDOD = AhData.integratedCurrent / (RATEDCAPACITANCE * 3600.0) * 1000;
-	for (i = 0; i < 14; i++){
-
-		if (currentDirectionFlag == 0){
-			AhData.DOD_c[i] = AhData.DOD_0[i] + KD * deltaDOD; // Discharge DOD
-		}
-		else{
-			AhData.DOD_c[i] = AhData.DOD_0[i] + KC * deltaDOD; // Charge DOD
-		}
-
-	}
-	*/
-
 }
 
 /*
@@ -852,7 +802,7 @@ static void DischargeHandler(void)
     int16_t flag;
 
     for (i = 0; i < 14; i++){
-        if (cellData[i + 1] <= (MC33771C_TH_ALL_CT_UV_TH + 100) * 1000){ // 100mV margin
+        if (cellData[i + 1] <= (MC33771C_TH_ALL_CT_UV_TH + 150) * 1000){ // 150mV margin
             AhData.SOH[i] = AhData.DOD_c[i]; // DoD is equal to the maximum releasable capacity
             AhData.SOC_c[i] = 0; // When the cell is fully discharged, the SoC is 0, DoD is not 0
             flag = 1;
@@ -877,7 +827,7 @@ static void ChargeHandler(void)
     int16_t flag;
 
     for (i = 0; i < 14; i++){
-        if ((cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 130) * 1000) && (-isenseVolt <= (ISENSETHRESHOLD + 50))){ // At the end of CV process (10mV and 50uV margin)
+        if ((cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 100) * 1000) && (-isenseVolt <= (ISENSETHRESHOLD + 50))){ // At the end of CV process (10mV and 50uV margin)
             AhData.SOH[i] = AhData.SOC_c[i] - AhData.DOD_c[i]; // Calibrate SOH for each cell
             AhData.SOC_c[i] = AhData.SOH[i]; // SoC equals to SoH
             AhData.DOD_c[i] = 0; // When the battery is fully charged, the DoD is 0
@@ -904,7 +854,7 @@ static void OpenCircuitHandler(void)
         chargingDischargingFlag = 1;
     }
 
-    if (chargingDischargingCounter == 4){
+    if (chargingDischargingCounter == 2){
         AhData.efcCounter += AhData.absIntegratedCurent / (2*RATEDCAPACITANCE*3600);
         chargingDischargingCounter = 0;
     }
@@ -974,7 +924,7 @@ void dataTransmit(void)
         transmittedData[i] = AhData.SOH[i - 31]; // SOH data
     }
 
-    transmittedData[45] = (uint32_t)round(AhData.efcCounter); // Rount the EFC number
+    transmittedData[45] = (uint32_t)round(AhData.efcCounter); // Round the EFC number
 
     LPUART_DRV_SendData(INST_LPUART1, (uint8_t *)transmittedData, sizeof(transmittedData)); // Transmit the data through UART
 }
@@ -987,11 +937,6 @@ static void resetData(void){
 
     for (i = 0; i < 14; i++){
         AhData.DOD_c[i] = AhData.DOD_0[i];
-    }
-
-    if (AhData.efcCounter > 1000){ // Clear efc Data in case memory leaking
-    	AhData.absIntegratedCurent = 0.0;
-    	AhData.efcCounter = 0.0;
     }
 }
 
@@ -1057,6 +1002,7 @@ int main(void)
           /* Loops until specified timeout expires. */
           do
           {
+        	  /* State Display */
         	  switch(bmsNextState){
         	  	case Idle_State:
         	          	  	      {
@@ -1105,7 +1051,7 @@ int main(void)
         	  }
               if (!sleepMode)
               {
-                  /* To prevent communication loss. */
+                  /* To prevent communication loss */
                   if (BCC_SendNop(&drvConfig, BCC_CID_DEV1) != BCC_STATUS_SUCCESS)
                   {
                 	  PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
