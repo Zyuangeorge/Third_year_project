@@ -1,5 +1,5 @@
 """
-BMS GUI Version 0.8.3
+BMS GUI Version 1.0.0
 Features:
 *Improve stability and memory consumption
 
