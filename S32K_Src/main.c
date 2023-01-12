@@ -81,7 +81,7 @@
 #define KD 1 // Discharging efficiency
 
 /* Current threshold for determining the current direction */
-#define ISENSETHRESHOLD 6700 // In uV
+#define ISENSETHRESHOLD 3000 // In uV 6700
 
 /* Battery minimum and maximum voltages */
 #define MC33771C_TH_ALL_CT_UV_TH 1600 // In mV
@@ -259,7 +259,7 @@ int16_t currentDirectionFlag = 0;
 
 /* Charging and discharging counter used for EFC Calculation */
 int16_t chargingDischargingCounter = 0;
-int16_t chargingDischargingFlag = 0;
+int16_t EFCFlag = 0;
 
 /* Fault status */
 uint16_t faultStatusValue[2]={0,0}; // [0]: overvoltage [1]: undervoltage
@@ -724,14 +724,14 @@ static bcc_status_t updateMeasurements(void)
 
 	if (isenseVolt > ISENSETHRESHOLD){
 		currentDirectionFlag = 0; // Discharge
-        chargingDischargingFlag = 0;
+        EFCFlag = 0;
 	}
 	else if(abs(isenseVolt) <= ISENSETHRESHOLD){
 		currentDirectionFlag = 2; // Open circuit
 	}
     else{
         currentDirectionFlag = 1; // Charge 
-        chargingDischargingFlag = 0;
+        EFCFlag = 0;
     }
 
 	return BCC_STATUS_SUCCESS;
@@ -849,12 +849,12 @@ static void ChargeHandler(void)
  */
 static void OpenCircuitHandler(void)
 {
-	if (chargingDischargingFlag == 0){
+	if (EFCFlag == 0){
         chargingDischargingCounter += 1;
-        chargingDischargingFlag = 1;
+        EFCFlag = 1;
     }
 
-    if (chargingDischargingCounter == 2){
+    if (chargingDischargingCounter == 4){
         AhData.efcCounter += AhData.absIntegratedCurent / (2*RATEDCAPACITANCE*3600);
         chargingDischargingCounter = 0;
     }
@@ -990,7 +990,7 @@ int main(void)
         
           if (PTC->PDIR & (1<<12)){ /* If Pad Data Input = 1 (BTN0 [SW2] pushed) */
         	  chargingDischargingCounter = 0; /* Clear EFC counter */
-              chargingDischargingFlag = 1;
+              EFCFlag = 1;
   	  		  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
   	  		  PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
   	  		  PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
