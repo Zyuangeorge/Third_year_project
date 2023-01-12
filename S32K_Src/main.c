@@ -258,7 +258,7 @@ int32_t timeout = 0;
 int16_t currentDirectionFlag = 0;
 
 /* Charging and discharging counter used for EFC Calculation */
-int16_t chargingDischargingCounter = 0;
+int16_t CycleCounter = 0;
 int16_t EFCFlag = 0;
 
 /* Fault status */
@@ -850,13 +850,13 @@ static void ChargeHandler(void)
 static void OpenCircuitHandler(void)
 {
 	if (EFCFlag == 0){
-        chargingDischargingCounter += 1;
+        CycleCounter += 1;
         EFCFlag = 1;
     }
 
-    if (chargingDischargingCounter == 4){
+    if (CycleCounter == 4){
         AhData.efcCounter += AhData.absIntegratedCurent / (2*RATEDCAPACITANCE*3600);
-        chargingDischargingCounter = 0;
+        CycleCounter = 0;
     }
 
     BCC_SendNop(&drvConfig, BCC_CID_DEV1);
@@ -989,7 +989,7 @@ int main(void)
           initTimeout(200);
         
           if (PTC->PDIR & (1<<12)){ /* If Pad Data Input = 1 (BTN0 [SW2] pushed) */
-        	  chargingDischargingCounter = 0; /* Clear EFC counter */
+        	  CycleCounter = 0; /* Clear EFC counter */
               EFCFlag = 1;
   	  		  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
   	  		  PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
