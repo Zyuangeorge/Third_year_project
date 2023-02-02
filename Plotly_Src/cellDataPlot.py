@@ -4,7 +4,6 @@ import sys
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import pandas as pd
-import numpy as np
 
 sys.path.append('.')
 
