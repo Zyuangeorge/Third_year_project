@@ -72,14 +72,17 @@ class DataPlotting():
         ])
 
     def update_graphs(self, battery_data, battery_number):
-        filtered_data = self.batteryData[self.batteryData['BatteryNo'].isin(battery_number)]
+        filtered_data = self.batteryData[self.batteryData['BatteryNo'].isin(
+            battery_number)]
         xAxis = 'Cyc#'
         yAxis = filtered_data[battery_data].columns
 
         fig = px.line(filtered_data,
                       x=xAxis,
                       y=yAxis,
-                      color=filtered_data['BatteryType'], markers=True)
+                      color=filtered_data['BatteryType'],
+                      line_dash=filtered_data['BatteryNo'],
+                      markers=False)
 
         fig.update_layout(xaxis_title="Cycle",
                           yaxis_title="Nominal Value (%)",
