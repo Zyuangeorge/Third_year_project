@@ -35,7 +35,7 @@ class DataPlotting():
 
         self.app.layout = html.Div([
             html.H1(
-                children='Third Year Project-Data plotting-Zhe Yuan',
+                children='Third Year Project-Data Plotting-Zhe Yuan',
                 style={
                     'textAlign': 'left',
                     'color': self.colours['text']
