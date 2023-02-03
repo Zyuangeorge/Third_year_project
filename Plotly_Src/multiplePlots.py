@@ -1,7 +1,6 @@
 # Import functions in other folders
-from dash import Dash, dcc, html, Input, Output
+from dash import Dash, dcc, html, dependencies
 import plotly.express as px
-import plotly.graph_objects as go
 from PySide6.QtCore import QDateTime
 import numpy as np
 import pandas as pd
@@ -12,10 +11,83 @@ import os
 # Expend file path
 sys.path.append('.')
 
+
 class DataPlotting():
     def __init__(self, batteryData) -> None:
         self.batteryData = batteryData
         self.app = Dash(__name__)
+        self.app.callback(
+            dependencies.Output(component_id='battery-graph',
+                                component_property='figure'),
+            [dependencies.Input(component_id='battery_data',
+                                component_property='value'),
+             dependencies.Input(component_id='battery_number',
+                                component_property='value')]
+        )(self.update_graphs)
+
+        self.colours = {
+            'background': '#E0EEEE',
+            'text': '#000000'
+        }
+
+        self.app.layout = html.Div([
+            html.H1(
+                children='Data plotting for batteries',
+                style={
+                    'textAlign': 'left',
+                    'color': self.colours['text']
+                }
+            ),
+
+            html.Div(children=[
+                html.Label('Batteries Data',
+                           style={
+                               'textAlign': 'left',
+                               'color': self.colours['text']
+                           }),
+
+                dcc.Dropdown(
+                    id="battery_data",
+                    options=['Capacity', 'Efficiency', 'InternalResistance'],
+                    value=['Capacity'],
+                    multi=True),
+
+                html.Label('Battery Number',
+                           style={
+                               'textAlign': 'left',
+                               'color': self.colours['text']
+                           }),
+
+                dcc.Checklist(
+                    id="battery_number",
+                    options=self.batteryData['BatteryNo'].unique(),
+                    value=[1.0],
+                    inline=True),
+            ], style={
+                'color': self.colours['text'],
+                'padding': 10,
+                'flex': 1}),
+
+            dcc.Graph(id='battery-graph'),
+        ])
+
+    def update_graphs(self, battery_data, battery_number):
+        filtered_data = self.batteryData[self.batteryData['BatteryNo'].isin(battery_number)]
+        xAxis = 'Cyc#'
+        yAxis = filtered_data[battery_data].columns
+
+        fig = px.line(filtered_data,
+                      x=xAxis,
+                      y=yAxis,
+                      color=filtered_data['BatteryType'], markers=True)
+
+        fig.update_layout(xaxis_title="Cycle",
+                          yaxis_title="Nominal Value (%)",
+                          plot_bgcolor=self.colours['background'],
+                          paper_bgcolor=self.colours['background'],
+                          font_color=self.colours['text'])
+
+        return fig
 
 
 class Battery():
@@ -49,18 +121,20 @@ class Battery():
     def returnData(self):
         """Handler for returning overall data"""
         data_1 = np.empty(shape=(self.cycleNumber, 5), dtype=np.float32)
-        data_1[:,0] = np.array(list(range(self.cycleNumber)))
-        data_1[:,1] = self.capacity_1
-        data_1[:,2] = self.efficiency_1
-        data_1[:,3] = np.zeros(self.cycleNumber)
-        data_1[:,4] = np.full(self.cycleNumber, 1.0)
+        data_1[:, 0] = np.array(list(range(self.cycleNumber)))
+        data_1[:, 1] = self.capacity_1
+        data_1[:, 2] = self.efficiency_1
+        data_1[:, 3] = np.zeros(self.cycleNumber)
+        data_1[:, 4] = np.full(self.cycleNumber, 1.0)
 
-        data_2 = np.empty(shape=(self.rawData.shape[0] - self.cycleNumber, 5), dtype=np.float32)
-        data_2[:,0] = np.array(list(range(0, self.rawData.shape[0] - self.cycleNumber)))
-        data_2[:,1] = self.capacity_2
-        data_2[:,2] = self.efficiency_2
-        data_2[:,3] = np.zeros(self.rawData.shape[0] -self.cycleNumber)
-        data_2[:,4] = np.full(self.rawData.shape[0] -self.cycleNumber, 2.0)
+        data_2 = np.empty(
+            shape=(self.rawData.shape[0] - self.cycleNumber, 5), dtype=np.float32)
+        data_2[:, 0] = np.array(
+            list(range(0, self.rawData.shape[0] - self.cycleNumber)))
+        data_2[:, 1] = self.capacity_2
+        data_2[:, 2] = self.efficiency_2
+        data_2[:, 3] = np.zeros(self.rawData.shape[0] - self.cycleNumber)
+        data_2[:, 4] = np.full(self.rawData.shape[0] - self.cycleNumber, 2.0)
 
         # Create output dataframe
         data = np.concatenate((data_1, data_2), axis=0)
@@ -68,6 +142,23 @@ class Battery():
                    'InternalResistance', 'BatteryNo']
         outputData = pd.DataFrame(data=data, columns=colName, dtype=np.float32)
         outputData['BatteryType'] = self.type
+
+        # Data cleaning
+        for x in outputData.index:
+            if outputData.loc[x, "Capacity"] > 100:
+                outputData.loc[x, "Capacity"] = np.nan
+
+            if outputData.loc[x, "Efficiency"] > 100:
+                outputData.loc[x, "Efficiency"] = np.nan
+
+            if outputData.loc[x, "InternalResistance"] > 100:
+                outputData.loc[x, "InternalResistance"] = np.nan
+
+        outputData["Capacity"] = outputData["Capacity"].fillna(method='bfill')
+        outputData["Efficiency"] = outputData["Efficiency"].fillna(
+            method='bfill')
+        outputData["InternalResistance"] = outputData["InternalResistance"].fillna(
+            method='bfill')
 
         return outputData
 
@@ -136,7 +227,8 @@ class Dataset():
                     (rawData['ES'] > 120.0), 'Watt-hr'].max()
 
                 # Record the error
-                self.error['Position'].append(file[47:]) # Remove the previous path
+                self.error['Position'].append(
+                    file[47:])  # Remove the previous path
                 self.error['Cycle'].append(cycle)
                 self.error['Condition'].append("Discharging")
 
@@ -238,9 +330,7 @@ class Dataset():
         print("\n")
 
     def exportErrorLog(self):
-        outputDir = 'Third_year_project/Data/Error'
-
-        self.error = pd.DataFrame(columns=['A', 'B', 'C'], index=[0,1,2])
+        outputDir = './Data/Error'
 
         if not os.path.exists(outputDir):
             os.makedirs(outputDir)
@@ -263,15 +353,22 @@ class Dataset():
 
         for battery in self.batteries:
             batteryData = battery.returnData()
-            
+
             outputData = pd.concat([outputData, batteryData], axis=0,
                                    join='outer', ignore_index=True)
-            print(outputData)
+
+        print(outputData)
+        outputData.to_csv("./Data/Error/data.csv",
+                          index=False, line_terminator='\n')
+        return outputData, self.batteryType
 
 
 if __name__ == "__main__":
-    data = Dataset("D:\Project Data\MP_Cycle_Testing\Full_Test_Data")
-    data.getBatteryInfo()
-    data.instanceBatteries()
-    data.exportErrorLog()
-    data.combineData()
+    #dataset = Dataset("D:\Project Data\MP_Cycle_Testing\Full_Test_Data")
+    # dataset.getBatteryInfo()
+    # dataset.instanceBatteries()
+    # dataset.exportErrorLog()
+    #data, type = dataset.combineData()
+    data = pd.read_csv("./Data/Error/data.csv")
+    plotPage = DataPlotting(data)
+    plotPage.app.run_server(debug=True)
