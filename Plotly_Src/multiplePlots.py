@@ -5,7 +5,6 @@ from PySide6.QtCore import QDateTime
 import numpy as np
 import pandas as pd
 import sys
-import gc
 import os
 
 # Expend file path
@@ -362,8 +361,6 @@ class Dataset():
             print("\n")
             print("Output error log error!")
 
-        gc.collect()  # Collect garbage
-
     def combineData(self):
         """Handler for combining all the battery data"""
         outputData = pd.DataFrame()
@@ -374,7 +371,7 @@ class Dataset():
             outputData = pd.concat([outputData, batteryData], axis=0,
                                    join='outer', ignore_index=True)
 
-        return outputData, self.batteryType
+        return outputData
 
 
 if __name__ == "__main__":
@@ -382,7 +379,7 @@ if __name__ == "__main__":
     dataset.getBatteryInfo()
     dataset.instanceBatteries()
     dataset.exportErrorLog()
-    data, type = dataset.combineData()
+    data = dataset.combineData()
     #data = pd.read_csv("./Data/data.csv")
     plotPage = DataPlotting(data)
     plotPage.app.run_server(debug=True)
