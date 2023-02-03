@@ -22,6 +22,8 @@ class DataPlotting():
             [dependencies.Input(component_id='battery_data',
                                 component_property='value'),
              dependencies.Input(component_id='battery_number',
+                                component_property='value'),
+             dependencies.Input(component_id='battery_type',
                                 component_property='value')]
         )(self.update_graphs)
 
@@ -52,6 +54,18 @@ class DataPlotting():
                     value=['Capacity'],
                     multi=True),
 
+                html.Label('Batteries Type',
+                           style={
+                               'textAlign': 'left',
+                               'color': self.colours['text']
+                           }),
+
+                dcc.Dropdown(
+                    id="battery_type",
+                    options=self.batteryData['BatteryType'].unique(),
+                    value=self.batteryData['BatteryType'].unique(),
+                    multi=True),
+
                 html.Label('Battery Number',
                            style={
                                'textAlign': 'left',
@@ -71,9 +85,9 @@ class DataPlotting():
             dcc.Graph(id='battery-graph'),
         ])
 
-    def update_graphs(self, battery_data, battery_number):
-        filtered_data = self.batteryData[self.batteryData['BatteryNo'].isin(
-            battery_number)]
+    def update_graphs(self, battery_data, battery_number, battery_type):
+        filtered_data = self.batteryData[self.batteryData['BatteryNo'].isin(battery_number) &
+                                         self.batteryData['BatteryType'].isin(battery_type)]
         xAxis = 'Cyc#'
         yAxis = filtered_data[battery_data].columns
 
