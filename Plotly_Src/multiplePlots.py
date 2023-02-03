@@ -374,18 +374,15 @@ class Dataset():
             outputData = pd.concat([outputData, batteryData], axis=0,
                                    join='outer', ignore_index=True)
 
-        print(outputData)
-        outputData.to_csv("./Data/Error/data.csv",
-                          index=False, line_terminator='\n')
         return outputData, self.batteryType
 
 
 if __name__ == "__main__":
-    #dataset = Dataset("D:\Project Data\MP_Cycle_Testing\Full_Test_Data")
-    # dataset.getBatteryInfo()
-    # dataset.instanceBatteries()
-    # dataset.exportErrorLog()
-    #data, type = dataset.combineData()
-    data = pd.read_csv("./Data/Error/data.csv")
+    dataset = Dataset("D:\Project Data\MP_Cycle_Testing\Full_Test_Data")
+    dataset.getBatteryInfo()
+    dataset.instanceBatteries()
+    dataset.exportErrorLog()
+    data, type = dataset.combineData()
+    #data = pd.read_csv("./Data/data.csv")
     plotPage = DataPlotting(data)
     plotPage.app.run_server(debug=True)
