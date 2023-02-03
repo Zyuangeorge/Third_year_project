@@ -1,5 +1,7 @@
 # Import functions in other folders
 from dash import Dash, dcc, html, dependencies
+from threading import Timer
+import webbrowser
 import plotly.express as px
 from PySide6.QtCore import QDateTime
 import numpy as np
@@ -33,7 +35,7 @@ class DataPlotting():
 
         self.app.layout = html.Div([
             html.H1(
-                children='Data plotting for batteries',
+                children='Third Year Project-Data plotting-Zhe Yuan',
                 style={
                     'textAlign': 'left',
                     'color': self.colours['text']
@@ -104,6 +106,11 @@ class DataPlotting():
                           font_color=self.colours['text'])
 
         return fig
+    
+    def autoOpen(self):
+        if not os.environ.get("WERKZEUG_RUN_MAIN"):
+            webbrowser.open_new('http://127.0.0.1:8050')
+
 
 
 class Battery():
@@ -380,6 +387,6 @@ if __name__ == "__main__":
     dataset.instanceBatteries()
     dataset.exportErrorLog()
     data = dataset.combineData()
-    #data = pd.read_csv("./Data/data.csv")
     plotPage = DataPlotting(data)
-    plotPage.app.run_server(debug=True)
+    Timer(1, plotPage.autoOpen).start()
+    plotPage.app.run_server()
