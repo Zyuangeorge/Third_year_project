@@ -1,16 +1,23 @@
-# Import functions in other folders
-from dash import Dash, dcc, html, dependencies
 from threading import Timer
 import webbrowser
-import plotly.express as px
-from PySide6.QtCore import QDateTime
-import numpy as np
-import pandas as pd
+from datetime import datetime
 import sys
 import os
+from enum import Enum
+
+from dash import Dash, dcc, html, dependencies
+import plotly.express as px
+import numpy as np
+import pandas as pd
+
 
 # Expend file path
 sys.path.append('.')
+
+
+class thresholdSetting(Enum):
+    MINIMUMVOLTAGE = 3.0
+    ESTHRESHOLD = 120.0
 
 
 class DataPlotting():
@@ -122,17 +129,17 @@ class DataPlotting():
         if show_trendline == ['show']:
             fig.add_traces(px.scatter(filtered_data, x=xAxis,
                            y=yAxis, color=filtered_data['BatteryType'], trendline="lowess").data)
-            
+
             # Remove marker line
             fig.update_traces(visible=False, selector=dict(mode="markers"))
 
         fig.update_layout(xaxis_title="Cycle",
-                   yaxis_title="Nominal Value (%)",
-                   plot_bgcolor=self.colours['background'],
-                   paper_bgcolor=self.colours['background'],)
+                          yaxis_title="Nominal Value (%)",
+                          plot_bgcolor=self.colours['background'],
+                          paper_bgcolor=self.colours['background'],)
 
         return fig
-    
+
     def autoOpen(self):
         """Handler used to open the graph automatically"""
         if not os.environ.get("WERKZEUG_RUN_MAIN"):
@@ -174,7 +181,7 @@ class Battery():
         # [1] Capacity
         # [2] Efficiency
         # [3] Internal resistance
-        # [4] Battery number 
+        # [4] Battery number
         data_1 = np.empty(shape=(self.cycleNumber, 5), dtype=np.float32)
         data_1[:, 0] = np.array(list(range(self.cycleNumber)))
         data_1[:, 1] = self.capacity_1
@@ -183,16 +190,17 @@ class Battery():
         data_1[:, 4] = np.full(self.cycleNumber, 1.0)
 
         data_2 = np.empty(
-            shape=(self.rawData.shape[0] - self.cycleNumber, 5), dtype=np.float32) 
+            shape=(self.rawData.shape[0] - self.cycleNumber, 5), dtype=np.float32)
         data_2[:, 0] = np.array(
-            list(range(0, self.rawData.shape[0] - self.cycleNumber))) # Change the start of the cycle number from 1
+            list(range(0, self.rawData.shape[0] - self.cycleNumber)))  # Change the start of the cycle number from 1
         data_2[:, 1] = self.capacity_2
         data_2[:, 2] = self.efficiency_2
         data_2[:, 3] = np.zeros(self.rawData.shape[0] - self.cycleNumber)
         data_2[:, 4] = np.full(self.rawData.shape[0] - self.cycleNumber, 2.0)
 
         # Create output dataframe
-        data = np.concatenate((data_1, data_2), axis=0) # Combine the battery data for 1 and 2 in vertical axis
+        # Combine the battery data for 1 and 2 in vertical axis
+        data = np.concatenate((data_1, data_2), axis=0)
         colName = ['Cyc#', 'Capacity', 'Efficiency',
                    'InternalResistance', 'BatteryNo']
         outputData = pd.DataFrame(data=data, columns=colName, dtype=np.float32)
@@ -266,25 +274,26 @@ class Dataset():
             filteredData = rawData.loc[
                 (rawData['Cyc#'] == float(cycle)) &
                 (rawData['Amps'] < 0.0) &
-                (rawData['Volts'] < 3.0) &
-                (rawData['Volts'] > 2.99) &
-                (rawData['ES'] > 120.0)]
+                (rawData['Volts'] < thresholdSetting.MINIMUMVOLTAGE.value) &
+                (rawData['Volts'] > (thresholdSetting.MINIMUMVOLTAGE.value - 0.01)) &
+                (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value)]
 
-            if filteredData.shape[0] == 1:  # There should only be one selected point
+            # There should only be one selected point
+            if filteredData.shape[0] == 1:
                 pointDischarging[0] = filteredData['Amp-hr'].values[0]
                 pointDischarging[1] = filteredData['Watt-hr'].values[0]
             else:
                 # If there is an error in the data, using the maximum capacity value as the capacity data in this cycle
                 pointDischarging[0] = rawData.loc[
                     (rawData['Cyc#'] == float(cycle)) &
-                    (rawData['ES'] > 120.0), 'Amp-hr'].max()
+                    (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value), 'Amp-hr'].max()
                 pointDischarging[1] = rawData.loc[
                     (rawData['Cyc#'] == float(cycle)) &
-                    (rawData['ES'] > 120.0), 'Watt-hr'].max()
+                    (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value), 'Watt-hr'].max()
 
                 # Record the error
                 self.error['Position'].append(
-                    file[47:])  # Remove the previous path
+                    file[47:])  # Remove the previous path: until the full cycle data folder
                 self.error['Cycle'].append(cycle)
                 self.error['Condition'].append("Discharging")
 
@@ -294,7 +303,7 @@ class Dataset():
                 indexList = rawData[
                     (rawData['Cyc#'] == float(cycle)) &
                     (rawData['Amps'] > 0.0) &
-                    (rawData['ES'] > 120.0)].index.tolist()
+                    (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value)].index.tolist()
 
                 for index in indexList:
                     if rawData.loc[index + 1, 'Cyc#'] == cycle + 1:
@@ -305,10 +314,10 @@ class Dataset():
                 # If there is no such data then using the maximum capacity value as the capacity data in this cycle
                 pointCharging[0] = rawData.loc[
                     (rawData['Cyc#'] == float(cycle)) &
-                    (rawData['ES'] > 120.0), 'Amp-hr'].max()
+                    (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value), 'Amp-hr'].max()
                 pointCharging[1] = rawData.loc[
                     (rawData['Cyc#'] == float(cycle)) &
-                    (rawData['ES'] > 120.0), 'Watt-hr'].max()
+                    (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value), 'Watt-hr'].max()
 
                 # Record the error
                 self.error['Position'].append(file[47:])
@@ -395,8 +404,8 @@ class Dataset():
         if not os.path.exists(outputDir):
             os.makedirs(outputDir)
 
-        time = QDateTime.currentDateTime()
-        timeInfo = time.toString("dd-MM-yyyy-mm-hh")
+        time = datetime.now()
+        timeInfo = time.strftime("%d-%m-%Y-%H-%M-%S")
         fileName = outputDir + "/" + str(timeInfo) + ".csv"
 
         try:
