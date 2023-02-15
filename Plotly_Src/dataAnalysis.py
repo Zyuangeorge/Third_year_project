@@ -17,6 +17,7 @@ class DataPlotting():
     def __init__(self, batteryData) -> None:
         self.batteryData = batteryData
         self.app = Dash(__name__)
+        # App callback
         self.app.callback(
             dependencies.Output(component_id='battery-graph',
                                 component_property='figure'),
@@ -30,11 +31,13 @@ class DataPlotting():
                                 component_property='value')]
         )(self.update_graphs)
 
+        # Graph colour setting
         self.colours = {
             'background': '#E0EEEE',
             'text': '#000000'
         }
 
+        # Layout setting
         self.app.layout = html.Div([
             html.H1(
                 children='Third Year Project-Data Plotting-Zhe Yuan',
@@ -50,7 +53,7 @@ class DataPlotting():
                                'textAlign': 'left',
                                'color': self.colours['text']
                            }),
-
+                # Battery data type filter
                 dcc.Dropdown(
                     id="battery_data",
                     options=['Capacity', 'Efficiency', 'InternalResistance'],
@@ -63,6 +66,7 @@ class DataPlotting():
                                'color': self.colours['text']
                            }),
 
+                # Battery type filter
                 dcc.Dropdown(
                     id="battery_type",
                     options=self.batteryData['BatteryType'].unique(),
@@ -75,12 +79,14 @@ class DataPlotting():
                                'color': self.colours['text']
                            }),
 
+                # Battery number filter
                 dcc.Checklist(
                     id="battery_number",
                     options=self.batteryData['BatteryNo'].unique(),
                     value=[1.0],
                     inline=True),
 
+                # Trendline selection
                 dcc.Checklist(
                     id='show_trendline',
                     options=[{'label': 'Show Trendline', 'value': 'show'}],
@@ -95,11 +101,16 @@ class DataPlotting():
         ])
 
     def update_graphs(self, battery_data, battery_number, battery_type, show_trendline):
+        """Handler used to update graph based on the user action"""
+        # Filter the data based on battery type
         filtered_data = self.batteryData[self.batteryData['BatteryNo'].isin(battery_number) &
                                          self.batteryData['BatteryType'].isin(battery_type)]
+
+        # Define X and Y axis name
         xAxis = 'Cyc#'
         yAxis = filtered_data[battery_data].columns
 
+        # Create figure
         fig = px.line(filtered_data,
                       x=xAxis,
                       y=yAxis,
@@ -107,9 +118,12 @@ class DataPlotting():
                       line_dash=filtered_data['BatteryNo'],
                       markers=False)
 
+        # Add trendline
         if show_trendline == ['show']:
             fig.add_traces(px.scatter(filtered_data, x=xAxis,
                            y=yAxis, color=filtered_data['BatteryType'], trendline="lowess").data)
+            
+            # Remove marker line
             fig.update_traces(visible=False, selector=dict(mode="markers"))
 
         fig.update_layout(xaxis_title="Cycle",
@@ -118,8 +132,9 @@ class DataPlotting():
                    paper_bgcolor=self.colours['background'],)
 
         return fig
-
+    
     def autoOpen(self):
+        """Handler used to open the graph automatically"""
         if not os.environ.get("WERKZEUG_RUN_MAIN"):
             webbrowser.open_new('http://127.0.0.1:8050')
 
@@ -132,19 +147,19 @@ class Battery():
 
     def getCapacity(self):
         """Capacity data handler"""
-        # Capacity data for battery 1
+        # Calculate the nominal capacity of the battery
         self.capacity_1 = self.rawData[0:self.cycleNumber,
                                        0] / self.rawData[0, 0] * 100.0
-        # Capacity data for battery 2
+
         self.capacity_2 = self.rawData[self.cycleNumber:,
                                        0] / self.rawData[self.cycleNumber, 0] * 100.0
 
     def getEfficiency(self):
         """Efficiency data handler"""
-        # Efficiency data for battery 1
+        # Calculate the nominal efficiency of the battery
         self.efficiency_1 = self.rawData[0:self.cycleNumber,
                                          1] / self.rawData[0:self.cycleNumber, 2] * 100.0
-        # Efficiency data for battery 2
+
         self.efficiency_2 = self.rawData[self.cycleNumber:,
                                          1] / self.rawData[self.cycleNumber:, 2] * 100.0
 
@@ -153,7 +168,13 @@ class Battery():
         pass
 
     def returnData(self):
-        """Handler for returning overall data"""
+        """Handler for organising the data"""
+        # Data for battery 1
+        # [0] Cycle number
+        # [1] Capacity
+        # [2] Efficiency
+        # [3] Internal resistance
+        # [4] Battery number 
         data_1 = np.empty(shape=(self.cycleNumber, 5), dtype=np.float32)
         data_1[:, 0] = np.array(list(range(self.cycleNumber)))
         data_1[:, 1] = self.capacity_1
@@ -162,22 +183,22 @@ class Battery():
         data_1[:, 4] = np.full(self.cycleNumber, 1.0)
 
         data_2 = np.empty(
-            shape=(self.rawData.shape[0] - self.cycleNumber, 5), dtype=np.float32)
+            shape=(self.rawData.shape[0] - self.cycleNumber, 5), dtype=np.float32) 
         data_2[:, 0] = np.array(
-            list(range(0, self.rawData.shape[0] - self.cycleNumber)))
+            list(range(0, self.rawData.shape[0] - self.cycleNumber))) # Change the start of the cycle number from 1
         data_2[:, 1] = self.capacity_2
         data_2[:, 2] = self.efficiency_2
         data_2[:, 3] = np.zeros(self.rawData.shape[0] - self.cycleNumber)
         data_2[:, 4] = np.full(self.rawData.shape[0] - self.cycleNumber, 2.0)
 
         # Create output dataframe
-        data = np.concatenate((data_1, data_2), axis=0)
+        data = np.concatenate((data_1, data_2), axis=0) # Combine the battery data for 1 and 2 in vertical axis
         colName = ['Cyc#', 'Capacity', 'Efficiency',
                    'InternalResistance', 'BatteryNo']
         outputData = pd.DataFrame(data=data, columns=colName, dtype=np.float32)
         outputData['BatteryType'] = self.type
 
-        # Data cleaning
+        # Data cleaning, remove all the data larger than 100
         for x in outputData.index:
             if outputData.loc[x, "Capacity"] > 100:
                 outputData.loc[x, "Capacity"] = np.nan
@@ -216,8 +237,9 @@ class Dataset():
         print("\n")
 
         for type in self.batteryType:
-            # This is the folder path of each battery
+            # This is the path of each battery data
             prePath = str(self.dataPath + "\\" + type)
+            # Combine all the paths into one list
             self.filePath.append([os.path.join(prePath, file) for file in os.listdir(
                 prePath + "\\")])  # Get each csv file path according to the battery type
 
@@ -227,8 +249,8 @@ class Dataset():
         totalCycle = int(rawData['Cyc#'].max())
 
         # Discharging point and Charging point
-        # [0] is capacity data
-        # [1] is watt-hr data
+        # Row 0 is capacity data
+        # Row 1 is watt-hr data
         pointDischarging = np.zeros((2,), dtype=np.float32)
         pointCharging = np.zeros((2,), dtype=np.float32)
 
@@ -248,7 +270,7 @@ class Dataset():
                 (rawData['Volts'] > 2.99) &
                 (rawData['ES'] > 120.0)]
 
-            if filteredData.shape[0] == 1:  # There should only be one point
+            if filteredData.shape[0] == 1:  # There should only be one selected point
                 pointDischarging[0] = filteredData['Amp-hr'].values[0]
                 pointDischarging[1] = filteredData['Watt-hr'].values[0]
             else:
@@ -321,17 +343,19 @@ class Dataset():
             dataLoadingTotal = len(batteryDataList)
 
             for file in batteryDataList:
-                # Complete instruction
+                # User instruction
                 dataLoading += 1
                 print("\rComplete: %.0f %%" %
                       (dataLoading * 100 / dataLoadingTotal), end="")
 
+                # Read CSV file
                 batteryData = pd.read_csv(file, header=2, usecols=[
                     'Cyc#', 'Step', 'Amp-hr', 'Watt-hr', 'Amps', 'Volts', 'ES'], dtype=np.float32)
 
                 capAndEffValue = self.filterBatteryCapAndEffData(
                     batteryData, file)
 
+                # Combine all the capacity and efficiency data
                 capAndEffData = np.append(
                     capAndEffData, capAndEffValue, axis=0)
 
@@ -339,12 +363,13 @@ class Dataset():
                 # Record cycle number for the first battery
                 cycleData = capAndEffData.shape[0] - 1
 
-        # Delete row 1 values
+        # Delete row 1 values, (All 0)
         capAndEffData = np.delete(capAndEffData, 0, axis=0)
 
         return capAndEffData, cycleData
 
     def instanceBatteries(self):
+        """Handler used to instance the batteries"""
         for i in range(len(self.batteryType)):
             # Get the battery data based on the battery type
             capAndEffData, cycleData = self.getBatteryData(
@@ -364,6 +389,7 @@ class Dataset():
         print("\n")
 
     def exportErrorLog(self):
+        """Handler used for outputting the error log to the Data/Error folder"""
         outputDir = './Data/Error'
 
         if not os.path.exists(outputDir):
@@ -386,6 +412,7 @@ class Dataset():
         for battery in self.batteries:
             batteryData = battery.returnData()
 
+            # Combine all the data in the vertical axis
             outputData = pd.concat([outputData, batteryData], axis=0,
                                    join='outer', ignore_index=True)
 
