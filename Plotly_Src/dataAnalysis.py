@@ -3,6 +3,7 @@ from dash import Dash, dcc, html, dependencies
 from threading import Timer
 import webbrowser
 import plotly.express as px
+import plotly.graph_objects as go
 from PySide6.QtCore import QDateTime
 import numpy as np
 import pandas as pd
@@ -25,6 +26,8 @@ class DataPlotting():
              dependencies.Input(component_id='battery_number',
                                 component_property='value'),
              dependencies.Input(component_id='battery_type',
+                                component_property='value'),
+             dependencies.Input(component_id='show_trendline',
                                 component_property='value')]
         )(self.update_graphs)
 
@@ -78,6 +81,12 @@ class DataPlotting():
                     options=self.batteryData['BatteryNo'].unique(),
                     value=[1.0],
                     inline=True),
+
+                dcc.Checklist(
+                    id='show_trendline',
+                    options=[{'label': 'Show Trendline', 'value': 'show'}],
+                    value=[]
+                ),
             ], style={
                 'color': self.colours['text'],
                 'padding': 10,
@@ -86,7 +95,7 @@ class DataPlotting():
             dcc.Graph(id='battery-graph'),
         ])
 
-    def update_graphs(self, battery_data, battery_number, battery_type):
+    def update_graphs(self, battery_data, battery_number, battery_type, show_trendline):
         filtered_data = self.batteryData[self.batteryData['BatteryNo'].isin(battery_number) &
                                          self.batteryData['BatteryType'].isin(battery_type)]
         xAxis = 'Cyc#'
@@ -99,18 +108,21 @@ class DataPlotting():
                       line_dash=filtered_data['BatteryNo'],
                       markers=False)
 
+        if show_trendline == ['show']:
+            fig.add_traces(px.scatter(filtered_data, x=xAxis,
+                           y=yAxis, color=filtered_data['BatteryType'], trendline="lowess").data)
+            fig.update_traces(visible=False, selector=dict(mode="markers"))
+
         fig.update_layout(xaxis_title="Cycle",
-                          yaxis_title="Nominal Value (%)",
-                          plot_bgcolor=self.colours['background'],
-                          paper_bgcolor=self.colours['background'],
-                          font_color=self.colours['text'])
+                   yaxis_title="Nominal Value (%)",
+                   plot_bgcolor=self.colours['background'],
+                   paper_bgcolor=self.colours['background'],)
 
         return fig
-    
+
     def autoOpen(self):
         if not os.environ.get("WERKZEUG_RUN_MAIN"):
             webbrowser.open_new('http://127.0.0.1:8050')
-
 
 
 class Battery():
@@ -385,8 +397,8 @@ if __name__ == "__main__":
     dataset = Dataset("D:\Project Data\MP_Cycle_Testing\Full_Test_Data")
     dataset.getBatteryInfo()
     dataset.instanceBatteries()
-    dataset.exportErrorLog()
+    # dataset.exportErrorLog()
     data = dataset.combineData()
     plotPage = DataPlotting(data)
     Timer(1, plotPage.autoOpen).start()
-    plotPage.app.run_server()
+    plotPage.app.run_server(debug=True)
