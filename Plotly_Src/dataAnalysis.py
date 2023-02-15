@@ -3,7 +3,6 @@ from dash import Dash, dcc, html, dependencies
 from threading import Timer
 import webbrowser
 import plotly.express as px
-import plotly.graph_objects as go
 from PySide6.QtCore import QDateTime
 import numpy as np
 import pandas as pd
@@ -401,4 +400,4 @@ if __name__ == "__main__":
     data = dataset.combineData()
     plotPage = DataPlotting(data)
     Timer(1, plotPage.autoOpen).start()
-    plotPage.app.run_server(debug=True)
+    plotPage.app.run_server()
