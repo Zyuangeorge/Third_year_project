@@ -1,8 +1,9 @@
-from threading import Timer
-import webbrowser
-from datetime import datetime
 import sys
 import os
+import gc
+import webbrowser
+from threading import Timer
+from datetime import datetime
 from enum import Enum
 
 from dash import Dash, dcc, html, dependencies
@@ -223,6 +224,11 @@ class Battery():
         outputData["InternalResistance"] = outputData["InternalResistance"].fillna(
             method='bfill')
 
+        del self.rawData, self.cycleNumber, self.type
+        del self.capacity_1, self.capacity_2, self.efficiency_1, self.efficiency_2
+        del data_1, data_2, data, colName
+        gc.collect()
+
         return outputData
 
 
@@ -259,6 +265,10 @@ class Dataset():
         # Discharging point and Charging point
         # Row 0 is capacity data
         # Row 1 is watt-hr data
+        # Row 2 is voltage point 1 for DCIR calculation
+        # Row 3 is voltage point 2 for DCIR calculation
+        # Row 4 is current point 1 for DCIR calculation
+        # Row 5 is current point 2 for DCIR calculation
         pointDischarging = np.zeros((2,), dtype=np.float32)
         pointCharging = np.zeros((2,), dtype=np.float32)
 
@@ -266,23 +276,26 @@ class Dataset():
         # Column 0 is capacity data
         # Column 1 is discharging watt-hr data
         # Column 2 is charging watt-hr data
+        # Column 3 is discharging DCIR data
+        # Column 4 is charging DCIR data
         dataSet = np.zeros((totalCycle, 3), dtype=np.float32)
 
         for cycle in range(totalCycle):
             # Find discharging data
-            # Filter the data based on these conditions
-            filteredData = rawData.loc[
+            try:
+                # Filter the data based on these conditions and combine the index into a list
+                indexList_1 = rawData[
                 (rawData['Cyc#'] == float(cycle)) &
                 (rawData['Amps'] < 0.0) &
                 (rawData['Volts'] < thresholdSetting.MINIMUMVOLTAGE.value) &
                 (rawData['Volts'] > (thresholdSetting.MINIMUMVOLTAGE.value - 0.01)) &
-                (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value)]
+                (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value)].index.tolist()
 
-            # There should only be one selected point
-            if filteredData.shape[0] == 1:
-                pointDischarging[0] = filteredData['Amp-hr'].values[0]
-                pointDischarging[1] = filteredData['Watt-hr'].values[0]
-            else:
+                for index in indexList_1:
+                    if rawData.loc[index + 1, 'Amps'] == 0: # If the current value in the next line is 0
+                        pointDischarging[0] = rawData.loc[index, 'Amp-hr']
+                        pointDischarging[1] = rawData.loc[index, 'Watt-hr']
+            except:
                 # If there is an error in the data, using the maximum capacity value as the capacity data in this cycle
                 pointDischarging[0] = rawData.loc[
                     (rawData['Cyc#'] == float(cycle)) &
@@ -300,16 +313,15 @@ class Dataset():
             # Find charging data
             try:
                 # Filter the data based on these conditions and combine the index into a list
-                indexList = rawData[
+                indexList_2 = rawData[
                     (rawData['Cyc#'] == float(cycle)) &
                     (rawData['Amps'] > 0.0) &
                     (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value)].index.tolist()
 
-                for index in indexList:
-                    if rawData.loc[index + 1, 'Cyc#'] == cycle + 1:
+                for index in indexList_2:
+                    if rawData.loc[index + 1, 'Cyc#'] == cycle + 1: # If next line is a new cycle
                         pointCharging[0] = rawData.loc[index, 'Amp-hr']
                         pointCharging[1] = rawData.loc[index, 'Watt-hr']
-
             except:
                 # If there is no such data then using the maximum capacity value as the capacity data in this cycle
                 pointCharging[0] = rawData.loc[
@@ -329,6 +341,10 @@ class Dataset():
             dataSet[cycle][1] = pointDischarging[1]
             dataSet[cycle][2] = pointCharging[1]
 
+        del rawData, file, indexList_1, indexList_2
+        del pointDischarging, pointCharging, totalCycle
+        gc.collect()
+
         return dataSet
 
     def getBatteryData(self, name, fileList):
@@ -345,6 +361,7 @@ class Dataset():
             # Create battery data file name list for battery 1 and 2
             batteryDataList = list(filter(lambda x: (
                 x[index:(index + 3)] == '_' + str(i + 1) + '_' and x[-4:] == '.csv'), fileList))
+
             # Sort the data in the cycle order
             batteryDataList.sort(key=lambda x: int(x[(index + 3): -4]))
 
@@ -367,14 +384,17 @@ class Dataset():
                 # Combine all the capacity and efficiency data
                 capAndEffData = np.append(
                     capAndEffData, capAndEffValue, axis=0)
+                
+                del batteryData, capAndEffValue
+                gc.collect()
 
             if i == 0:
                 # Record cycle number for the first battery
                 cycleData = capAndEffData.shape[0] - 1
 
-        # Delete row 1 values, (All 0)
+        # Delete row 1 values, (All the values are 0)
         capAndEffData = np.delete(capAndEffData, 0, axis=0)
-
+        
         return capAndEffData, cycleData
 
     def instanceBatteries(self):
@@ -390,6 +410,9 @@ class Dataset():
             battery.getInternalResistance()
 
             self.batteries.append(battery)
+
+            del capAndEffData, cycleData, battery
+            gc.collect()
 
         self.error = pd.DataFrame(self.error)
         print("\n")
@@ -410,6 +433,8 @@ class Dataset():
 
         try:
             self.error.to_csv(fileName, index=False, line_terminator='\n')
+            del self.error
+            gc.collect()
         except:
             print("\n")
             print("Output error log error!")
@@ -424,6 +449,11 @@ class Dataset():
             # Combine all the data in the vertical axis
             outputData = pd.concat([outputData, batteryData], axis=0,
                                    join='outer', ignore_index=True)
+            
+            del batteryData
+
+        del self.batteries, self.batteryType, self.filePath, self.dataPath
+        gc.collect()
 
         return outputData
 
