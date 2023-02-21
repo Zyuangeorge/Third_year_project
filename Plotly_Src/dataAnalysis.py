@@ -1,16 +1,15 @@
-import sys
-import os
 import gc
+import os
+import sys
 import webbrowser
-from threading import Timer
 from datetime import datetime
 from enum import Enum
+from threading import Timer
 
-from dash import Dash, dcc, html, dependencies
-import plotly.express as px
 import numpy as np
 import pandas as pd
-
+import plotly.express as px
+from dash import Dash, dcc, dependencies, html
 
 # Expend file path
 sys.path.append('.')
@@ -155,7 +154,7 @@ class Battery():
 
     def getCapacity(self):
         """Capacity data handler"""
-        # Calculate the nominal capacity of the battery : [Current (Charging Ah + Discharging Ah) / 2] / [Initial (Charging Ah + Discharging Ah) / 2]
+        # Calculate the nominal capacity of the battery : (Current Capacity Ah) / (Initial Capacity Ah)
         self.capacity_1 = self.rawData[0:self.cycleNumber,
                                        0] / self.rawData[0, 0] * 100.0
 
@@ -164,7 +163,7 @@ class Battery():
 
     def getEfficiency(self):
         """Efficiency data handler"""
-        # Calculate the efficiency of the battery: (Discharging Wh/Charging Wh) * 100%
+        # Calculate the efficiency of the battery: (Discharging Efficiency Wh/Charging Efficiency Wh) * 100%
         self.efficiency_1 = self.rawData[0:self.cycleNumber,
                                          1] / self.rawData[0:self.cycleNumber, 2] * 100.0
 
@@ -173,7 +172,14 @@ class Battery():
 
     def getInternalResistance(self):
         """Internal resistance data handler"""
-        pass
+        # Calculate the nominal internal resistance of the battery : (Current average IR) / (Initial average IR)
+        # IR for battery 1
+        self.internalResistance_1 = (0.5 * (self.rawData[0:self.cycleNumber, 3] + self.rawData[0:self.cycleNumber, 4])) / (
+            0.5 * (self.rawData[0, 3] + self.rawData[0, 4])) * 100.0
+
+        # IR for battery 2
+        self.internalResistance_2 = (0.5 * (self.rawData[self.cycleNumber:, 3] + self.rawData[self.cycleNumber:, 4])) / (
+            0.5 * (self.rawData[self.cycleNumber, 3] + self.rawData[self.cycleNumber, 4])) * 100.0
 
     def returnData(self):
         """Handler for organising the data"""
@@ -187,7 +193,7 @@ class Battery():
         data_1[:, 0] = np.array(list(range(self.cycleNumber)))
         data_1[:, 1] = self.capacity_1
         data_1[:, 2] = self.efficiency_1
-        data_1[:, 3] = np.zeros(self.cycleNumber)
+        data_1[:, 3] = self.internalResistance_1
         data_1[:, 4] = np.full(self.cycleNumber, 1.0)
 
         data_2 = np.empty(
@@ -196,7 +202,7 @@ class Battery():
             list(range(0, self.rawData.shape[0] - self.cycleNumber)))  # Change the start of the cycle number from 1
         data_2[:, 1] = self.capacity_2
         data_2[:, 2] = self.efficiency_2
-        data_2[:, 3] = np.zeros(self.rawData.shape[0] - self.cycleNumber)
+        data_2[:, 3] = self.internalResistance_2
         data_2[:, 4] = np.full(self.rawData.shape[0] - self.cycleNumber, 2.0)
 
         # Create output dataframe
@@ -209,23 +215,24 @@ class Battery():
 
         # Data cleaning, remove all the data larger than 100
         for x in outputData.index:
-            if outputData.loc[x, "Capacity"] > 100:
+            if outputData.loc[x, "Capacity"] > 100 or outputData.loc[x, "Capacity"] < 0:
                 outputData.loc[x, "Capacity"] = np.nan
 
-            if outputData.loc[x, "Efficiency"] > 100:
+            if outputData.loc[x, "Efficiency"] > 100 or outputData.loc[x, "Efficiency"] < 0:
                 outputData.loc[x, "Efficiency"] = np.nan
 
-            if outputData.loc[x, "InternalResistance"] > 100:
+            if outputData.loc[x, "InternalResistance"] > 100 or outputData.loc[x, "InternalResistance"] < 0:
                 outputData.loc[x, "InternalResistance"] = np.nan
 
-        outputData["Capacity"] = outputData["Capacity"].fillna(method='bfill')
+        outputData["Capacity"] = outputData["Capacity"].fillna(
+            method='bfill')
         outputData["Efficiency"] = outputData["Efficiency"].fillna(
             method='bfill')
         outputData["InternalResistance"] = outputData["InternalResistance"].fillna(
             method='bfill')
 
         del self.rawData, self.cycleNumber, self.type
-        del self.capacity_1, self.capacity_2, self.efficiency_1, self.efficiency_2
+        del self.capacity_1, self.capacity_2, self.efficiency_1, self.efficiency_2, self.internalResistance_1, self.internalResistance_2
         del data_1, data_2, data, colName
         gc.collect()
 
@@ -257,7 +264,7 @@ class Dataset():
             self.filePath.append([os.path.join(prePath, file) for file in os.listdir(
                 prePath + "\\")])  # Get each csv file path according to the battery type
 
-    def filterBatteryCapAndEffData(self, rawData, file):
+    def filterOutData(self, rawData, file):
         """Handler for filtering battery capacity and efficiency data"""
         # Total cycle number of the battery
         totalCycle = int(rawData['Cyc#'].max())
@@ -265,12 +272,12 @@ class Dataset():
         # Discharging point and Charging point
         # Row 0 is capacity data
         # Row 1 is watt-hr data
-        # Row 2 is voltage point 1 for DCIR calculation
+        # Row 2 is voltage point 1 for DCIR calculation (Before switching off or current step)
         # Row 3 is voltage point 2 for DCIR calculation
-        # Row 4 is current point 1 for DCIR calculation
+        # Row 4 is current point 1 for DCIR calculation (Before switching off or current step)
         # Row 5 is current point 2 for DCIR calculation
-        pointDischarging = np.zeros((2,), dtype=np.float32)
-        pointCharging = np.zeros((2,), dtype=np.float32)
+        dischargingPoints = np.zeros((6,), dtype=np.float32)
+        chargingPoints = np.zeros((6,), dtype=np.float32)
 
         # Capacity and efficiency data
         # Column 0 is capacity data
@@ -278,31 +285,42 @@ class Dataset():
         # Column 2 is charging watt-hr data
         # Column 3 is discharging DCIR data
         # Column 4 is charging DCIR data
-        dataSet = np.zeros((totalCycle, 3), dtype=np.float32)
+        dataSet = np.zeros((totalCycle, 5), dtype=np.float32)
 
         for cycle in range(totalCycle):
             # Find discharging data
             try:
                 # Filter the data based on these conditions and combine the index into a list
                 indexList_1 = rawData[
-                (rawData['Cyc#'] == float(cycle)) &
-                (rawData['Amps'] < 0.0) &
-                (rawData['Volts'] < thresholdSetting.MINIMUMVOLTAGE.value) &
-                (rawData['Volts'] > (thresholdSetting.MINIMUMVOLTAGE.value - 0.01)) &
-                (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value)].index.tolist()
+                    (rawData['Cyc#'] == float(cycle)) &
+                    (rawData['Amps'] < 0.0) &
+                    (rawData['Volts'] < thresholdSetting.MINIMUMVOLTAGE.value) &
+                    (rawData['Volts'] > (thresholdSetting.MINIMUMVOLTAGE.value - 0.01)) &
+                    (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value)].index.tolist()
 
                 for index in indexList_1:
-                    if rawData.loc[index + 1, 'Amps'] == 0: # If the current value in the next line is 0
-                        pointDischarging[0] = rawData.loc[index, 'Amp-hr']
-                        pointDischarging[1] = rawData.loc[index, 'Watt-hr']
+                    # If the current value in the next line is 0
+                    if rawData.loc[index + 1, 'Amps'] == 0 and rawData.loc[index + 1, 'ES'] == 0:
+                        dischargingPoints[0] = rawData.loc[index, 'Amp-hr']
+                        dischargingPoints[1] = rawData.loc[index, 'Watt-hr']
+                        # Voltage before switching off
+                        dischargingPoints[2] = rawData.loc[index, 'Volts']
+                        dischargingPoints[3] = rawData.loc[index + 1, 'Volts']
+                        # Current before switching off
+                        dischargingPoints[4] = rawData.loc[index, 'Amps']
+                        dischargingPoints[5] = rawData.loc[index + 1, 'Amps']
             except:
                 # If there is an error in the data, using the maximum capacity value as the capacity data in this cycle
-                pointDischarging[0] = rawData.loc[
+                dischargingPoints[0] = rawData.loc[
                     (rawData['Cyc#'] == float(cycle)) &
                     (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value), 'Amp-hr'].max()
-                pointDischarging[1] = rawData.loc[
+                dischargingPoints[1] = rawData.loc[
                     (rawData['Cyc#'] == float(cycle)) &
                     (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value), 'Watt-hr'].max()
+                dischargingPoints[2] == np.nan
+                dischargingPoints[3] == np.nan
+                dischargingPoints[4] == np.nan
+                dischargingPoints[5] == np.nan
 
                 # Record the error
                 self.error['Position'].append(
@@ -318,18 +336,38 @@ class Dataset():
                     (rawData['Amps'] > 0.0) &
                     (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value)].index.tolist()
 
+                indexList_3 = rawData[
+                    (rawData['Cyc#'] == float(cycle)) &
+                    (rawData['Amps'] == 0.0) &
+                    (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value)].index.tolist()
+
                 for index in indexList_2:
-                    if rawData.loc[index + 1, 'Cyc#'] == cycle + 1: # If next line is a new cycle
-                        pointCharging[0] = rawData.loc[index, 'Amp-hr']
-                        pointCharging[1] = rawData.loc[index, 'Watt-hr']
+                    # If next line is a new cycle
+                    if rawData.loc[index + 1, 'Cyc#'] == cycle + 1 and rawData.loc[index + 1, 'ES'] == 0:
+                        chargingPoints[0] = rawData.loc[index, 'Amp-hr']
+                        chargingPoints[1] = rawData.loc[index, 'Watt-hr']
+
+                for index in indexList_3:
+                    # If next line is the start of charging process
+                    if rawData.loc[index + 1, 'Amps'] > 0 and rawData.loc[index + 1, 'ES'] == 0:
+                        # Voltage before current step
+                        chargingPoints[2] = rawData.loc[index, 'Volts']
+                        chargingPoints[3] = rawData.loc[index + 1, 'Volts']
+                        # Current before current step
+                        chargingPoints[4] = rawData.loc[index, 'Amps']
+                        chargingPoints[5] = rawData.loc[index + 1, 'Amps']
             except:
                 # If there is no such data then using the maximum capacity value as the capacity data in this cycle
-                pointCharging[0] = rawData.loc[
+                chargingPoints[0] = rawData.loc[
                     (rawData['Cyc#'] == float(cycle)) &
                     (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value), 'Amp-hr'].max()
-                pointCharging[1] = rawData.loc[
+                chargingPoints[1] = rawData.loc[
                     (rawData['Cyc#'] == float(cycle)) &
                     (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value), 'Watt-hr'].max()
+                chargingPoints[2] == np.nan
+                chargingPoints[3] == np.nan
+                chargingPoints[4] == np.nan
+                chargingPoints[5] == np.nan
 
                 # Record the error
                 self.error['Position'].append(file[47:])
@@ -337,12 +375,22 @@ class Dataset():
                 self.error['Condition'].append("Charging")
 
             # Combine data
-            dataSet[cycle][0] = (pointDischarging[0] + pointCharging[0]) * 0.5
-            dataSet[cycle][1] = pointDischarging[1]
-            dataSet[cycle][2] = pointCharging[1]
+            # Calculate capacity data
+            dataSet[cycle][0] = (dischargingPoints[0] +
+                                 chargingPoints[0]) * 0.5
 
-        del rawData, file, indexList_1, indexList_2
-        del pointDischarging, pointCharging, totalCycle
+            # Assign efficiency data
+            dataSet[cycle][1] = dischargingPoints[1]
+            dataSet[cycle][2] = chargingPoints[1]
+
+            # Calculate internal resistance data
+            dataSet[cycle][3] = (dischargingPoints[3] - dischargingPoints[2]) / \
+                (dischargingPoints[5] - dischargingPoints[4])
+            dataSet[cycle][4] = (
+                chargingPoints[3] - chargingPoints[2]) / (chargingPoints[5] - chargingPoints[4])
+
+        del rawData, file, indexList_1, indexList_2, indexList_3
+        del dischargingPoints, chargingPoints, totalCycle
         gc.collect()
 
         return dataSet
@@ -350,8 +398,8 @@ class Dataset():
     def getBatteryData(self, name, fileList):
         """Handler for getting raw data for one type of battery"""
 
-        # Create an numpy array to store capacity and efficiency data for two batteries with the same type
-        capAndEffData = np.empty((1, 3), dtype=np.float32)
+        # Create an numpy array to store capacity, efficiency and internal resistance data for two batteries with the same type
+        filteredData = np.empty((1, 5), dtype=np.float32)
 
         # Index used to sort the battery 1 and 2
         index = len(self.dataPath) + len(name) * 2 + 2
@@ -378,40 +426,40 @@ class Dataset():
                 batteryData = pd.read_csv(file, header=2, usecols=[
                     'Cyc#', 'Step', 'Amp-hr', 'Watt-hr', 'Amps', 'Volts', 'ES'], dtype=np.float32)
 
-                capAndEffValue = self.filterBatteryCapAndEffData(
+                filteredDataValue = self.filterOutData(
                     batteryData, file)
 
                 # Combine all the capacity and efficiency data
-                capAndEffData = np.append(
-                    capAndEffData, capAndEffValue, axis=0)
-                
-                del batteryData, capAndEffValue
+                filteredData = np.append(
+                    filteredData, filteredDataValue, axis=0)
+
+                del batteryData, filteredDataValue
                 gc.collect()
 
             if i == 0:
                 # Record cycle number for the first battery
-                cycleData = capAndEffData.shape[0] - 1
+                cycleData = filteredData.shape[0] - 1
 
         # Delete row 1 values, (All the values are 0)
-        capAndEffData = np.delete(capAndEffData, 0, axis=0)
-        
-        return capAndEffData, cycleData
+        filteredData = np.delete(filteredData, 0, axis=0)
+
+        return filteredData, cycleData
 
     def instanceBatteries(self):
         """Handler used to instance the batteries"""
         for i in range(len(self.batteryType)):
             # Get the battery data based on the battery type
-            capAndEffData, cycleData = self.getBatteryData(
+            filteredData, cycleData = self.getBatteryData(
                 self.batteryType[i], self.filePath[i])
 
-            battery = Battery(self.batteryType[i], capAndEffData, cycleData)
+            battery = Battery(self.batteryType[i], filteredData, cycleData)
             battery.getCapacity()
             battery.getEfficiency()
             battery.getInternalResistance()
 
             self.batteries.append(battery)
 
-            del capAndEffData, cycleData, battery
+            del filteredData, cycleData, battery
             gc.collect()
 
         self.error = pd.DataFrame(self.error)
@@ -449,7 +497,7 @@ class Dataset():
             # Combine all the data in the vertical axis
             outputData = pd.concat([outputData, batteryData], axis=0,
                                    join='outer', ignore_index=True)
-            
+
             del batteryData
 
         del self.batteries, self.batteryType, self.filePath, self.dataPath
