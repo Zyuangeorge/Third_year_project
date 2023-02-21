@@ -154,7 +154,7 @@ class Battery():
 
     def getCapacity(self):
         """Capacity data handler"""
-        # Calculate the nominal capacity of the battery
+        # Calculate the nominal capacity of the battery : [Current (Charging Ah + Discharging Ah) / 2] / [Initial (Charging Ah + Discharging Ah) / 2]
         self.capacity_1 = self.rawData[0:self.cycleNumber,
                                        0] / self.rawData[0, 0] * 100.0
 
@@ -163,7 +163,7 @@ class Battery():
 
     def getEfficiency(self):
         """Efficiency data handler"""
-        # Calculate the nominal efficiency of the battery
+        # Calculate the efficiency of the battery: (Discharging Wh/Charging Wh) * 100%
         self.efficiency_1 = self.rawData[0:self.cycleNumber,
                                          1] / self.rawData[0:self.cycleNumber, 2] * 100.0
 
