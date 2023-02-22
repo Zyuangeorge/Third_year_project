@@ -134,6 +134,9 @@ class DataPlotting():
             # Remove marker line
             fig.update_traces(visible=False, selector=dict(mode="markers"))
 
+            for i in range(len(battery_number)*len(battery_data)*len(battery_type)):
+                fig.data[i].update(visible="legendonly")
+
         fig.update_layout(xaxis_title="Cycle",
                           yaxis_title="Nominal Value (%)",
                           plot_bgcolor=self.colours['background'],
@@ -274,7 +277,6 @@ class Battery():
             print("Error:")
             print(self.type)
             print("See error log for detailed information.")
-            print("\n")
             self.error.to_csv(fileName, index=False, line_terminator='\n')
         except:
             print("\n")
