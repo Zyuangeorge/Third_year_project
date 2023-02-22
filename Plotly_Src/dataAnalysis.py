@@ -136,7 +136,8 @@ class DataPlotting():
         fig.update_layout(xaxis_title="Cycle",
                           yaxis_title="Nominal Value (%)",
                           plot_bgcolor=self.colours['background'],
-                          paper_bgcolor=self.colours['background'],)
+                          paper_bgcolor=self.colours['background'],
+                          yaxis_range=[50, 120])
 
         return fig
 
@@ -151,6 +152,8 @@ class Battery():
         self.rawData = rawData  # Battery dataset path
         self.cycleNumber = cycleData  # Cycle number data
         self.type = type  # Type data
+        # Error dictionary
+        self.error = {'BatteryType': [], 'BatterNumber': [], 'Cycle': [], 'DataType': [], 'DataValue': []}
 
     def getCapacity(self):
         """Capacity data handler"""
@@ -216,20 +219,27 @@ class Battery():
         # Data cleaning, remove all the data larger than 100
         for x in outputData.index:
             if outputData.loc[x, "Capacity"] > 100 or outputData.loc[x, "Capacity"] < 0:
-                outputData.loc[x, "Capacity"] = np.nan
+                self.error['BatteryType'].append(outputData.loc[x, "BatteryType"])
+                self.error['BatterNumber'].append(outputData.loc[x, "BatteryNo"])
+                self.error['Cycle'].append(outputData.loc[x, 'Cyc#'])
+                self.error['DataType'].append("Capacity")
+                self.error['DataValue'].append(outputData.loc[x, 'Capacity'])
 
             if outputData.loc[x, "Efficiency"] > 100 or outputData.loc[x, "Efficiency"] < 0:
-                outputData.loc[x, "Efficiency"] = np.nan
+                self.error['BatteryType'].append(outputData.loc[x, "BatteryType"])
+                self.error['BatterNumber'].append(outputData.loc[x, "BatteryNo"])
+                self.error['Cycle'].append(outputData.loc[x, 'Cyc#'])
+                self.error['DataType'].append("Efficiency")
+                self.error['DataValue'].append(outputData.loc[x, 'Efficiency'])
 
-            if outputData.loc[x, "InternalResistance"] > 100 or outputData.loc[x, "InternalResistance"] < 0:
-                outputData.loc[x, "InternalResistance"] = np.nan
+            if outputData.loc[x, "InternalResistance"] > 1000 or outputData.loc[x, "InternalResistance"] < 0:
+                self.error['BatteryType'].append(outputData.loc[x, "BatteryType"])
+                self.error['BatterNumber'].append(outputData.loc[x, "BatteryNo"])
+                self.error['Cycle'].append(outputData.loc[x, 'Cyc#'])
+                self.error['DataType'].append("InternalResistance")
+                self.error['DataValue'].append(outputData.loc[x, 'InternalResistance'])
 
-        outputData["Capacity"] = outputData["Capacity"].fillna(
-            method='bfill')
-        outputData["Efficiency"] = outputData["Efficiency"].fillna(
-            method='bfill')
-        outputData["InternalResistance"] = outputData["InternalResistance"].fillna(
-            method='bfill')
+        self.exportErrorLog()
 
         del self.rawData, self.cycleNumber, self.type
         del self.capacity_1, self.capacity_2, self.efficiency_1, self.efficiency_2, self.internalResistance_1, self.internalResistance_2
@@ -237,6 +247,32 @@ class Battery():
         gc.collect()
 
         return outputData
+    
+    def exportErrorLog(self):
+        """Handler used for outputting the error log to the Data/Error folder"""
+        outputDir = './Data/Error'
+
+        if not os.path.exists(outputDir):
+            os.makedirs(outputDir)
+
+        time = datetime.now()
+        timeInfo = time.strftime("%d-%m-%Y-%H-%M-%S")
+        fileName = outputDir + "/" + str(timeInfo) + ".csv"
+
+        try:
+            self.error = pd.DataFrame(self.error)
+            print("\n")
+            print("Error:")
+            print(self.type)
+            print("See error log for detailed information.")
+            print("\n")
+            self.error.to_csv(fileName, index=False, line_terminator='\n')
+        except:
+            print("\n")
+            print("Output error log error!")
+
+        del self.error
+        gc.collect()
 
 
 class Dataset():
@@ -245,8 +281,6 @@ class Dataset():
         self.filePath = []  # List of file paths
         self.batteryType = []  # Battery types
         self.batteries = []  # list of batteries
-        # Error dictionary
-        self.error = {'Position': [], 'Cycle': [], 'Condition': []}
 
     def getBatteryInfo(self):
         """Handler for getting get battery information"""
@@ -310,23 +344,13 @@ class Dataset():
                         dischargingPoints[4] = rawData.loc[index, 'Amps']
                         dischargingPoints[5] = rawData.loc[index + 1, 'Amps']
             except:
-                # If there is an error in the data, using the maximum capacity value as the capacity data in this cycle
-                dischargingPoints[0] = rawData.loc[
-                    (rawData['Cyc#'] == float(cycle)) &
-                    (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value), 'Amp-hr'].max()
-                dischargingPoints[1] = rawData.loc[
-                    (rawData['Cyc#'] == float(cycle)) &
-                    (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value), 'Watt-hr'].max()
+                # If there is an error in the data, set the value to none
+                dischargingPoints[0] == np.nan
+                dischargingPoints[1] == np.nan
                 dischargingPoints[2] == np.nan
                 dischargingPoints[3] == np.nan
                 dischargingPoints[4] == np.nan
                 dischargingPoints[5] == np.nan
-
-                # Record the error
-                self.error['Position'].append(
-                    file[47:])  # Remove the previous path: until the full cycle data folder
-                self.error['Cycle'].append(cycle)
-                self.error['Condition'].append("Discharging")
 
             # Find charging data
             try:
@@ -357,22 +381,12 @@ class Dataset():
                         chargingPoints[4] = rawData.loc[index, 'Amps']
                         chargingPoints[5] = rawData.loc[index + 1, 'Amps']
             except:
-                # If there is no such data then using the maximum capacity value as the capacity data in this cycle
-                chargingPoints[0] = rawData.loc[
-                    (rawData['Cyc#'] == float(cycle)) &
-                    (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value), 'Amp-hr'].max()
-                chargingPoints[1] = rawData.loc[
-                    (rawData['Cyc#'] == float(cycle)) &
-                    (rawData['ES'] > thresholdSetting.ESTHRESHOLD.value), 'Watt-hr'].max()
+                chargingPoints[0] == np.nan
+                chargingPoints[1] == np.nan
                 chargingPoints[2] == np.nan
                 chargingPoints[3] == np.nan
                 chargingPoints[4] == np.nan
                 chargingPoints[5] == np.nan
-
-                # Record the error
-                self.error['Position'].append(file[47:])
-                self.error['Cycle'].append(cycle)
-                self.error['Condition'].append("Charging")
 
             # Combine data
             # Calculate capacity data
@@ -462,31 +476,6 @@ class Dataset():
             del filteredData, cycleData, battery
             gc.collect()
 
-        self.error = pd.DataFrame(self.error)
-        print("\n")
-        print("Error:")
-        print(self.error)
-        print("\n")
-
-    def exportErrorLog(self):
-        """Handler used for outputting the error log to the Data/Error folder"""
-        outputDir = './Data/Error'
-
-        if not os.path.exists(outputDir):
-            os.makedirs(outputDir)
-
-        time = datetime.now()
-        timeInfo = time.strftime("%d-%m-%Y-%H-%M-%S")
-        fileName = outputDir + "/" + str(timeInfo) + ".csv"
-
-        try:
-            self.error.to_csv(fileName, index=False, line_terminator='\n')
-            del self.error
-            gc.collect()
-        except:
-            print("\n")
-            print("Output error log error!")
-
     def combineData(self):
         """Handler for combining all the battery data"""
         outputData = pd.DataFrame()
@@ -510,7 +499,6 @@ if __name__ == "__main__":
     dataset = Dataset("D:\Project Data\MP_Cycle_Testing\Full_Test_Data")
     dataset.getBatteryInfo()
     dataset.instanceBatteries()
-    # dataset.exportErrorLog()
     data = dataset.combineData()
     plotPage = DataPlotting(data)
     Timer(1, plotPage.autoOpen).start()
