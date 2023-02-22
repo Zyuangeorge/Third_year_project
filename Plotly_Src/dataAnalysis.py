@@ -153,7 +153,8 @@ class Battery():
         self.cycleNumber = cycleData  # Cycle number data
         self.type = type  # Type data
         # Error dictionary
-        self.error = {'BatteryType': [], 'BatterNumber': [], 'Cycle': [], 'DataType': [], 'DataValue': []}
+        self.error = {'BatteryType': [], 'BatterNumber': [],
+                      'Cycle': [], 'DataType': [], 'DataValue': []}
 
     def getCapacity(self):
         """Capacity data handler"""
@@ -218,26 +219,33 @@ class Battery():
 
         # Data cleaning, remove all the data larger than 100
         for x in outputData.index:
-            if outputData.loc[x, "Capacity"] > 100 or outputData.loc[x, "Capacity"] < 0:
-                self.error['BatteryType'].append(outputData.loc[x, "BatteryType"])
-                self.error['BatterNumber'].append(outputData.loc[x, "BatteryNo"])
+            if outputData.loc[x, "Capacity"] > 100 or outputData.loc[x, "Capacity"] < 0 or outputData.loc[x, "Capacity"] == np.nan:
+                self.error['BatteryType'].append(
+                    outputData.loc[x, "BatteryType"])
+                self.error['BatterNumber'].append(
+                    outputData.loc[x, "BatteryNo"])
                 self.error['Cycle'].append(outputData.loc[x, 'Cyc#'])
                 self.error['DataType'].append("Capacity")
                 self.error['DataValue'].append(outputData.loc[x, 'Capacity'])
 
-            if outputData.loc[x, "Efficiency"] > 100 or outputData.loc[x, "Efficiency"] < 0:
-                self.error['BatteryType'].append(outputData.loc[x, "BatteryType"])
-                self.error['BatterNumber'].append(outputData.loc[x, "BatteryNo"])
+            if outputData.loc[x, "Efficiency"] > 100 or outputData.loc[x, "Efficiency"] < 0 or outputData.loc[x, "Capacity"] == np.nan:
+                self.error['BatteryType'].append(
+                    outputData.loc[x, "BatteryType"])
+                self.error['BatterNumber'].append(
+                    outputData.loc[x, "BatteryNo"])
                 self.error['Cycle'].append(outputData.loc[x, 'Cyc#'])
                 self.error['DataType'].append("Efficiency")
                 self.error['DataValue'].append(outputData.loc[x, 'Efficiency'])
 
-            if outputData.loc[x, "InternalResistance"] > 1000 or outputData.loc[x, "InternalResistance"] < 0:
-                self.error['BatteryType'].append(outputData.loc[x, "BatteryType"])
-                self.error['BatterNumber'].append(outputData.loc[x, "BatteryNo"])
+            if outputData.loc[x, "InternalResistance"] > 1000 or outputData.loc[x, "InternalResistance"] < 0 or outputData.loc[x, "Capacity"] == np.nan:
+                self.error['BatteryType'].append(
+                    outputData.loc[x, "BatteryType"])
+                self.error['BatterNumber'].append(
+                    outputData.loc[x, "BatteryNo"])
                 self.error['Cycle'].append(outputData.loc[x, 'Cyc#'])
                 self.error['DataType'].append("InternalResistance")
-                self.error['DataValue'].append(outputData.loc[x, 'InternalResistance'])
+                self.error['DataValue'].append(
+                    outputData.loc[x, 'InternalResistance'])
 
         self.exportErrorLog()
 
@@ -247,7 +255,7 @@ class Battery():
         gc.collect()
 
         return outputData
-    
+
     def exportErrorLog(self):
         """Handler used for outputting the error log to the Data/Error folder"""
         outputDir = './Data/Error'
