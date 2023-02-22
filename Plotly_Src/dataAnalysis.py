@@ -131,11 +131,21 @@ class DataPlotting():
                 fig.add_traces(px.scatter(filtered_data, x=xAxis,
                             y=data, color=filtered_data['BatteryType'], symbol=filtered_data['BatteryNo'], trendline="lowess").data)
 
-            # Remove marker line
+            # Improve visualisation
             fig.update_traces(visible=False, selector=dict(mode="markers"))
 
             for i in range(len(battery_number)*len(battery_data)*len(battery_type)):
                 fig.data[i].update(visible="legendonly")
+            
+            trendLine_2=[]
+            for k, trace in enumerate(fig.data):
+                if trace.mode is not None and trace.mode == 'lines' and '2.0' in trace.name:
+                    trendLine_2.append(k)
+            for id in trendLine_2:
+                fig.data[id].update(line={'dash':'dot'})
+
+            del trendLine_2
+            gc.collect()
 
         fig.update_layout(xaxis_title="Cycle",
                           yaxis_title="Nominal Value (%)",
@@ -269,7 +279,7 @@ class Battery():
 
         time = datetime.now()
         timeInfo = time.strftime("%d-%m-%Y-%H-%M-%S")
-        fileName = outputDir + "/" + str(timeInfo) + ".csv"
+        fileName = outputDir + "/" + str(timeInfo) + "-" + str(self.type) + ".csv"
 
         try:
             self.error = pd.DataFrame(self.error)
@@ -513,4 +523,4 @@ if __name__ == "__main__":
     data = dataset.combineData()
     plotPage = DataPlotting(data)
     Timer(1, plotPage.autoOpen).start()
-    plotPage.app.run_server()
+    plotPage.app.run_server(debug=False)
