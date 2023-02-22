@@ -127,8 +127,9 @@ class DataPlotting():
 
         # Add trendline
         if show_trendline == ['show']:
-            fig.add_traces(px.scatter(filtered_data, x=xAxis,
-                           y=yAxis, color=filtered_data['BatteryType'], trendline="lowess").data)
+            for data in battery_data:
+                fig.add_traces(px.scatter(filtered_data, x=xAxis,
+                            y=data, color=filtered_data['BatteryType'], trendline="lowess").data)
 
             # Remove marker line
             fig.update_traces(visible=False, selector=dict(mode="markers"))
