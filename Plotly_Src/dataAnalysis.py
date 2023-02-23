@@ -47,10 +47,11 @@ class DataPlotting():
         # Layout setting
         self.app.layout = html.Div([
             html.H1(
-                children='Third Year Project-Data Plotting-Zhe Yuan',
+                children='Data Plotting for Batteries - Zhe',
                 style={
                     'textAlign': 'left',
-                    'color': self.colours['text']
+                    'color': self.colours['text'],
+                    'fontSize': 15
                 }
             ),
 
