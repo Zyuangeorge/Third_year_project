@@ -19,22 +19,21 @@ bcc_drv_config_t drvConfig;
 #define MAX_BALANCED_CELL_NUMBER 7; // Maximum number of cells under balancing
 #define REST_TIME 1000; // Rest time between balancing processes in mS
 
-static void bubbleSort(uint32_t cellVoltage, int8_t cellLabel);
+void bubbleSort(uint32_t cellVoltage[], uint8_t cellLabel[], uint8_t len);
 static void cellBalancing(void);
 static void cellBalancingControl(void);
 
 /*!
  * @brief Function used for sorting the cellVoltage as well as cellLabel
  */
-static void bubbleSort(uint32_t cellVoltage, uint8_t cellLabel)
+void bubbleSort(uint32_t cellVoltage[], uint8_t cellLabel[], uint8_t len)
 {
-    uint8_t i, j, labelTamp, len;
+    uint32_t i, j, labelTamp;
     uint32_t dataTamp;
 
-    len = (uint8_t) sizeof(cellVoltage) / sizeof(*cellVoltage);
     for (i = 0; i < len - 1; i++){
         for (j = 0; j < len - 1 - i; j ++){
-            if (cellVoltage[j] > arr[j + 1]){
+            if (cellVoltage[j] > cellVoltage[j + 1]){
                 dataTamp = cellVoltage[j];
                 cellVoltage[j] = cellVoltage[j + 1];
                 cellVoltage[j + 1] = dataTamp;
@@ -57,13 +56,14 @@ static void cellBalancing(void)
     uint8_t i, j; 
     uint8_t balancedCellNumber;
     uint16_t balanceTime = 1; // In minutes
-    
+    uint8_t len = (uint8_t) sizeof(cellVoltage) / sizeof(*cellVoltage);
+
     for(i = 0; i < BATTERY_NUMBER; i++){
         cellVoltage[i] = cellData[i + 1];
         cellLabel[i] = i; 
     }
 
-    bubbleSort(cellVoltage, cellLabel);
+    bubbleSort(cellVoltage, cellLabel, len);
 
     if((cellVoltage[BATTERY_NUMBER - 1] - cellVoltage[0]) > VOLTAGE_DIFFERENCE_THRESHOLD){
         BCC_CB_Enable(drvConfig, BCC_CID_DEV1, true);
