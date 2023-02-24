@@ -20,7 +20,8 @@ bcc_drv_config_t drvConfig;
 #define REST_TIME 1000; // Rest time between balancing processes in mS
 
 static void bubbleSort(uint32_t cellVoltage, int8_t cellLabel);
-static void cellBalancing(uint32_t cellData, int32_t timeoutMs);
+static void cellBalancing(void);
+static void cellBalancingControl(void);
 
 /*!
  * @brief Function used for sorting the cellVoltage as well as cellLabel
@@ -96,7 +97,7 @@ void LPIT0_Ch0_IRQHandler(void)
  */
 static void cellBalancingControl(void)
 {
-    uint8_t cellIndex;
+    uint8_t cellIndex, i;
     uint16_t readVal;
     bool balanceEnable = false;
 
