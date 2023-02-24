@@ -292,13 +292,13 @@ static bool timeoutExpired(void);
 static void fillOcvTable(const ocv_config_t* const ocvConfig);
 static void getSOCResult(uint32_t cellVoltage, int16_t *soc);
 
-static status_t initDemo(void);
-static bcc_status_t Ah_integral_initialize(void);
+static status_t initAlgorithm(void);
+static bcc_status_t initAlgorithmValues(void);
 static bcc_status_t updateThreshold(void);
 
 static bcc_status_t updateMeasurements(void);
 
-static void Ah_integral_step(void);
+static void integrateCurrent(void);
 
 static void getCurrentDOD(void);
 static void getCurrentSOC(void);
@@ -515,7 +515,7 @@ static void getSOCResult(uint32_t cellVoltage, int16_t *soc)
 *
 * @return bccStatus.
 */
-static bcc_status_t Ah_integral_initialize(void)
+static bcc_status_t initAlgorithmValues(void)
 {
 	bcc_status_t error;
     ocv_config_t ocvConfig;
@@ -590,7 +590,7 @@ static bcc_status_t updateThreshold(void)
 /*!
  * @brief MCU and BCC initialization.
  */
-static status_t initDemo(void)
+static status_t initAlgorithm(void)
 {
     status_t status;
     bcc_status_t bccStatus;
@@ -740,7 +740,7 @@ static bcc_status_t updateMeasurements(void)
 /*!
  * @brief Model step function 
  */
-void Ah_integral_step(void)
+void integrateCurrent(void)
 {
     int16_t current_c; // Current current
 
@@ -812,7 +812,7 @@ static void DischargeHandler(void)
         }
     }
     if (flag == 0){
-    	Ah_integral_step();
+    	integrateCurrent();
 		getCurrentDOD();
 		getCurrentSOC();
     }
@@ -838,7 +838,7 @@ static void ChargeHandler(void)
         }
     }
     if (flag == 0){
-    	Ah_integral_step();
+    	integrateCurrent();
 		getCurrentDOD();
 		getCurrentSOC();
     }
@@ -855,7 +855,7 @@ static void OpenCircuitHandler(void)
     }
 
     if (CycleCounter == 4){
-        AhData.efcCounter += AhData.absIntegratedCurent / (2*RATEDCAPACITANCE*3600);
+        AhData.efcCounter += AhData.absIntegratedCurent / (2 * RATEDCAPACITANCE*3600);
         CycleCounter = 0;
     }
 
@@ -975,10 +975,10 @@ int main(void)
 
   /* Write your code here */
   /* For example: for(;;) { } */
-  if (initDemo() == STATUS_SUCCESS) // Initialize peripherals
+  if (initAlgorithm() == STATUS_SUCCESS) // Initialize peripherals
   {
       /* Get the initial value of SoC through lookup table */
-      Ah_integral_initialize();
+      initAlgorithmValues();
 
       /* Infinite loop for the real-time processing routines. */
       while (1)

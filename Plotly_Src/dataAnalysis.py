@@ -234,7 +234,7 @@ class Battery():
 
         # Data cleaning, remove all the data larger than 100
         for x in outputData.index:
-            if outputData.loc[x, "Capacity"] > 100 or outputData.loc[x, "Capacity"] < 0 or outputData.loc[x, "Capacity"] == np.nan:
+            if outputData.loc[x, "Capacity"] > 110 or outputData.loc[x, "Capacity"] < 0 or outputData.loc[x, "Capacity"] == np.nan:
                 self.error['BatteryType'].append(
                     outputData.loc[x, "BatteryType"])
                 self.error['BatterNumber'].append(
@@ -243,7 +243,7 @@ class Battery():
                 self.error['DataType'].append("Capacity")
                 self.error['DataValue'].append(outputData.loc[x, 'Capacity'])
 
-            if outputData.loc[x, "Efficiency"] > 100 or outputData.loc[x, "Efficiency"] < 0 or outputData.loc[x, "Capacity"] == np.nan:
+            if outputData.loc[x, "Efficiency"] > 110 or outputData.loc[x, "Efficiency"] < 0 or outputData.loc[x, "Capacity"] == np.nan:
                 self.error['BatteryType'].append(
                     outputData.loc[x, "BatteryType"])
                 self.error['BatterNumber'].append(
@@ -252,7 +252,7 @@ class Battery():
                 self.error['DataType'].append("Efficiency")
                 self.error['DataValue'].append(outputData.loc[x, 'Efficiency'])
 
-            if outputData.loc[x, "InternalResistance"] > 1000 or outputData.loc[x, "InternalResistance"] < 0 or outputData.loc[x, "Capacity"] == np.nan:
+            if outputData.loc[x, "InternalResistance"] > 250 or outputData.loc[x, "InternalResistance"] < 0 or outputData.loc[x, "Capacity"] == np.nan:
                 self.error['BatteryType'].append(
                     outputData.loc[x, "BatteryType"])
                 self.error['BatterNumber'].append(
@@ -262,7 +262,9 @@ class Battery():
                 self.error['DataValue'].append(
                     outputData.loc[x, 'InternalResistance'])
 
-        self.exportErrorLog()
+        # self.exportErrorLog()
+        del self.error
+        gc.collect()
 
         del self.rawData, self.cycleNumber, self.type
         del self.capacity_1, self.capacity_2, self.efficiency_1, self.efficiency_2, self.internalResistance_1, self.internalResistance_2

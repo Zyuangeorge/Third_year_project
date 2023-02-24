@@ -40,6 +40,6 @@ class ocvDataPlotting():
 
         fig.show()
 
-ocvPlot = ocvDataPlotting("D:\Project Data\MP_Cycle_Testing\Full_Test_Data\BAK_29\BAK_29_1_200.csv")
+ocvPlot = ocvDataPlotting("D:\Project Data\MP_Cycle_Testing\Full_Test_Data\MOLI_42\MOLI_42_1_200.csv")
 
 ocvPlot.plotBatteryData()
