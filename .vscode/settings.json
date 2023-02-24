@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "BATTERTNUMBER",
         "bytesize",
         "CHAM",
         "EIGHTBITS",
@@ -16,5 +17,10 @@
         "UNDERTEMPERATURE",
         "UNDERVOLTAGE"
     ],
-    "python.analysis.typeCheckingMode": "off"
+    "python.analysis.typeCheckingMode": "off",
+    "files.associations": {
+        "bcc_wait.h": "c",
+        "common.h": "c",
+        "math.h": "c"
+    }
 }
