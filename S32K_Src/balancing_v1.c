@@ -67,13 +67,14 @@ static void cellBalancing(void)
 
     if((cellVoltage[BATTERY_NUMBER - 1] - cellVoltage[0]) > VOLTAGE_DIFFERENCE_THRESHOLD){
         BCC_CB_Enable(drvConfig, BCC_CID_DEV1, true);
+        balanceTimeout = 0; // Reset balance time out to 0
 
         for(i = BATTERY_NUMBER - 1; i > 1; i--){
             if((cellVoltage[i] - cellVoltage[0]) > VOLTAGE_DIFFERENCE_THRESHOLD){
                 balancedCellNumber++;
             }
             if(balancedCellNumber < MAX_BALANCED_CELL_NUMBER){
-                BCC_CB_SetIndividual(drvConfig, BCC_CID_DEV1, i, true, balanceTime);
+                BCC_CB_SetIndividual(drvConfig, BCC_CID_DEV1, cellLabel[i], true, balanceTime);
             }
         }
     }
@@ -106,8 +107,7 @@ static void cellBalancingControl(void)
         balanceEnable |= readVal;
     }
     
-    if((!balanceEnable == true) && (balanceTimeout == REST_TIME)){
+    if((!balanceEnable == true) && (balanceTimeout >= REST_TIME)){
         cellBalancing();
-        balanceTimeout = 0; // Reset balance time out to 1 min
     }
 }
