@@ -81,7 +81,7 @@ static void cellBalancing(void)
                 // DoD calculation under balancing condition
                 deltaDOD[cellLabel[i]] = 60 * 1000 / (AhData.SOH[cellLabel[i]] * RATEDCAPACITANCE * 3600); // 60As * 1000 / (SoH (1000%) *Rated Capacity(in As))
 
-                AhData.DOD_c[cellLabel[i]] = AhData.DOD_0[cellLabel[i]] - deltaDOD[cellLabel[i]];
+                AhData.DOD_c[cellLabel[i]] = AhData.DOD_0[cellLabel[i]] + deltaDOD[cellLabel[i]];
 
                 // SoC calculation under balancing condition
                 AhData.SOC_c[cellLabel[i]] = AhData.SOH[cellLabel[i]] - AhData.DOD_c[cellLabel[i]];
