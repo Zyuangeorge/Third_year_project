@@ -841,9 +841,8 @@ static void cellBalancing(void)
     uint32_t cellVoltage[BATTERY_NUMBER]; // Cell voltages for 14 cells
     uint8_t cellLabel[BATTERY_NUMBER]; // Cell number label
     uint8_t i, j; 
-    uint8_t balancedCellNumber; // Number of cells require balancing
-    uint16_t balanceTime = BALANCE_TIME; // Balanced time in minutes
-    uint8_t len = (uint8_t) sizeof(cellVoltage) / sizeof(*cellVoltage); // Length of array
+    uint8_t balancingCellNumber; // Number of cells require balancing
+    uint16_t balanceTime = BALANCE_TIME; // Balanced time in minute
     float deltaDOD[BATTERY_NUMBER]; // Change in DoD
 
     for(i = 0; i < BATTERY_NUMBER; i++){
@@ -851,7 +850,7 @@ static void cellBalancing(void)
         cellLabel[i] = i; 
     }
 
-    bubbleSort(cellVoltage, cellLabel, len);
+    bubbleSort(cellVoltage, cellLabel, BATTERY_NUMBER);
 
     if((cellVoltage[BATTERY_NUMBER - 1] - cellVoltage[0]) > VOLTAGE_DIFFERENCE_THRESHOLD){
         BCC_CB_Enable(drvConfig, BCC_CID_DEV1, true);
@@ -859,17 +858,17 @@ static void cellBalancing(void)
 
         for(i = BATTERY_NUMBER - 1; i > 1; i--){
             if((cellVoltage[i] - cellVoltage[0]) > VOLTAGE_DIFFERENCE_THRESHOLD){
-                balancedCellNumber++;
+                balancingCellNumber++;
             }
-            if(balancedCellNumber < MAX_BALANCED_CELL_NUMBER){
+            if(balancingCellNumber < MAX_BALANCED_CELL_NUMBER){
 
                 BCC_CB_SetIndividual(drvConfig, BCC_CID_DEV1, cellLabel[i], true, balanceTime);
 
                 // DoD calculation under balancing condition
-                // (60As * 1000) / (SoH (1000%) *Rated Capacity(in As))
+                // (60As * 1000) / (SoH (1000%) * Rated Capacity(In As))
                 deltaDOD[cellLabel[i]] = 60 * 1000 / (AhData.SOH[cellLabel[i]] * RATEDCAPACITANCE * 3600); 
 
-                AhData.DOD_c[cellLabel[i]] = AhData.DOD_0[cellLabel[i]] - deltaDOD[cellLabel[i]];
+                AhData.DOD_c[cellLabel[i]] = AhData.DOD_0[cellLabel[i]] + deltaDOD[cellLabel[i]];
 
                 // SoC calculation under balancing condition
                 AhData.SOC_c[cellLabel[i]] = AhData.SOH[cellLabel[i]] - AhData.DOD_c[cellLabel[i]];
@@ -896,7 +895,8 @@ static void cellBalancingControl(void)
         balanceEnable |= readVal; // Read registers for determining the controlling condition of each cell
     }
     
-    if((!balanceEnable == true) && (balanceTimeout >= REST_TIME)){ // If there the balancing process of all the batteries are finished, and the the batteries are rested
+    // If the balancing process of all the batteries had finished, and the batteries had rested
+    if((!balanceEnable == true) && (balanceTimeout >= REST_TIME)){ 
         cellBalancing();
         balanceTimeout = 0; // Reset balance time out to 1 min
     }
