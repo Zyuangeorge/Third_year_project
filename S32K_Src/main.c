@@ -81,16 +81,17 @@
 #define KD 1 // Discharging efficiency
 
 /* Current threshold for determining the current direction */
-#define ISENSETHRESHOLD 3000 // In uV 6700
+#define ISENSETHRESHOLD 3000 // In uV is 6700uV
 
 /* Battery minimum and maximum voltages */
-#define MC33771C_TH_ALL_CT_UV_TH 1600 // In mV
-#define MC33771C_TH_ALL_CT_OV_TH 2500 // In mV
+#define MC33771C_TH_ALL_CT_UV_TH 1600 // 1600 mV
+#define MC33771C_TH_ALL_CT_OV_TH 2500 // 2500 mV
 
 #define BATTERY_NUMBER 14; // Number of cells
-#define VOLTAGE_DIFFERENCE_THRESHOLD 5000; // 5000 uV
+#define VOLTAGE_DIFFERENCE_THRESHOLD 5000; // Voltage difference threshold for cell balancing 5000 uV
 #define MAX_BALANCED_CELL_NUMBER 7; // Maximum number of cells under balancing
 #define REST_TIME 1000; // Rest time between balancing processes in mS
+#define BALANCE_TIME 1; // Cell balancing time setting in minute
 
 /* Lookup table setup */
 //#define LINEAR
@@ -260,7 +261,7 @@ bool sleepMode = false;
 int32_t timeout = 0;
 uint32_t balanceTimeout = 0;
 
-/* Current direction flag: 0 is discharge, 1 is charge */
+/* Current direction flag: 0 is discharge, 1 is charge, 2 is open circuit */
 int16_t currentDirectionFlag = 0;
 
 /* Charging and discharging counter used for EFC Calculation */
@@ -324,6 +325,7 @@ static void dataTransmit(void);
 static void resetData(void);
 
 static bcc_status_t updateFaultStatus(void);
+static void displayStatus(bmsSystemState bmsNextState)
 
 /*******************************************************************************
  * Functions
@@ -610,7 +612,11 @@ static status_t initAlgorithm(void)
     AhData.efcCounter = 0;
     AhData.integratedCurrent = 0.0;
     AhData.absIntegratedCurent = 0.0;
+    
+    // Reset cell balancing
+    BCC_CB_Pause(drvConfig, BCC_CID_DEV1, true);
 
+    // Init system clock
     CLOCK_SYS_Init(g_clockManConfigsArr, CLOCK_MANAGER_CONFIG_CNT,
             g_clockManCallbacksArr, CLOCK_MANAGER_CALLBACK_CNT);
     CLOCK_SYS_UpdateConfiguration(0U, CLOCK_MANAGER_POLICY_FORCIBLE);
@@ -729,7 +735,7 @@ static bcc_status_t updateMeasurements(void)
 	cellData[14]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT14]);
 	cellData[15] = BCC_GET_IC_TEMP_C(measurements[BCC_MSR_ICTEMP]);
 
-	/* ISENCE data (current measurement) */
+	/* ISENSE data (current measurement) */
 	cellData[16] = BCC_GET_ISENSE_AMP(DEMO_RSHUNT, measurements[BCC_MSR_ISENSE1], measurements[BCC_MSR_ISENSE2]);
 	isenseVolt = BCC_GET_ISENSE_VOLT(measurements[BCC_MSR_ISENSE1], measurements[BCC_MSR_ISENSE2]);
 
@@ -832,12 +838,13 @@ void bubbleSort(uint32_t cellVoltage[], uint8_t cellLabel[], uint8_t len)
  */
 static void cellBalancing(void)
 {
-    uint32_t cellVoltage = [];
-    uint8_t cellLabel = [];
+    uint32_t cellVoltage[BATTERY_NUMBER]; // Cell voltages for 14 cells
+    uint8_t cellLabel[BATTERY_NUMBER]; // Cell number label
     uint8_t i, j; 
-    uint8_t balancedCellNumber;
-    uint16_t balanceTime = 1; // In minutes
-    uint8_t len = (uint8_t) sizeof(cellVoltage) / sizeof(*cellVoltage);
+    uint8_t balancedCellNumber; // Number of cells require balancing
+    uint16_t balanceTime = BALANCE_TIME; // Balanced time in minutes
+    uint8_t len = (uint8_t) sizeof(cellVoltage) / sizeof(*cellVoltage); // Length of array
+    float deltaDOD[BATTERY_NUMBER]; // Change in DoD
 
     for(i = 0; i < BATTERY_NUMBER; i++){
         cellVoltage[i] = cellData[i + 1];
@@ -848,15 +855,27 @@ static void cellBalancing(void)
 
     if((cellVoltage[BATTERY_NUMBER - 1] - cellVoltage[0]) > VOLTAGE_DIFFERENCE_THRESHOLD){
         BCC_CB_Enable(drvConfig, BCC_CID_DEV1, true);
+        
 
         for(i = BATTERY_NUMBER - 1; i > 1; i--){
             if((cellVoltage[i] - cellVoltage[0]) > VOLTAGE_DIFFERENCE_THRESHOLD){
                 balancedCellNumber++;
             }
             if(balancedCellNumber < MAX_BALANCED_CELL_NUMBER){
+
                 BCC_CB_SetIndividual(drvConfig, BCC_CID_DEV1, cellLabel[i], true, balanceTime);
+
+                // DoD calculation under balancing condition
+                // (60As * 1000) / (SoH (1000%) *Rated Capacity(in As))
+                deltaDOD[cellLabel[i]] = 60 * 1000 / (AhData.SOH[cellLabel[i]] * RATEDCAPACITANCE * 3600); 
+
+                AhData.DOD_c[cellLabel[i]] = AhData.DOD_0[cellLabel[i]] - deltaDOD[cellLabel[i]];
+
+                // SoC calculation under balancing condition
+                AhData.SOC_c[cellLabel[i]] = AhData.SOH[cellLabel[i]] - AhData.DOD_c[cellLabel[i]];
             }
         }
+        balanceTimeout = 0; // Reset balance time out to 0
     }
     else{
         BCC_CB_Pause(drvConfig, BCC_CID_DEV1, true);
@@ -874,10 +893,10 @@ static void cellBalancingControl(void)
 
     for(i = 0; i < BATTERY_NUMBER; i++){
         BCC_Reg_Read(drvConfig, BCC_CID_DEV1, MC33771C_CB1_CFG_OFFSET + cellIndex, 1U, &readVal);
-        balanceEnable |= readVal;
+        balanceEnable |= readVal; // Read registers for determining the controlling condition of each cell
     }
     
-    if((!balanceEnable == true) && (balanceTimeout >= REST_TIME)){
+    if((!balanceEnable == true) && (balanceTimeout >= REST_TIME)){ // If there the balancing process of all the batteries are finished, and the the batteries are rested
         cellBalancing();
         balanceTimeout = 0; // Reset balance time out to 1 min
     }
@@ -935,7 +954,7 @@ static void ChargeHandler(void)
 }
 
 /*
- * @brief Handler for open circuit state
+ * @brief Handler for open circuit state calculation
  */
 static void OpenCircuitHandler(void)
 {
@@ -1055,6 +1074,59 @@ static bcc_status_t updateFaultStatus(void)
     return BCC_STATUS_SUCCESS;
 }
 
+/*
+ * @brief Function used for status display
+ */
+static void displayStatus(bmsSystemState bmsNextState)
+{
+    switch(bmsNextState){
+    case Idle_State:
+                        {
+                            PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
+                            PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+                            PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+                        }
+                        break;
+    case Discharge_State:
+                        {
+                            PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
+                            PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+                            PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+
+                            PINS_DRV_ClearPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+                        }
+                        break;
+    case Charge_State:
+                        {
+                            PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
+                            PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+                            PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+
+                            PINS_DRV_ClearPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+                        }
+                        break;
+    case OpenCircuit_State:
+                        {
+                            PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
+                            PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+                            PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+
+                            PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
+                            PINS_DRV_ClearPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+                            PINS_DRV_ClearPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+                        }
+                        break;
+    case Fault_State:
+                        {
+                            PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
+                            PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
+                            PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+
+                            PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
+                        }
+    }
+}
+
 int main(void)
 {
   /* Write your local variable definition here */
@@ -1082,65 +1154,21 @@ int main(void)
         
           if (PTC->PDIR & (1<<12)){ /* If Pad Data Input = 1 (BTN0 [SW2] pushed) */
         	  CycleCounter = 0; /* Clear EFC counter */
-              EFCFlag = 1;
+              EFCFlag = 1; /* Reset EFC flag */
+
+              // Turn off the LED for a short period to represent that the data has cleared
   	  		  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
   	  		  PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
   	  		  PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
           }
 
-          //Read system Events
+          // Read system Events
           bmsSystemEvent bmsNewEvent = monitorBattery();
 
-          /* Loops until specified timeout expires. */
+          /* Loops until specified timeout expires, loop ends every 200ms */
           do
           {
-        	  /* State Display */
-        	  switch(bmsNextState){
-        	  	case Idle_State:
-        	          	  	      {
-        	          	  	    	  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
-        	          	  	    	  PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
-        	          	  	    	  PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
-        	          	  	      }
-        	          	  	      break;
-        	  	case Discharge_State:
-        	  	        	  	  {
-        	  	        	  		  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
-        	  	        	  		  PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
-        	  	        	  		  PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
-
-        	  	        	  		  PINS_DRV_ClearPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
-        	  	        	  	  }
-        	  	        	  	  break;
-        	  	case Charge_State:
-        	  	        	  	  {
-        	  	        	  		  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
-        	  	        	  		  PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
-        	  	        	  		  PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
-
-        	  	        	  		  PINS_DRV_ClearPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
-        	  	        	  	  }
-        	  	        	  	  break;
-        	  	case OpenCircuit_State:
-        	  	        	  	  {
-        	  	        	  		  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
-        	  	        	  		  PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
-        	  	        	  		  PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
-
-        	  	        	  		  PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
-        	  	        	  		  PINS_DRV_ClearPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
-        	  	        	  		  PINS_DRV_ClearPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
-        	  	        	  	  }
-        	  	        	  	  break;
-        	  	case Fault_State:
-							      {
-									  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
-									  PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
-									  PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
-
-									  PINS_DRV_ClearPins(RED_LED_PORT, 1U << RED_LED_PIN);
-								  }
-        	  }
+        	  displayStatus(bmsNextState);
               if (!sleepMode)
               {
                   /* To prevent communication loss */

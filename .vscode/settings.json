@@ -6,6 +6,7 @@
         "EIGHTBITS",
         "FIVEBITS",
         "ICTEMPERATURE",
+        "ISENSETHRESHOLD",
         "OVERCURRENT",
         "OVERTEMPERATURE",
         "OVERVOLTAGE",

@@ -51,12 +51,13 @@ void bubbleSort(uint32_t cellVoltage[], uint8_t cellLabel[], uint8_t len)
  */
 static void cellBalancing(void)
 {
-    uint32_t cellVoltage = [];
-    uint8_t cellLabel = [];
+    uint32_t cellVoltage[BATTERY_NUMBER];
+    uint8_t cellLabel[BATTERY_NUMBER];
     uint8_t i, j; 
     uint8_t balancedCellNumber;
     uint16_t balanceTime = 1; // In minutes
     uint8_t len = (uint8_t) sizeof(cellVoltage) / sizeof(*cellVoltage);
+    float deltaDOD[BATTERY_NUMBER];
 
     for(i = 0; i < BATTERY_NUMBER; i++){
         cellVoltage[i] = cellData[i + 1];
@@ -67,16 +68,26 @@ static void cellBalancing(void)
 
     if((cellVoltage[BATTERY_NUMBER - 1] - cellVoltage[0]) > VOLTAGE_DIFFERENCE_THRESHOLD){
         BCC_CB_Enable(drvConfig, BCC_CID_DEV1, true);
-        balanceTimeout = 0; // Reset balance time out to 0
+        
 
         for(i = BATTERY_NUMBER - 1; i > 1; i--){
             if((cellVoltage[i] - cellVoltage[0]) > VOLTAGE_DIFFERENCE_THRESHOLD){
                 balancedCellNumber++;
             }
             if(balancedCellNumber < MAX_BALANCED_CELL_NUMBER){
+
                 BCC_CB_SetIndividual(drvConfig, BCC_CID_DEV1, cellLabel[i], true, balanceTime);
+
+                // DoD calculation under balancing condition
+                deltaDOD[cellLabel[i]] = 60 * 1000 / (AhData.SOH[cellLabel[i]] * RATEDCAPACITANCE * 3600); // 60As * 1000 / (SoH (1000%) *Rated Capacity(in As))
+
+                AhData.DOD_c[cellLabel[i]] = AhData.DOD_0[cellLabel[i]] - deltaDOD[cellLabel[i]];
+
+                // SoC calculation under balancing condition
+                AhData.SOC_c[cellLabel[i]] = AhData.SOH[cellLabel[i]] - AhData.DOD_c[cellLabel[i]];
             }
         }
+        balanceTimeout = 0; // Reset balance time out to 0
     }
     else{
         BCC_CB_Pause(drvConfig, BCC_CID_DEV1, true);
