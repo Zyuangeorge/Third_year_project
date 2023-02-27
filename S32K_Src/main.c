@@ -1042,7 +1042,7 @@ void dataTransmit(void)
 
     transmittedData[45] = (uint32_t)round(AhData.efcCounter); // Round the EFC number
 
-    for (i = 46; i < 59; i++){
+    for (i = 46; i < 60; i++){
         transmittedData[i] = AhData.CB_ControlStatus[i - 46]; // CB control data
     }
 
