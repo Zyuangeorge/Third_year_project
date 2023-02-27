@@ -774,10 +774,10 @@ class Ui_MainWindow(object):
 
         self.CellBalancingButtonLayout.addWidget(self.StopBalancingButton)
 
-        self.CellBalancingStatusDisplay = QRadioButton(self.CellBalancingGroupBox)
+        self.CellBalancingStatusDisplay = QCheckBox(self.CellBalancingGroupBox)
         self.CellBalancingStatusDisplay.setObjectName(u"CellBalancingStatusDisplay")
         self.CellBalancingStatusDisplay.setFocusPolicy(Qt.NoFocus)
-        self.CellBalancingStatusDisplay.setCheckable(False)
+        self.CellBalancingStatusDisplay.setCheckable(True)
 
         self.CellBalancingButtonLayout.addWidget(self.CellBalancingStatusDisplay)
 

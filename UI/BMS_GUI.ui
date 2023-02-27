@@ -1341,7 +1341,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QRadioButton" name="CellBalancingStatusDisplay">
+                 <widget class="QCheckBox" name="CellBalancingStatusDisplay">
                   <property name="focusPolicy">
                    <enum>Qt::NoFocus</enum>
                   </property>
@@ -1349,7 +1349,7 @@
                    <string>Balancing Status</string>
                   </property>
                   <property name="checkable">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>

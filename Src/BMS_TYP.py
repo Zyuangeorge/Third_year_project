@@ -347,6 +347,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Set the stop monitoring button to close
         self.stopButton.setEnabled(False)
 
+        # Set the stop plotting button to close
+        self.stopPlotButton.setEnabled(False)
+
         # Set the port status to be unchanged
         self.portStatusDisplay.setEnabled(False)
 
@@ -420,6 +423,10 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.startRecordButton.toggled.connect(self.startRecording)
         self.stopRecordButton.toggled.connect(self.stopRecording)
         self.printButton.clicked.connect(self.printData)
+
+        # Connect cell balancing control button functions
+        self.StartBalancingButton.clicked.connect(self.startCellBalancing)
+        self.StopBalancingButton.clicked.connect(self.stopCellBalancing)
 
         # Connect zoom button functions
         self.zoomButton.clicked.connect(self.zoomGraph)
@@ -623,7 +630,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.startRecordButton.setEnabled(False)
         self.startButton.setEnabled(True)
         self.stopButton.setEnabled(False)
-        self.portStatusDisplay.setChecked(False)        
+        self.portStatusDisplay.setChecked(False)
 
 # ===================Data printing====================
 
@@ -844,6 +851,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         if self.serial.isOpen():
             self.timer2.start(200)
+            self.startPlotButton.setEnabled(False)
+            self.stopPlotButton.setEnabled(True)
         else:
             QMessageBox.critical(
                 self, 'COM error', 'COM data error, please reconnect the port')
@@ -877,7 +886,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """Handler for stop plotting data"""
         if self.serial.isOpen():
             self.timer2.stop()
-
+            self.startPlotButton.setEnabled(True)
+            self.stopPlotButton.setEnabled(False)
         else:
             QMessageBox.critical(
                 self, 'COM error', 'COM data error, please reconnect the port')
@@ -1162,6 +1172,27 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.packData['currentStatus'].value)
 
         self.ICStatusDisplay.setText(self.ICData['tempStatus'].value)
+
+# ===================Cell balancing====================
+    def startCellBalancing(self):
+        # Disable start cell balancing button if monitoring is started
+        if self.serial.isOpen():
+            self.StartBalancingButton.setEnabled(False)
+            self.StopBalancingButton.setEnabled(True)
+            self.CellBalancingStatusDisplay.setChecked(True)
+        else:
+            QMessageBox.critical(
+                self, 'COM error', 'COM data error, please reconnect the port')
+
+    def stopCellBalancing(self):
+        # Disable stop cell balancing button if monitoring is started
+        if self.serial.isOpen():
+            self.StartBalancingButton.setEnabled(True)
+            self.StopBalancingButton.setEnabled(False)
+            self.CellBalancingStatusDisplay.setChecked(False)
+        else:
+            QMessageBox.critical(
+                self, 'COM error', 'COM data error, please reconnect the port')
 
 # ===================GUI pop-up dialogues====================
 
