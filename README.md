@@ -51,3 +51,5 @@ This GUI is built by PySide6.
 11. Battery SOC and SOH information display
 
 12. Data plotting
+
+13. Cell balancing control
