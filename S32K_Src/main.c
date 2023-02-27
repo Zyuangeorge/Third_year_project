@@ -11,11 +11,10 @@
 ** ###################################################################*/
 /*!
 ** @file main.c
-** @version 0.0.4
+** @version 0.1.2
 ** @brief
-**         Main module.
 **         Enhanced CC method.
-**         Add fault state
+**         Add cell balancing.
 */         
 /*!
 **  @addtogroup main_module main module documentation
@@ -89,7 +88,7 @@
 
 #define BATTERY_NUMBER 14 // Number of cells
 #define VOLTAGE_DIFFERENCE_THRESHOLD 5000 // Voltage difference threshold for cell balancing 5000 uV
-#define MAX_BALANCED_CELL_NUMBER 7 // Maximum number of cells under balancing + 1
+#define MAX_BALANCED_CELL_NUMBER 7 // Maximum number of cells under balancing
 #define REST_TIME 1000 // Rest time between balancing processes in mS
 #define BALANCE_TIME 1 // Cell balancing time setting in minute
 
@@ -865,7 +864,7 @@ static void cellBalancing(void)
             if((cellVoltage[i] - cellVoltage[0]) > VOLTAGE_DIFFERENCE_THRESHOLD){
                 balancingCellNumber++;
             }
-            if(balancingCellNumber < MAX_BALANCED_CELL_NUMBER){
+            if(balancingCellNumber <= MAX_BALANCED_CELL_NUMBER){
                 BCC_CB_SetIndividual(&drvConfig, BCC_CID_DEV1, cellLabel[i], true, balanceTime);
 
                 // DoD calculation under balancing condition
@@ -901,7 +900,8 @@ static void cellBalancing(void)
 static void cellBalancingControl(void)
 {
     // If the batteries had rested, start the next balancing round
-    if(balanceTimeout >= REST_TIME){
+	// 1 min = 60,000 mS + 1s = 1000ms
+    if(balanceTimeout >= (BALANCE_TIME * 60 * 1000 + REST_TIME)){
         cellBalancing();
         balanceTimeout = 0; // Reset balance time out to 1 min
     }

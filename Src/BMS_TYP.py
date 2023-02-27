@@ -1013,19 +1013,19 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         zoomedGraph = self.zoomGraphComboBox_4.currentText()
         zoomedGraphDict = {
             'Cell 1 CB Control': 45,
-            'Cell 2 SoH': 46,
-            'Cell 3 SoH': 47,
-            'Cell 4 SoH': 48,
-            'Cell 5 SoH': 49,
-            'Cell 6 SoH': 50,
-            'Cell 7 SoH': 51,
-            'Cell 8 SoH': 52,
-            'Cell 9 SoH': 53,
-            'Cell 10 SoH': 54,
-            'Cell 11 SoH': 55,
-            'Cell 12 SoH': 56,
-            'Cell 13 SoH': 57,
-            'Cell 14 SoH': 58,
+            'Cell 2 CB Control': 46,
+            'Cell 3 CB Control': 47,
+            'Cell 4 CB Control': 48,
+            'Cell 5 CB Control': 49,
+            'Cell 6 CB Control': 50,
+            'Cell 7 CB Control': 51,
+            'Cell 8 CB Control': 52,
+            'Cell 9 CB Control': 53,
+            'Cell 10 CB Control': 54,
+            'Cell 11 CB Control': 55,
+            'Cell 12 CB Control': 56,
+            'Cell 13 CB Control': 57,
+            'Cell 14 CB Control': 58,
         }
 
         if self.graphData.shape[1] > 2:
