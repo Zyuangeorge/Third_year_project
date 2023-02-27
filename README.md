@@ -1,7 +1,5 @@
 # Third_year_project
-This the the python-based GUI, which is used for a battery management system project
-
-This GUI is built by PySide6.
+This a the python-based GUI, which is used for a battery management system project
 
 ## Hardware Requirement
 1. S32K144EVB-used for serial communication
