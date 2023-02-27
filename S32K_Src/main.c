@@ -89,7 +89,7 @@
 
 #define BATTERY_NUMBER 14 // Number of cells
 #define VOLTAGE_DIFFERENCE_THRESHOLD 5000 // Voltage difference threshold for cell balancing 5000 uV
-#define MAX_BALANCED_CELL_NUMBER 7 // Maximum number of cells under balancing
+#define MAX_BALANCED_CELL_NUMBER 7 // Maximum number of cells under balancing + 1
 #define REST_TIME 1000 // Rest time between balancing processes in mS
 #define BALANCE_TIME 1 // Cell balancing time setting in minute
 
@@ -126,16 +126,18 @@ typedef enum
 
 typedef struct
 {
-	int16_t SOC_0[14]; // Initial SoC value: permille
+	int16_t SOC_0[BATTERY_NUMBER]; // Initial SoC value: permille
 
-	int16_t SOC_c[14]; // Current SoC value: permille
+	int16_t SOC_c[BATTERY_NUMBER]; // Current SoC value: permille
 
-    int16_t DOD_0[14]; // Inital depth of Discharge: permille
+    int16_t DOD_0[BATTERY_NUMBER]; // Inital depth of Discharge: permille
 
-    int16_t DOD_c[14]; // Current depth of Discharge: permille
+    int16_t DOD_c[BATTERY_NUMBER]; // Current depth of Discharge: permille
 
-    int16_t SOH[14]; // State of health: permille
+    int16_t SOH[BATTERY_NUMBER]; // State of health: permille
     
+    int16_t CB_ControlStatus[BATTERY_NUMBER]; // Cell balancing control status
+
     float efcCounter;
 
     float absIntegratedCurent;
@@ -269,7 +271,7 @@ int16_t CycleCounter = 0;
 int16_t EFCFlag = 0;
 
 /* Fault status */
-uint16_t faultStatusValue[2]={0,0}; // [0]: overvoltage [1]: undervoltage
+uint16_t faultStatusValue[2]={0, 0}; // [0]: overvoltage [1]: undervoltage
 
 /* ISENSE voltage */
 int32_t isenseVolt;
@@ -280,11 +282,12 @@ int32_t isenseVolt;
  * [1:14] Cell voltage 1 to 14
  * [15] IC temperature
  * [16] Current
- * [17:30] SOC: Cell 1 to 14
- * [31:44] SOH: Cell 1 to 14
+ * [17:30] Cell 1 to 14 SoC
+ * [31:44] Cell 1 to 14 SoH
  * [45] EFC: Equivalent Full Cycle
+ * [46:59] Cell 1 to 14 CB Control 
  */
-uint32_t transmittedData[46];
+uint32_t transmittedData[60];
 
 /*******************************************************************************
  * Function prototypes
@@ -562,7 +565,7 @@ static bcc_status_t initAlgorithmValues(void)
 	/* Initialize the OCV-SOC look up table */
 	fillOcvTable(&ocvConfig);
 
-	for (i = 0; i < 14; i++){
+	for (i = 0; i < BATTERY_NUMBER; i++){
 		/* Get the initial SOC value */
 		getSOCResult(cellData[i + 1],&soc);
 		AhData.SOC_0[i] = soc;
@@ -573,6 +576,9 @@ static bcc_status_t initAlgorithmValues(void)
         /* Calculate the initial DOD value */
         AhData.DOD_0[i] = AhData.SOH[i] - AhData.SOC_0[i];
         AhData.DOD_c[i] = AhData.DOD_0[i];
+
+        /* Cet the initial CB control status value */
+        AhData.CB_ControlStatus[i] = 0.0;
 	}
     
     AhData.integratedCurrent = 0.0;
@@ -782,10 +788,10 @@ void integrateCurrent(void)
  */
 static void getCurrentDOD(void)
 {
-	float deltaDOD[14];
+	float deltaDOD[BATTERY_NUMBER];
 	int i;
 
-	for (i = 0; i < 14; i++){
+	for (i = 0; i < BATTERY_NUMBER; i++){
 
 		deltaDOD[i] = AhData.integratedCurrent * 1000 * 1000 / (AhData.SOH[i] * RATEDCAPACITANCE * 3600);
 
@@ -805,7 +811,7 @@ static void getCurrentSOC(void)
 {
 	int i;
 
-	for (i = 0; i < 14; i++){
+	for (i = 0; i < BATTERY_NUMBER; i++){
 		AhData.SOC_c[i] = AhData.SOH[i] - AhData.DOD_c[i];
 	}
 }
@@ -841,7 +847,7 @@ static void cellBalancing(void)
     uint32_t cellVoltage[BATTERY_NUMBER]; // Cell voltages for 14 cells
     uint8_t cellLabel[BATTERY_NUMBER]; // Cell number label
     uint8_t i;
-    uint8_t balancingCellNumber; // Number of cells require balancing
+    uint8_t balancingCellNumber = 0; // Number of cells require balancing
     uint16_t balanceTime = BALANCE_TIME; // Balanced time in minute
     float deltaDOD[BATTERY_NUMBER]; // Change in DoD
 
@@ -860,7 +866,6 @@ static void cellBalancing(void)
                 balancingCellNumber++;
             }
             if(balancingCellNumber < MAX_BALANCED_CELL_NUMBER){
-
                 BCC_CB_SetIndividual(&drvConfig, BCC_CID_DEV1, cellLabel[i], true, balanceTime);
 
                 // DoD calculation under balancing condition
@@ -871,12 +876,22 @@ static void cellBalancing(void)
 
                 // SoC calculation under balancing condition
                 AhData.SOC_c[cellLabel[i]] = AhData.SOH[cellLabel[i]] - AhData.DOD_c[cellLabel[i]];
+
+                AhData.CB_ControlStatus[cellLabel[i]] = 1.0;
+            }
+            else{
+            	AhData.CB_ControlStatus[cellLabel[i]] = 0.0;
             }
         }
         balanceTimeout = 0; // Reset balance time out to 0
     }
     else{
         BCC_CB_Pause(&drvConfig, BCC_CID_DEV1, true);
+
+        // Clear CB control status
+        for(i = 0; i < BATTERY_NUMBER; i++){
+        	AhData.CB_ControlStatus[i] = 0.0;
+        }
     }
 }
 
@@ -885,17 +900,8 @@ static void cellBalancing(void)
  */
 static void cellBalancingControl(void)
 {
-    uint8_t cellIndex;
-    uint16_t readVal;
-    bool balanceEnable = false;
-
-    for(cellIndex = 0; cellIndex < BATTERY_NUMBER; cellIndex++){
-        BCC_Reg_Read(&drvConfig, BCC_CID_DEV1, MC33771C_CB1_CFG_OFFSET + cellIndex, 1U, &readVal);
-        balanceEnable |= readVal; // Read registers for determining the controlling condition of each cell
-    }
-    
-    // If the balancing process of all the batteries had finished, and the batteries had rested
-    if((!balanceEnable == true) && (balanceTimeout >= REST_TIME)){ 
+    // If the batteries had rested, start the next balancing round
+    if(balanceTimeout >= REST_TIME){
         cellBalancing();
         balanceTimeout = 0; // Reset balance time out to 1 min
     }
@@ -909,7 +915,7 @@ static void DischargeHandler(void)
     int16_t i;
     int16_t flag;
 
-    for (i = 0; i < 14; i++){
+    for (i = 0; i < BATTERY_NUMBER; i++){
         if (cellData[i + 1] <= (MC33771C_TH_ALL_CT_UV_TH + 150) * 1000){ // 150mV margin
             AhData.SOH[i] = AhData.DOD_c[i]; // DoD is equal to the maximum releasable capacity
             AhData.SOC_c[i] = 0; // When the cell is fully discharged, the SoC is 0, DoD is not 0
@@ -934,7 +940,7 @@ static void ChargeHandler(void)
     int16_t i;
     int16_t flag;
 
-    for (i = 0; i < 14; i++){
+    for (i = 0; i < BATTERY_NUMBER; i++){
         if ((cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 100) * 1000) && (-isenseVolt <= (ISENSETHRESHOLD + 50))){ // At the end of CV process (10mV and 50uV margin)
             AhData.SOH[i] = AhData.SOC_c[i] - AhData.DOD_c[i]; // Calibrate SOH for each cell
             AhData.SOC_c[i] = AhData.SOH[i]; // SoC equals to SoH
@@ -1036,6 +1042,10 @@ void dataTransmit(void)
 
     transmittedData[45] = (uint32_t)round(AhData.efcCounter); // Round the EFC number
 
+    for (i = 46; i < 59; i++){
+        transmittedData[i] = AhData.CB_ControlStatus[i - 46]; // CB control data
+    }
+
     LPUART_DRV_SendData(INST_LPUART1, (uint8_t *)transmittedData, sizeof(transmittedData)); // Transmit the data through UART
 }
 
@@ -1045,7 +1055,7 @@ void dataTransmit(void)
 static void resetData(void){
     int16_t i;
 
-    for (i = 0; i < 14; i++){
+    for (i = 0; i < BATTERY_NUMBER; i++){
         AhData.DOD_c[i] = AhData.DOD_0[i];
     }
 }

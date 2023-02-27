@@ -754,6 +754,40 @@ class Ui_MainWindow(object):
         self.batteryData_5Layout = QVBoxLayout(self.batteryData_5)
         self.batteryData_5Layout.setObjectName(u"batteryData_5Layout")
         self.monitorWindowTab.addTab(self.batteryData_5, "")
+        self.batteryData_6 = QWidget()
+        self.batteryData_6.setObjectName(u"batteryData_6")
+        self.batteryData_6Layout = QVBoxLayout(self.batteryData_6)
+        self.batteryData_6Layout.setObjectName(u"batteryData_6Layout")
+        self.CellBalancingGroupBox = QGroupBox(self.batteryData_6)
+        self.CellBalancingGroupBox.setObjectName(u"CellBalancingGroupBox")
+        self.verticalLayout_3 = QVBoxLayout(self.CellBalancingGroupBox)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.CellBalancingButtonLayout = QHBoxLayout()
+        self.CellBalancingButtonLayout.setObjectName(u"CellBalancingButtonLayout")
+        self.StartBalancingButton = QPushButton(self.CellBalancingGroupBox)
+        self.StartBalancingButton.setObjectName(u"StartBalancingButton")
+
+        self.CellBalancingButtonLayout.addWidget(self.StartBalancingButton)
+
+        self.StopBalancingButton = QPushButton(self.CellBalancingGroupBox)
+        self.StopBalancingButton.setObjectName(u"StopBalancingButton")
+
+        self.CellBalancingButtonLayout.addWidget(self.StopBalancingButton)
+
+        self.CellBalancingStatusDisplay = QRadioButton(self.CellBalancingGroupBox)
+        self.CellBalancingStatusDisplay.setObjectName(u"CellBalancingStatusDisplay")
+        self.CellBalancingStatusDisplay.setFocusPolicy(Qt.NoFocus)
+        self.CellBalancingStatusDisplay.setCheckable(False)
+
+        self.CellBalancingButtonLayout.addWidget(self.CellBalancingStatusDisplay)
+
+
+        self.verticalLayout_3.addLayout(self.CellBalancingButtonLayout)
+
+
+        self.batteryData_6Layout.addWidget(self.CellBalancingGroupBox)
+
+        self.monitorWindowTab.addTab(self.batteryData_6, "")
 
         self.monitorGroupBoxLayout.addWidget(self.monitorWindowTab)
 
@@ -962,6 +996,11 @@ class Ui_MainWindow(object):
         self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_3), QCoreApplication.translate("MainWindow", u"Battery Data Graph", None))
         self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_4), QCoreApplication.translate("MainWindow", u"SoC Estimation", None))
         self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_5), QCoreApplication.translate("MainWindow", u"SoH Estimation", None))
+        self.CellBalancingGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Cell Balancing Control", None))
+        self.StartBalancingButton.setText(QCoreApplication.translate("MainWindow", u"Start Balancing", None))
+        self.StopBalancingButton.setText(QCoreApplication.translate("MainWindow", u"Stop Balancing", None))
+        self.CellBalancingStatusDisplay.setText(QCoreApplication.translate("MainWindow", u"Balancing Status", None))
+        self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_6), QCoreApplication.translate("MainWindow", u"Cell Balancing", None))
         self.nameLabel.setText(QCoreApplication.translate("MainWindow", u"Made by Zhe Yuan", None))
         self.menuSetting.setTitle(QCoreApplication.translate("MainWindow", u"Setting", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))

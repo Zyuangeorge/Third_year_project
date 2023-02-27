@@ -1313,6 +1313,53 @@
           </attribute>
           <layout class="QVBoxLayout" name="batteryData_5Layout"/>
          </widget>
+         <widget class="QWidget" name="batteryData_6">
+          <attribute name="title">
+           <string>Cell Balancing</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="batteryData_6Layout">
+           <item>
+            <widget class="QGroupBox" name="CellBalancingGroupBox">
+             <property name="title">
+              <string>Cell Balancing Control</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <item>
+               <layout class="QHBoxLayout" name="CellBalancingButtonLayout">
+                <item>
+                 <widget class="QPushButton" name="StartBalancingButton">
+                  <property name="text">
+                   <string>Start Balancing</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="StopBalancingButton">
+                  <property name="text">
+                   <string>Stop Balancing</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="CellBalancingStatusDisplay">
+                  <property name="focusPolicy">
+                   <enum>Qt::NoFocus</enum>
+                  </property>
+                  <property name="text">
+                   <string>Balancing Status</string>
+                  </property>
+                  <property name="checkable">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </widget>
        </item>
        <item>

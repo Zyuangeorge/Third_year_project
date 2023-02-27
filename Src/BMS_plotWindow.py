@@ -478,3 +478,44 @@ class SOHPlotWindow(pg.GraphicsLayoutWidget):
             curve.setLabel('bottom', "Time (s)")
             curve.setLabel('left', "SoH (%)")
             curve.enableAutoRange(axis='y')
+
+class CBPlotWindow(pg.GraphicsLayoutWidget):
+    """Window for plotting graphs"""
+    def __init__(self):
+        super().__init__()
+        # Set plot windows
+        self.p0 = self.addPlot(title="Cell 1 CB Control")
+        self.p1 = self.addPlot(title="Cell 2 CB Control")
+        self.p2 = self.addPlot(title="Cell 3 CB Control")
+        self.p3 = self.addPlot(title="Cell 4 CB Control")
+
+        self.nextRow()
+        self.p4 = self.addPlot(title="Cell 5 CB Control")
+        self.p5 = self.addPlot(title="Cell 6 CB Control")
+        self.p6 = self.addPlot(title="Cell 7 CB Control")
+        self.p7 = self.addPlot(title="Cell 8 CB Control")
+
+        self.nextRow()
+        self.p8 = self.addPlot(title="Cell 9 CB Control")
+        self.p9 = self.addPlot(title="Cell 10 CB Control")
+        self.p10 = self.addPlot(title="Cell 11 CB Control")
+        self.p11 = self.addPlot(title="Cell 12 CB Control")
+
+        self.nextRow()
+        self.p12 = self.addPlot(title="Cell 13 CB Control")
+        self.p13 = self.addPlot(title="Cell 14 CB Control")
+
+        self.CBCurves = [
+            self.p0,self.p1,self.p2,self.p3,
+            self.p4,self.p5,self.p6,self.p7,
+            self.p8,self.p9,self.p10,self.p11,
+            self.p12,self.p13]
+
+        self.initCurves()
+
+    def initCurves(self):
+        """Handler for curve initialisation"""
+        for curve in self.CBCurves:
+            curve.setLabel('bottom', "Time (s)")
+            curve.setLabel('left', "CB (On/Off)")
+            curve.enableAutoRange(axis='y')
