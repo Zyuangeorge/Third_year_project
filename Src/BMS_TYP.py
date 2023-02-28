@@ -350,6 +350,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Set the stop plotting button to close
         self.stopPlotButton.setEnabled(False)
 
+        # Set the stop balancing button to close
+        self.StopBalancingButton.setEnable(False)
+
         # Set the port status to be unchanged
         self.portStatusDisplay.setEnabled(False)
 
@@ -1043,7 +1046,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         else:
             QMessageBox.critical(
                 self, 'Data error', 'No curve data, please restart plotting')
-            
+
 # ===================Read data====================
 
     def openFile(self):
@@ -1177,6 +1180,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def startCellBalancing(self):
         # Disable start cell balancing button if monitoring is started
         if self.serial.isOpen():
+            # self.serial.write(int(1))
+
             self.StartBalancingButton.setEnabled(False)
             self.StopBalancingButton.setEnabled(True)
             self.CellBalancingStatusDisplay.setChecked(True)
@@ -1187,6 +1192,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def stopCellBalancing(self):
         # Disable stop cell balancing button if monitoring is started
         if self.serial.isOpen():
+            #self.serial.write(int(0))
+
             self.StartBalancingButton.setEnabled(True)
             self.StopBalancingButton.setEnabled(False)
             self.CellBalancingStatusDisplay.setChecked(False)
@@ -1200,19 +1207,23 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """User manual"""
         QMessageBox.about(self,
                           "Help",
-                          "This GUI supports: \n\
+                          "\nThis GUI supports: \n\
             1. Change UART settings\n\
             2. Set threshold values\n\
             3. Display battery data and status\n\
             4. Display pack data and status\n\
-            5. Display MC33771C temperature\n\n\
+            5. Display MC33771C temperature\n\
+            6. Record battery data\n\
+            7. Load battery data\n\
+            8. Plot full-cycle battery data\n\
+            9. Cell balancing control\n\n\
         Follow these steps to use this GUI: \n\
             1. Set UART configuration\n\
             2. Set threshold values\n\
             3. Start monitoring\n\
             4. Check data and status\n\
-        *To check individual cell data, please click the cell button\n\
-        **The button will turn red if there is a problem with the status")
+        *To check cell status, please click the cell button\n\
+        *The button will turn red if there is a problem with the status\n")
 
     def aboutAction(self):
         """About this GUI"""
