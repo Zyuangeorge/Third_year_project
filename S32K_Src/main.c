@@ -11,11 +11,11 @@
 ** ###################################################################*/
 /*!
 ** @file main.c
-** @version 0.1.2
+** @version 0.1.3
 ** @brief
 **         Enhanced CC method.
-**         Add cell balancing.
-*/         
+**         Cell balancing bug fixed.
+*/
 /*!
 **  @addtogroup main_module main module documentation
 **  @{
@@ -323,6 +323,7 @@ static bmsSystemState FaultHandler(void);
 
 static bmsSystemEvent monitorBattery(void);
 
+//static void receiveData(void);
 static void dataTransmit(void);
 static void resetData(void);
 
@@ -563,7 +564,7 @@ static bcc_status_t initAlgorithmValues(void)
 
 	/* Initialize the OCV-SOC look up table */
 	fillOcvTable(&ocvConfig);
-
+	balanceTimeout = 0;
 	for (i = 0; i < BATTERY_NUMBER; i++){
 		/* Get the initial SOC value */
 		getSOCResult(cellData[i + 1],&soc);
@@ -875,22 +876,11 @@ static void cellBalancing(void)
 
                 // SoC calculation under balancing condition
                 AhData.SOC_c[cellLabel[i]] = AhData.SOH[cellLabel[i]] - AhData.DOD_c[cellLabel[i]];
-
-                AhData.CB_ControlStatus[cellLabel[i]] = 1.0;
-            }
-            else{
-            	AhData.CB_ControlStatus[cellLabel[i]] = 0.0;
             }
         }
-        balanceTimeout = 0; // Reset balance time out to 0
     }
     else{
         BCC_CB_Pause(&drvConfig, BCC_CID_DEV1, true);
-
-        // Clear CB control status
-        for(i = 0; i < BATTERY_NUMBER; i++){
-        	AhData.CB_ControlStatus[i] = 0.0;
-        }
     }
 }
 
@@ -899,11 +889,20 @@ static void cellBalancing(void)
  */
 static void cellBalancingControl(void)
 {
+	uint8_t cellIndex;
+	uint16_t readVal;
+
+	// Read cell balancing status registers
+	for(cellIndex = 0; cellIndex < BATTERY_NUMBER; cellIndex++){
+		BCC_Reg_Read(&drvConfig, BCC_CID_DEV1, MC33771C_CB_DRV_STS_OFFSET, 1U, &readVal);
+		AhData.CB_ControlStatus[cellIndex] = (readVal & (1 << cellIndex)) >> cellIndex;
+	}
+
     // If the batteries had rested, start the next balancing round
 	// 1 min = 60,000 mS + 1s = 1000ms
     if(balanceTimeout >= (BALANCE_TIME * 60 * 1000 + REST_TIME)){
+        balanceTimeout = 0; // Reset balance time out to 0
         cellBalancing();
-        balanceTimeout = 0; // Reset balance time out to 1 min
     }
 }
 
@@ -1136,10 +1135,20 @@ static void displayStatus(bmsSystemState bmsNextState)
     }
 }
 
+///*
+// * @brief Function used for status display
+// */
+//static void receiveData(void)
+//{
+//
+//}
+
 int main(void)
 {
   /* Write your local variable definition here */
     bmsSystemState bmsNextState = Idle_State;
+    // uint32_t bytesRemaining;
+
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   #ifdef PEX_RTOS_INIT
     PEX_RTOS_INIT();                   /* Initialization of the selected RTOS. Macro is defined by the RTOS component. */
@@ -1164,6 +1173,7 @@ int main(void)
           if (PTC->PDIR & (1<<12)){ /* If Pad Data Input = 1 (BTN0 [SW2] pushed) */
         	  CycleCounter = 0; /* Clear EFC counter */
               EFCFlag = 1; /* Reset EFC flag */
+              balanceTimeout = 0;
 
               // Turn off the LED for a short period to represent that the data has cleared
   	  		  PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
@@ -1178,6 +1188,8 @@ int main(void)
           do
           {
         	  displayStatus(bmsNextState);
+              // receiveData();
+
               if (!sleepMode)
               {
                   /* To prevent communication loss */
