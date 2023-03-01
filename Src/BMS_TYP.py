@@ -1,7 +1,7 @@
 """
-BMS GUI Version 1.0.0
+BMS GUI Version 1.0.1
 Features:
-*Improve stability and memory consumption
+*PC, uC communication
 
 pipenv Install:
 pyinstaller --add-data="sheffield_logo.png;img" -w -i guiLogo.ico --distpath Release/ --clean BMS_TYP.py
@@ -76,7 +76,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Threshold variables
         self.currentThreshold = [0, 1500]
-        self.voltageThreshold = [1700, 2400]
+        self.voltageThreshold = [1200, 5000]
         self.tempThreshold = [20, 105]
         self.packVoltageThreshold = [i * 14 for i in self.voltageThreshold]
 
@@ -120,6 +120,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.xaxis = np.zeros(1).astype(np.float16)
 
         self.EFC_Data = 0
+
+        self.command = b'IDLE'
 
         # ===================GUI Widgets====================
 
@@ -351,7 +353,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.stopPlotButton.setEnabled(False)
 
         # Set the stop balancing button to close
-        self.StopBalancingButton.setEnable(False)
+        self.StopBalancingButton.setEnabled(False)
 
         # Set the port status to be unchanged
         self.portStatusDisplay.setEnabled(False)
@@ -606,6 +608,10 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         try:
             time.sleep(0.1)
             self.serial.open()
+
+            self.command = b'STAR\t'
+            self.serial.write(self.command)
+            
             self.startRecordButton.setEnabled(True)
         except:
             QMessageBox.critical(self, "COM error", "Please check COM port!")
@@ -1180,7 +1186,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def startCellBalancing(self):
         # Disable start cell balancing button if monitoring is started
         if self.serial.isOpen():
-            # self.serial.write(int(1))
+            # self.serial.write(b'OPEN\t')
+            self.command = b'OPEN\t'
 
             self.StartBalancingButton.setEnabled(False)
             self.StopBalancingButton.setEnabled(True)
@@ -1192,7 +1199,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def stopCellBalancing(self):
         # Disable stop cell balancing button if monitoring is started
         if self.serial.isOpen():
-            #self.serial.write(int(0))
+            # self.serial.write(b'OVER\t')
+            self.command = b'OVER\t'
 
             self.StartBalancingButton.setEnabled(True)
             self.StopBalancingButton.setEnabled(False)
@@ -1302,6 +1310,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """Handler for receiving data"""
         bccRawData = []
         dataList = []
+
+        self.serial.write(self.command)
+
         try:
             # Get the data bits in waiting
             self.waitBits = self.serial.in_waiting
@@ -1319,14 +1330,13 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         if self.waitBits > 0:
             # Read data from COM port
             bccRawData = self.serial.read(self.waitBits)
-
+            
             # Transfer the byte data to UART data list
             dataList = list(hex(data) for data in list(bccRawData))
 
             # Filter out incorrect inputs
             if len(dataList) == 240:
                 data = util.listData2strData(dataList)
-
                 self.bccData = data[0:17]
                 self.SOC_SOHData = data[17:45]
                 self.EFC_Data = data[45]
