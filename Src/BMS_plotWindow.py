@@ -12,6 +12,7 @@ class plotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
     def __init__(self):
         super().__init__()
+        self.scene().contextMenu = None
         # Set plot windows
         self.p0 = self.addPlot(title="Cell 1 Voltage")
         self.p1 = self.addPlot(title="Cell 2 Voltage")
@@ -399,6 +400,7 @@ class SOCPlotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
     def __init__(self):
         super().__init__()
+        self.scene().contextMenu = None
 
         # Set plot windows
         self.p0 = self.addPlot(title="Cell 1 SoC")
@@ -442,6 +444,7 @@ class SOHPlotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
     def __init__(self):
         super().__init__()
+        self.scene().contextMenu = None
         # Set plot windows
         self.p0 = self.addPlot(title="Cell 1 SoH")
         self.p1 = self.addPlot(title="Cell 2 SoH")
@@ -483,6 +486,7 @@ class CBPlotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
     def __init__(self):
         super().__init__()
+        self.scene().contextMenu = None
         # Set plot windows
         self.p0 = self.addPlot(title="Cell 1 CB Control")
         self.p1 = self.addPlot(title="Cell 2 CB Control")

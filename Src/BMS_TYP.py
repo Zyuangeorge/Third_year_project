@@ -1,5 +1,5 @@
 """
-BMS GUI Version 1.0.1
+BMS GUI Version 1.0.2
 Features:
 *PC, uC communication
 
@@ -121,6 +121,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         self.EFC_Data = 0
 
+        # BMS command
         self.command = b'IDLE'
 
         # ===================GUI Widgets====================
@@ -464,18 +465,18 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """This function is used to update the threshold values"""
         self.currentThreshold = [int(self.currentMiniLineEdit.text()), int(
             self.currentMaxLineEdit.text())]
-        print("Current threshold: ")
-        print(self.currentThreshold)
+        #print("Current threshold: ")
+        #print(self.currentThreshold)
 
         self.voltageThreshold = [int(self.voltageMiniLineEdit.text()), int(
             self.voltageMaxLineEdit.text())]
-        print("Voltage threshold: ")
-        print(self.voltageThreshold)
+        #print("Voltage threshold: ")
+        #print(self.voltageThreshold)
         
         self.tempThreshold = [int(self.tempMiniLineEdit.text()), int(
             self.tempMaxLineEdit.text())]
-        print("Temperature threshold: ")
-        print(self.tempThreshold)
+        #print("Temperature threshold: ")
+        #print(self.tempThreshold)
 
 # ===================Clear and reset data====================
 
@@ -512,6 +513,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.SOC_SOHData = [0 for _ in range(28)]
 
         try:
+            self.stopPlotting()
             for i in range(0,59):
                 self.curveList[i].setData(self.xaxis,self.graphData[i], _callSync='off')
         except:
@@ -608,10 +610,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         try:
             time.sleep(0.1)
             self.serial.open()
-
-            self.command = b'STAR\t'
-            self.serial.write(self.command)
-            
             self.startRecordButton.setEnabled(True)
         except:
             QMessageBox.critical(self, "COM error", "Please check COM port!")
@@ -1186,9 +1184,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def startCellBalancing(self):
         # Disable start cell balancing button if monitoring is started
         if self.serial.isOpen():
-            # self.serial.write(b'OPEN\t')
             self.command = b'OPEN\t'
-
+            self.serial.write(self.command)
+            
             self.StartBalancingButton.setEnabled(False)
             self.StopBalancingButton.setEnabled(True)
             self.CellBalancingStatusDisplay.setChecked(True)
@@ -1199,8 +1197,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def stopCellBalancing(self):
         # Disable stop cell balancing button if monitoring is started
         if self.serial.isOpen():
-            # self.serial.write(b'OVER\t')
             self.command = b'OVER\t'
+            self.serial.write(self.command)
 
             self.StartBalancingButton.setEnabled(True)
             self.StopBalancingButton.setEnabled(False)
@@ -1310,8 +1308,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """Handler for receiving data"""
         bccRawData = []
         dataList = []
-
-        self.serial.write(self.command)
 
         try:
             # Get the data bits in waiting

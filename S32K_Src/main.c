@@ -11,10 +11,10 @@
 ** ###################################################################*/
 /*!
 ** @file main.c
-** @version 0.1.4
+** @version 0.1.5
 ** @brief
 **         Enhanced CC method.
-**         PC, uC communication(with LEF bug).
+**         PC, uC communication(with balance status bug).
 */
 /*!
 **  @addtogroup main_module main module documentation
@@ -68,10 +68,10 @@
 #define RATEDCAPACITANCE    2.5
 
 /* The minimum value of OCV */
-#define OCV_MINSOC          0U
+#define OCV_MINSOC          0
 
 /* The maximum value of OCV */
-#define OCV_MAXSOC          1000U // permille
+#define OCV_MAXSOC          1000 // permille
 
 /* The size of the lookup table*/
 #define OCV_TABLE_SIZE      (OCV_MAXSOC - OCV_MINSOC + 1) // 1000 sets of data in the lookupTable
@@ -81,24 +81,29 @@
 #define KD 1 // Discharging efficiency
 
 /* Current threshold for determining the current direction */
-#define ISENSETHRESHOLD 3000U // In uV is 6700uV
+#define ISENSETHRESHOLD 3000 // In uV is 6700uV
 
 /* Battery minimum and maximum voltages */
-#define MC33771C_TH_ALL_CT_UV_TH 1200U // 1600 mV
-#define MC33771C_TH_ALL_CT_OV_TH 5000U // 2500 mV
+#define MC33771C_TH_ALL_CT_UV_TH 0 // 1600 mV
+#define MC33771C_TH_ALL_CT_OV_TH 2500 // 2500 mV
 
-#define BATTERY_NUMBER 14U // Number of cells
+/*  Number of cells */
+#define BATTERY_NUMBER 14
 
-#define VOLTAGE_DIFFERENCE_THRESHOLD 5000U // Voltage difference threshold for cell balancing 5000 uV
+/* Voltage difference threshold for cell balancing 5000 uV */
+#define VOLTAGE_DIFFERENCE_THRESHOLD 5000
 
-#define MAX_BALANCED_CELL_NUMBER 7U // Maximum number of cells under balancing
+/* Maximum number of cells under balancing */
+#define MAX_BALANCED_CELL_NUMBER 7 //
 
-#define REST_TIME 1000U // Rest time between balancing processes in mS
+/* Rest time between balancing processes in mS */
+#define REST_TIME 1000
 
-#define BALANCE_TIME 1U // Cell balancing time setting in minute
+/* Cell balancing time setting in minute */
+#define BALANCE_TIME 1
 
 /* Receive buffer size */
-#define BUFFER_SIZE 6U
+#define BUFFER_SIZE 6
 
 /* Lookup table setup */
 //#define LINEAR
@@ -145,9 +150,9 @@ typedef struct
     
     int16_t CB_ControlStatus[BATTERY_NUMBER]; // Cell balancing control status
 
-    float efcCounter;
+    float efcCounter; // EFC counter
 
-    float absIntegratedCurent;
+    float absIntegratedCurent; // Absolute integrated current value
 
 	float integratedCurrent; // The integral value of current: A*s
 } Ah_integral_data;
@@ -257,7 +262,7 @@ uint32_t cellData[17];
 /* Array needed to store all measured values. */
 uint16_t measurements[BCC_MEAS_CNT];
 
-/* Ah intergal data*/
+/* Ah integral data*/
 Ah_integral_data AhData;
 
 /* The OCV-SOC lookup table */
@@ -271,7 +276,7 @@ int32_t timeout = 0;
 uint32_t balanceTimeout = 0;
 
 /* Current direction flag: 0 is discharge, 1 is charge, 2 is open circuit */
-int16_t currentDirectionFlag = 0;
+int16_t currentDirectionFlag = 2;
 
 /* Charging and discharging counter used for EFC Calculation */
 int16_t CycleCounter = 0;
@@ -340,7 +345,7 @@ static bmsSystemState FaultHandler(void);
 
 static bmsSystemEvent monitorBattery(void);
 
-static void receiveData(bmsSystemState *bmsNextState);
+static void communicateWithPc(void);
 static void dataTransmit(void);
 static void resetData(void);
 
@@ -629,18 +634,18 @@ static status_t initAlgorithm(void)
     status_t status;
     bcc_status_t bccStatus;
 
-    // Reset AhData values
+    /* Reset AhData values */ 
     AhData.efcCounter = 0;
     AhData.integratedCurrent = 0.0;
     AhData.absIntegratedCurent = 0.0;
 
-    // Reset cell balancing control flag
+    /* Reset cell balancing control flag */ 
     cellBalancingFlag = false;
     
-    // Reset cell balancing
+    /* Reset cell balancing */ 
     BCC_CB_Pause(&drvConfig, BCC_CID_DEV1, true);
 
-    // Init system clock
+    /* Init system clock */ 
     CLOCK_SYS_Init(g_clockManConfigsArr, CLOCK_MANAGER_CONFIG_CNT,
             g_clockManCallbacksArr, CLOCK_MANAGER_CALLBACK_CNT);
     CLOCK_SYS_UpdateConfiguration(0U, CLOCK_MANAGER_POLICY_FORCIBLE);
@@ -656,7 +661,7 @@ static status_t initAlgorithm(void)
     }
 
     /* Install the callback for rx events */
-    LPUART_DRV_InstallRxCallback(INST_LPUART1, rxCallback, NULL);
+    // LPUART_DRV_InstallRxCallback(INST_LPUART1, rxCallback, NULL);
 
     /* Initialize LPIT instance */
     LPIT_DRV_Init(INST_LPIT1, &lpit1_InitConfig);
@@ -748,7 +753,8 @@ static bcc_status_t updateMeasurements(void)
     cellData[0]= BCC_GET_STACK_VOLT(measurements[BCC_MSR_STACK_VOLT]);
 	cellData[1]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT1]);
 	cellData[2]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT2]);
-	cellData[3]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT3]);
+	// cellData[3]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT3]);
+	cellData[3] = 2000000;
 	cellData[4]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT4]);
 	cellData[5]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT5]);
 	cellData[6]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT6]);
@@ -837,7 +843,7 @@ static void getCurrentSOC(void)
 }
 
 /*!
- * @brief Function used for sorting the cellVoltage as well as cellLabel
+ * @brief Function used for sorting the cell voltage as well as cell number
  */
 void bubbleSort(uint32_t cellVoltage[], uint8_t cellLabel[], uint8_t len)
 {
@@ -866,10 +872,10 @@ static void cellBalancing(void)
 {
     uint32_t cellVoltage[BATTERY_NUMBER]; // Cell voltages for 14 cells
     uint8_t cellLabel[BATTERY_NUMBER]; // Cell number label
-    uint8_t i;
     uint8_t balancingCellNumber = 0; // Number of cells require balancing
     uint16_t balanceTime = BALANCE_TIME; // Balanced time in minute
     float deltaDOD[BATTERY_NUMBER]; // Change in DoD
+    uint8_t i;
 
     for(i = 0; i < BATTERY_NUMBER; i++){
         cellVoltage[i] = cellData[i + 1];
@@ -892,7 +898,7 @@ static void cellBalancing(void)
                 // (60s * 0.1A * 1000) / (SoH (1000%) * Rated Capacity(In As))
                 deltaDOD[cellLabel[i]] = 6000 / (AhData.SOH[cellLabel[i]] * RATEDCAPACITANCE * 3600);
 
-                AhData.DOD_c[cellLabel[i]] = AhData.DOD_0[cellLabel[i]] + deltaDOD[cellLabel[i]];
+                AhData.DOD_c[cellLabel[i]] = AhData.DOD_c[cellLabel[i]] + deltaDOD[cellLabel[i]];
 
                 // SoC calculation under balancing condition
                 AhData.SOC_c[cellLabel[i]] = AhData.SOH[cellLabel[i]] - AhData.DOD_c[cellLabel[i]];
@@ -913,19 +919,20 @@ static void cellBalancingControl(void)
 	uint16_t readVal;
 
 	// Read cell balancing status registers
+	BCC_Reg_Read(&drvConfig, BCC_CID_DEV1, MC33771C_CB_DRV_STS_OFFSET, 1U, &readVal);
+
 	for(cellIndex = 0; cellIndex < BATTERY_NUMBER; cellIndex++){
-		BCC_Reg_Read(&drvConfig, BCC_CID_DEV1, MC33771C_CB_DRV_STS_OFFSET, 1U, &readVal);
 		AhData.CB_ControlStatus[cellIndex] = (readVal & (1 << cellIndex)) >> cellIndex;
 	}
 
-    // If the batteries had rested, start the next balancing round
-	// 1 min = 60,000 mS + 1s = 1000ms
-    // The rest time may be larger than the setting value due to the transmission delay
+    /* If the batteries had rested, start the next balancing round
+	* 1 min = 60,000 mS + 1s = 1000ms
+    */
     if(cellBalancingFlag == true){
-        if(balanceTimeout >= (BALANCE_TIME * 60 * 1000 + REST_TIME)){
-            balanceTimeout = 0; // Reset balance time out to 0
-            cellBalancing();
-        }
+    	if(balanceTimeout >= (BALANCE_TIME * 60 * 1000 + REST_TIME)){
+    		cellBalancing();
+    		balanceTimeout = 0; // Reset balance time out to 0
+    	}
     }
     else{
         BCC_CB_Pause(&drvConfig, BCC_CID_DEV1, true);
@@ -950,6 +957,7 @@ static void DischargeHandler(void)
         	flag = 0;
         }
     }
+
     if (flag == 0){
     	integrateCurrent();
 		getCurrentDOD();
@@ -976,6 +984,7 @@ static void ChargeHandler(void)
         	flag = 0;
         }
     }
+
     if (flag == 0){
     	integrateCurrent();
 		getCurrentDOD();
@@ -999,8 +1008,6 @@ static void OpenCircuitHandler(void)
     }
 
     cellBalancingControl();
-
-    BCC_SendNop(&drvConfig, BCC_CID_DEV1);
 }
 
 /*
@@ -1012,12 +1019,12 @@ static bmsSystemState FaultHandler(void)
 
 	if (PTC->PDIR & (1<<12)){
 		clearFaultRegs();
+
 		for (i = 0; i < 2; i++){
 			faultStatusValue[i] = 0;
 		}
 		return Idle_State;
 	}
-
 	return Fault_State;
 }
 
@@ -1161,73 +1168,26 @@ static void displayStatus(bmsSystemState bmsNextState)
     }
 }
 
-/* UART rx callback for continuous reception, byte by byte */
-void rxCallback(void *driverState, uart_event_t event, void *userData)
-{
-    /* Unused parameters */
-    (void)driverState;
-    (void)userData;
-
-    /* Check the event type */
-    if (event == UART_EVENT_RX_FULL)
-    {
-    	/* The reception stops when newline is received or the buffer is full */
-    	if((receivedBuffer[bufferIdx] != '\n') && bufferIdx < (BUFFER_SIZE - 2U))
-    	{
-    		/* Update the buffer index and the rx buffer */
-    		bufferIdx++;
-    		LPUART_DRV_SetRxBuffer(INST_LPUART1, &receivedBuffer[bufferIdx], 1U);
-    	}
-    }
-}
-
 /*
 * @brief Function used for status display
 */
-static void receiveData(bmsSystemState *bmsNextState)
+static void communicateWithPc(void)
 {
     /* Declare a buffer used to store the received data */
     uint32_t bytesRemaining;
     status_t status;
 
-    LPUART_DRV_ReceiveData(INST_LPUART1, receivedBuffer, 1U);
+    LPUART_DRV_ReceiveData(INST_LPUART1, receivedBuffer, 5U);
 
-    /* Wait for transfer to be completed */
-    while(LPUART_DRV_GetReceiveStatus(INST_LPUART1, &bytesRemaining) == STATUS_BUSY);
+    dataTransmit();
 
-    /* Check the status */
-    status = LPUART_DRV_GetReceiveStatus(INST_LPUART1, &bytesRemaining);
+    if(strcmp((char *)receivedBuffer, "OPEN\t") == 0)
+    {
 
-    if (status != STATUS_SUCCESS)
-    {
-        *bmsNextState = Fault_Event;
-    }
-
-    /* Process end of line in Doc/Window(CRLF) or Unix(LF) */
-    if (receivedBuffer[bufferIdx - 1] == '\r')
-    {
-        bufferIdx = bufferIdx - 1;
-        /* Replace end of line character with null */
-        receivedBuffer[bufferIdx] = 0U;
-    }
-    else
-    {
-        /* Replace end of line character with null */
-    	receivedBuffer[bufferIdx] = 0U;
-    }
-
-    if(strcmp((char *)receivedBuffer, "STAR") == 0)
-    {
-    	dataTransmit();
-    }
-    else if(strcmp((char *)receivedBuffer, "OPEN") == 0)
-    {
-    	dataTransmit();
         cellBalancingFlag = true;
     }
-    else if(strcmp((char *)receivedBuffer, "OVER") == 0)
+    else if(strcmp((char *)receivedBuffer, "OVER\t") == 0)
     {
-    	dataTransmit();
         cellBalancingFlag = false;
     }
     else
@@ -1242,10 +1202,12 @@ static void receiveData(bmsSystemState *bmsNextState)
     bufferIdx = 0U;
 }
 
+bmsSystemEvent bmsNewEvent;
+bmsSystemState bmsNextState;
 int main(void)
 {
   /* Write your local variable definition here */
-    bmsSystemState bmsNextState = Idle_State;
+    bmsNextState = Idle_State;
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   #ifdef PEX_RTOS_INIT
@@ -1266,7 +1228,7 @@ int main(void)
     	  /* The initial timeout value is set to 200, since the lpit period is set to 1000 (1ms)
     	   * 200*1ms = 200ms, so the do while will be ended every 200ms
     	   */
-          initTimeout(200);
+          initTimeout(196);
         
           if (PTC->PDIR & (1<<12)){ /* If Pad Data Input = 1 (BTN0 [SW2] pushed) */
         	  CycleCounter = 0; /* Clear EFC counter */
@@ -1280,13 +1242,11 @@ int main(void)
           }
 
           // Read system Events
-          bmsSystemEvent bmsNewEvent = monitorBattery();
-
+          bmsNewEvent = monitorBattery();
           /* Loops until specified timeout expires, loop ends every 200ms */
           do
           {
         	  displayStatus(bmsNextState);
-        	  receiveData(&bmsNextState);
 
               if (!sleepMode)
               {
@@ -1392,9 +1352,9 @@ int main(void)
                 default:
                     break;
                 }
-                
-                //dataTransmit();
+
                 resetData();
+                communicateWithPc();
           }
       }
   }
