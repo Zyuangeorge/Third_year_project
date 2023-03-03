@@ -1,11 +1,5 @@
-.vscode/bookmarks.json
-.vscode/settings.json
-example/graph.py
-.vscode/launch.json
-.vscode/settings.json
-.vscode/settings.json
-.vscode/tasks.json
-.vscode/settings.json
+.pyc
+.vscode
 S32K_Src/bcc
 S32K_Src/bcc_s32k144
 S32K_Src/test.c
