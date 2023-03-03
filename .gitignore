@@ -1,4 +1,4 @@
-.pyc
+*.pyc
 .vscode
 S32K_Src/bcc
 S32K_Src/bcc_s32k144
