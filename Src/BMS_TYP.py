@@ -1,7 +1,7 @@
 """
-BMS GUI Version 1.0.2
+BMS GUI Version 1.1.0
 Features:
-*PC, uC communication
+    Support PC, uC transmission
 
 pipenv Install:
 pyinstaller --add-data="sheffield_logo.png;img" -w -i guiLogo.ico --distpath Release/ --clean BMS_TYP.py
