@@ -76,7 +76,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Threshold variables
         self.currentThreshold = [0, 1500]
-        self.voltageThreshold = [1200, 5000]
+        self.voltageThreshold = [1700, 2500]
         self.tempThreshold = [20, 105]
         self.packVoltageThreshold = [i * 14 for i in self.voltageThreshold]
 
