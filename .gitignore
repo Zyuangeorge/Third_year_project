@@ -4,3 +4,4 @@ S32K_Src/bcc
 S32K_Src/bcc_s32k144
 S32K_Src/test.c
 S32K_Src/test.exe
+__pycache__/
