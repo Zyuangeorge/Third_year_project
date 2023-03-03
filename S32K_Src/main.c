@@ -11,10 +11,10 @@
 ** ###################################################################*/
 /*!
 ** @file main.c
-** @version 0.1.5
+** @version 0.1.6
 ** @brief
 **         Enhanced CC method.
-**         PC, uC communication(with balance status bug).
+**         PC, uC communication(with close cb control problem).
 */
 /*!
 **  @addtogroup main_module main module documentation
@@ -97,7 +97,7 @@
 #define MAX_BALANCED_CELL_NUMBER 7 //
 
 /* Rest time between balancing processes in mS */
-#define REST_TIME 1000
+#define REST_TIME 905
 
 /* Cell balancing time setting in minute */
 #define BALANCE_TIME 1
@@ -634,18 +634,18 @@ static status_t initAlgorithm(void)
     status_t status;
     bcc_status_t bccStatus;
 
-    /* Reset AhData values */ 
+    /* Reset AhData values */
     AhData.efcCounter = 0;
     AhData.integratedCurrent = 0.0;
     AhData.absIntegratedCurent = 0.0;
 
-    /* Reset cell balancing control flag */ 
+    /* Reset cell balancing control flag */
     cellBalancingFlag = false;
     
-    /* Reset cell balancing */ 
+    /* Reset cell balancing */
     BCC_CB_Pause(&drvConfig, BCC_CID_DEV1, true);
 
-    /* Init system clock */ 
+    /* Init system clock */
     CLOCK_SYS_Init(g_clockManConfigsArr, CLOCK_MANAGER_CONFIG_CNT,
             g_clockManCallbacksArr, CLOCK_MANAGER_CALLBACK_CNT);
     CLOCK_SYS_UpdateConfiguration(0U, CLOCK_MANAGER_POLICY_FORCIBLE);
@@ -930,13 +930,14 @@ static void cellBalancingControl(void)
     */
     if(cellBalancingFlag == true){
     	if(balanceTimeout >= (BALANCE_TIME * 60 * 1000 + REST_TIME)){
-    		cellBalancing();
     		balanceTimeout = 0; // Reset balance time out to 0
+            cellBalancing();
     	}
     }
-    else{
-        BCC_CB_Pause(&drvConfig, BCC_CID_DEV1, true);
-    }
+
+    //else{
+        //BCC_CB_Pause(&drvConfig, BCC_CID_DEV1, true);
+    //}
 }
 
 /*
@@ -1174,8 +1175,6 @@ static void displayStatus(bmsSystemState bmsNextState)
 static void communicateWithPc(void)
 {
     /* Declare a buffer used to store the received data */
-    uint32_t bytesRemaining;
-    status_t status;
 
     LPUART_DRV_ReceiveData(INST_LPUART1, receivedBuffer, 5U);
 
@@ -1202,12 +1201,10 @@ static void communicateWithPc(void)
     bufferIdx = 0U;
 }
 
-bmsSystemEvent bmsNewEvent;
-bmsSystemState bmsNextState;
 int main(void)
 {
   /* Write your local variable definition here */
-    bmsNextState = Idle_State;
+	bmsSystemState bmsNextState = Idle_State;
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   #ifdef PEX_RTOS_INIT
@@ -1242,7 +1239,7 @@ int main(void)
           }
 
           // Read system Events
-          bmsNewEvent = monitorBattery();
+          bmsSystemEvent bmsNewEvent = monitorBattery();
           /* Loops until specified timeout expires, loop ends every 200ms */
           do
           {
@@ -1353,8 +1350,8 @@ int main(void)
                     break;
                 }
 
-                resetData();
                 communicateWithPc();
+                resetData();
           }
       }
   }

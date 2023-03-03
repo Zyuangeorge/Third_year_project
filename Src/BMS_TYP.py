@@ -513,9 +513,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.SOC_SOHData = [0 for _ in range(28)]
 
         try:
-            self.stopPlotting()
             for i in range(0,59):
                 self.curveList[i].setData(self.xaxis,self.graphData[i], _callSync='off')
+                self.stopPlotting()
         except:
             pass
 
@@ -629,6 +629,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         try:
             self.timer.stop()
             self.timer2.stop()
+            self.stopPlotting()
             self.stopRecordButton.setChecked(True) #Stop timer 3
             self.serial.close()
         except:
@@ -891,13 +892,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
     def stopPlotting(self):
         """Handler for stop plotting data"""
-        if self.serial.isOpen():
-            self.timer2.stop()
-            self.startPlotButton.setEnabled(True)
-            self.stopPlotButton.setEnabled(False)
-        else:
-            QMessageBox.critical(
-                self, 'COM error', 'COM data error, please reconnect the port')
+        self.timer2.stop()
+        self.startPlotButton.setEnabled(True)
+        self.stopPlotButton.setEnabled(False)
     
     def zoomGraph(self):
         """Handler for zooming graph"""
