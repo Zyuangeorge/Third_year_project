@@ -16,22 +16,23 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
-    QGroupBox, QHBoxLayout, QHeaderView, QLabel,
-    QLineEdit, QMainWindow, QMenu, QMenuBar,
-    QPushButton, QRadioButton, QSizePolicy, QSpacerItem,
-    QTabWidget, QTableWidget, QTableWidgetItem, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDoubleSpinBox,
+    QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
+    QLabel, QLineEdit, QMainWindow, QMenu,
+    QMenuBar, QProgressBar, QPushButton, QRadioButton,
+    QSizePolicy, QSpacerItem, QStackedWidget, QTabWidget,
+    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(742, 737)
+        MainWindow.resize(742, 791)
         font = QFont()
         font.setFamilies([u"Arial"])
         MainWindow.setFont(font)
         MainWindow.setLocale(QLocale(QLocale.English, QLocale.UnitedKingdom))
+        MainWindow.setInputMethodHints(Qt.ImhDigitsOnly)
         self.actionConnect = QAction(MainWindow)
         self.actionConnect.setObjectName(u"actionConnect")
         self.actionDetectPort = QAction(MainWindow)
@@ -218,17 +219,49 @@ class Ui_MainWindow(object):
 
         self.recordGroupBox = QGroupBox(self.centralwidget)
         self.recordGroupBox.setObjectName(u"recordGroupBox")
-        self.recordGroupBoxLayout = QVBoxLayout(self.recordGroupBox)
+        self.recordGroupBox.setInputMethodHints(Qt.ImhDigitsOnly)
+        self.recordGroupBoxLayout = QGridLayout(self.recordGroupBox)
         self.recordGroupBoxLayout.setObjectName(u"recordGroupBoxLayout")
+        self.recordTextLabel = QLabel(self.recordGroupBox)
+        self.recordTextLabel.setObjectName(u"recordTextLabel")
+
+        self.recordGroupBoxLayout.addWidget(self.recordTextLabel, 0, 0, 1, 1)
+
         self.startRecordButton = QRadioButton(self.recordGroupBox)
         self.startRecordButton.setObjectName(u"startRecordButton")
 
-        self.recordGroupBoxLayout.addWidget(self.startRecordButton)
+        self.recordGroupBoxLayout.addWidget(self.startRecordButton, 2, 0, 1, 2)
 
         self.stopRecordButton = QRadioButton(self.recordGroupBox)
         self.stopRecordButton.setObjectName(u"stopRecordButton")
 
-        self.recordGroupBoxLayout.addWidget(self.stopRecordButton)
+        self.recordGroupBoxLayout.addWidget(self.stopRecordButton, 3, 0, 1, 2)
+
+        self.recordDoubleSpinBox = QDoubleSpinBox(self.recordGroupBox)
+        self.recordDoubleSpinBox.setObjectName(u"recordDoubleSpinBox")
+        self.recordDoubleSpinBox.setInputMethodHints(Qt.ImhDigitsOnly)
+        self.recordDoubleSpinBox.setReadOnly(False)
+        self.recordDoubleSpinBox.setDecimals(1)
+        self.recordDoubleSpinBox.setMinimum(0.500000000000000)
+        self.recordDoubleSpinBox.setSingleStep(0.500000000000000)
+        self.recordDoubleSpinBox.setValue(1.000000000000000)
+
+        self.recordGroupBoxLayout.addWidget(self.recordDoubleSpinBox, 0, 1, 1, 1)
+
+        self.recordTextLabel_2 = QLabel(self.recordGroupBox)
+        self.recordTextLabel_2.setObjectName(u"recordTextLabel_2")
+        font2 = QFont()
+        font2.setFamilies([u"Arial"])
+        font2.setStyleStrategy(QFont.PreferDefault)
+        self.recordTextLabel_2.setFont(font2)
+        self.recordTextLabel_2.setLayoutDirection(Qt.LeftToRight)
+
+        self.recordGroupBoxLayout.addWidget(self.recordTextLabel_2, 0, 2, 1, 1)
+
+        self.printButton = QPushButton(self.recordGroupBox)
+        self.printButton.setObjectName(u"printButton")
+
+        self.recordGroupBoxLayout.addWidget(self.printButton, 4, 0, 1, 3)
 
 
         self.leftLayout.addWidget(self.recordGroupBox)
@@ -538,10 +571,10 @@ class Ui_MainWindow(object):
         self.batteryStatusLayout.setObjectName(u"batteryStatusLayout")
         self.Cell12StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell12StatusDisplay.setObjectName(u"Cell12StatusDisplay")
-        font2 = QFont()
-        font2.setFamilies([u"Arial"])
-        font2.setBold(True)
-        self.Cell12StatusDisplay.setFont(font2)
+        font3 = QFont()
+        font3.setFamilies([u"Arial"])
+        font3.setBold(True)
+        self.Cell12StatusDisplay.setFont(font3)
         self.Cell12StatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.Cell12StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -549,7 +582,7 @@ class Ui_MainWindow(object):
 
         self.Cell5StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell5StatusDisplay.setObjectName(u"Cell5StatusDisplay")
-        self.Cell5StatusDisplay.setFont(font2)
+        self.Cell5StatusDisplay.setFont(font3)
         self.Cell5StatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.Cell5StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -557,11 +590,11 @@ class Ui_MainWindow(object):
 
         self.Cell14StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell14StatusDisplay.setObjectName(u"Cell14StatusDisplay")
-        font3 = QFont()
-        font3.setFamilies([u"Arial"])
-        font3.setBold(True)
-        font3.setStrikeOut(False)
-        self.Cell14StatusDisplay.setFont(font3)
+        font4 = QFont()
+        font4.setFamilies([u"Arial"])
+        font4.setBold(True)
+        font4.setStrikeOut(False)
+        self.Cell14StatusDisplay.setFont(font4)
         self.Cell14StatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.Cell14StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -569,7 +602,7 @@ class Ui_MainWindow(object):
 
         self.Cell1StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell1StatusDisplay.setObjectName(u"Cell1StatusDisplay")
-        self.Cell1StatusDisplay.setFont(font2)
+        self.Cell1StatusDisplay.setFont(font3)
         self.Cell1StatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.Cell1StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -577,7 +610,7 @@ class Ui_MainWindow(object):
 
         self.Cell4StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell4StatusDisplay.setObjectName(u"Cell4StatusDisplay")
-        self.Cell4StatusDisplay.setFont(font2)
+        self.Cell4StatusDisplay.setFont(font3)
         self.Cell4StatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.Cell4StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -585,7 +618,7 @@ class Ui_MainWindow(object):
 
         self.Cell3StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell3StatusDisplay.setObjectName(u"Cell3StatusDisplay")
-        self.Cell3StatusDisplay.setFont(font2)
+        self.Cell3StatusDisplay.setFont(font3)
         self.Cell3StatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.Cell3StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -593,7 +626,7 @@ class Ui_MainWindow(object):
 
         self.Cell8StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell8StatusDisplay.setObjectName(u"Cell8StatusDisplay")
-        self.Cell8StatusDisplay.setFont(font2)
+        self.Cell8StatusDisplay.setFont(font3)
         self.Cell8StatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.Cell8StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -601,7 +634,7 @@ class Ui_MainWindow(object):
 
         self.Cell10StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell10StatusDisplay.setObjectName(u"Cell10StatusDisplay")
-        self.Cell10StatusDisplay.setFont(font2)
+        self.Cell10StatusDisplay.setFont(font3)
         self.Cell10StatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.Cell10StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -609,7 +642,7 @@ class Ui_MainWindow(object):
 
         self.Cell2StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell2StatusDisplay.setObjectName(u"Cell2StatusDisplay")
-        self.Cell2StatusDisplay.setFont(font2)
+        self.Cell2StatusDisplay.setFont(font3)
         self.Cell2StatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.Cell2StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -617,7 +650,7 @@ class Ui_MainWindow(object):
 
         self.Cell6StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell6StatusDisplay.setObjectName(u"Cell6StatusDisplay")
-        self.Cell6StatusDisplay.setFont(font2)
+        self.Cell6StatusDisplay.setFont(font3)
         self.Cell6StatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.Cell6StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -625,7 +658,7 @@ class Ui_MainWindow(object):
 
         self.Cell7StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell7StatusDisplay.setObjectName(u"Cell7StatusDisplay")
-        self.Cell7StatusDisplay.setFont(font2)
+        self.Cell7StatusDisplay.setFont(font3)
         self.Cell7StatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.Cell7StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -633,7 +666,7 @@ class Ui_MainWindow(object):
 
         self.Cell9StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell9StatusDisplay.setObjectName(u"Cell9StatusDisplay")
-        self.Cell9StatusDisplay.setFont(font2)
+        self.Cell9StatusDisplay.setFont(font3)
         self.Cell9StatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.Cell9StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -641,7 +674,7 @@ class Ui_MainWindow(object):
 
         self.Cell11StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell11StatusDisplay.setObjectName(u"Cell11StatusDisplay")
-        self.Cell11StatusDisplay.setFont(font2)
+        self.Cell11StatusDisplay.setFont(font3)
         self.Cell11StatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.Cell11StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -649,7 +682,7 @@ class Ui_MainWindow(object):
 
         self.Cell13StatusDisplay = QPushButton(self.statusGroupBox)
         self.Cell13StatusDisplay.setObjectName(u"Cell13StatusDisplay")
-        self.Cell13StatusDisplay.setFont(font2)
+        self.Cell13StatusDisplay.setFont(font3)
         self.Cell13StatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.Cell13StatusDisplay.setStyleSheet(u"background-color: rgb(0, 255, 0);")
 
@@ -671,7 +704,7 @@ class Ui_MainWindow(object):
 
         self.packCurrentStatusLabel = QLabel(self.statusGroupBox)
         self.packCurrentStatusLabel.setObjectName(u"packCurrentStatusLabel")
-        self.packCurrentStatusLabel.setFont(font2)
+        self.packCurrentStatusLabel.setFont(font3)
 
         self.PackStatusLayout.addWidget(self.packCurrentStatusLabel, 2, 2, 2, 1)
 
@@ -681,7 +714,7 @@ class Ui_MainWindow(object):
 
         self.packVoltageStatusLabel = QLabel(self.statusGroupBox)
         self.packVoltageStatusLabel.setObjectName(u"packVoltageStatusLabel")
-        self.packVoltageStatusLabel.setFont(font2)
+        self.packVoltageStatusLabel.setFont(font3)
 
         self.PackStatusLayout.addWidget(self.packVoltageStatusLabel, 0, 2, 2, 1)
 
@@ -691,7 +724,7 @@ class Ui_MainWindow(object):
 
         self.packStatusLabel = QLabel(self.statusGroupBox)
         self.packStatusLabel.setObjectName(u"packStatusLabel")
-        self.packStatusLabel.setFont(font2)
+        self.packStatusLabel.setFont(font3)
 
         self.PackStatusLayout.addWidget(self.packStatusLabel, 0, 0, 4, 1)
 
@@ -716,7 +749,7 @@ class Ui_MainWindow(object):
         self.ICStatusLayout.setObjectName(u"ICStatusLayout")
         self.ICStatusLabel = QLabel(self.statusGroupBox)
         self.ICStatusLabel.setObjectName(u"ICStatusLabel")
-        self.ICStatusLabel.setFont(font2)
+        self.ICStatusLabel.setFont(font3)
 
         self.ICStatusLayout.addWidget(self.ICStatusLabel)
 
@@ -784,6 +817,244 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_3.addLayout(self.CellBalancingButtonLayout)
 
+        self.cbStackedWidget = QStackedWidget(self.CellBalancingGroupBox)
+        self.cbStackedWidget.setObjectName(u"cbStackedWidget")
+        self.cbPage = QWidget()
+        self.cbPage.setObjectName(u"cbPage")
+        self.gridLayout = QGridLayout(self.cbPage)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.cbPushButtonControl = QPushButton(self.cbPage)
+        self.cbPushButtonControl.setObjectName(u"cbPushButtonControl")
+
+        self.gridLayout.addWidget(self.cbPushButtonControl, 0, 0, 1, 2)
+
+        self.cbLabel = QLabel(self.cbPage)
+        self.cbLabel.setObjectName(u"cbLabel")
+        self.cbLabel.setFont(font3)
+
+        self.gridLayout.addWidget(self.cbLabel, 1, 0, 1, 1)
+
+        self.cbProgressBar = QProgressBar(self.cbPage)
+        self.cbProgressBar.setObjectName(u"cbProgressBar")
+        self.cbProgressBar.setFont(font3)
+        self.cbProgressBar.setValue(0)
+        self.cbProgressBar.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar.setTextVisible(True)
+        self.cbProgressBar.setInvertedAppearance(False)
+        self.cbProgressBar.setTextDirection(QProgressBar.TopToBottom)
+
+        self.gridLayout.addWidget(self.cbProgressBar, 1, 1, 1, 1)
+
+        self.cbLabel_2 = QLabel(self.cbPage)
+        self.cbLabel_2.setObjectName(u"cbLabel_2")
+        self.cbLabel_2.setFont(font3)
+
+        self.gridLayout.addWidget(self.cbLabel_2, 2, 0, 1, 1)
+
+        self.cbProgressBar_2 = QProgressBar(self.cbPage)
+        self.cbProgressBar_2.setObjectName(u"cbProgressBar_2")
+        self.cbProgressBar_2.setFont(font3)
+        self.cbProgressBar_2.setValue(0)
+        self.cbProgressBar_2.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_2.setTextVisible(True)
+
+        self.gridLayout.addWidget(self.cbProgressBar_2, 2, 1, 1, 1)
+
+        self.cbLabel_3 = QLabel(self.cbPage)
+        self.cbLabel_3.setObjectName(u"cbLabel_3")
+        self.cbLabel_3.setFont(font3)
+
+        self.gridLayout.addWidget(self.cbLabel_3, 3, 0, 1, 1)
+
+        self.cbProgressBar_3 = QProgressBar(self.cbPage)
+        self.cbProgressBar_3.setObjectName(u"cbProgressBar_3")
+        self.cbProgressBar_3.setFont(font3)
+        self.cbProgressBar_3.setValue(0)
+        self.cbProgressBar_3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_3.setTextVisible(True)
+        self.cbProgressBar_3.setOrientation(Qt.Horizontal)
+
+        self.gridLayout.addWidget(self.cbProgressBar_3, 3, 1, 1, 1)
+
+        self.cbLabel_4 = QLabel(self.cbPage)
+        self.cbLabel_4.setObjectName(u"cbLabel_4")
+        self.cbLabel_4.setFont(font3)
+
+        self.gridLayout.addWidget(self.cbLabel_4, 4, 0, 1, 1)
+
+        self.cbProgressBar_4 = QProgressBar(self.cbPage)
+        self.cbProgressBar_4.setObjectName(u"cbProgressBar_4")
+        self.cbProgressBar_4.setFont(font3)
+        self.cbProgressBar_4.setValue(0)
+        self.cbProgressBar_4.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_4.setTextVisible(True)
+
+        self.gridLayout.addWidget(self.cbProgressBar_4, 4, 1, 1, 1)
+
+        self.cbLabel_5 = QLabel(self.cbPage)
+        self.cbLabel_5.setObjectName(u"cbLabel_5")
+        self.cbLabel_5.setFont(font3)
+
+        self.gridLayout.addWidget(self.cbLabel_5, 5, 0, 1, 1)
+
+        self.cbProgressBar_5 = QProgressBar(self.cbPage)
+        self.cbProgressBar_5.setObjectName(u"cbProgressBar_5")
+        self.cbProgressBar_5.setFont(font3)
+        self.cbProgressBar_5.setValue(0)
+        self.cbProgressBar_5.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_5.setTextVisible(True)
+
+        self.gridLayout.addWidget(self.cbProgressBar_5, 5, 1, 1, 1)
+
+        self.cbLabel_6 = QLabel(self.cbPage)
+        self.cbLabel_6.setObjectName(u"cbLabel_6")
+        self.cbLabel_6.setFont(font3)
+
+        self.gridLayout.addWidget(self.cbLabel_6, 6, 0, 1, 1)
+
+        self.cbProgressBar_6 = QProgressBar(self.cbPage)
+        self.cbProgressBar_6.setObjectName(u"cbProgressBar_6")
+        self.cbProgressBar_6.setFont(font3)
+        self.cbProgressBar_6.setValue(0)
+        self.cbProgressBar_6.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_6.setTextVisible(True)
+
+        self.gridLayout.addWidget(self.cbProgressBar_6, 6, 1, 1, 1)
+
+        self.cbLabel_7 = QLabel(self.cbPage)
+        self.cbLabel_7.setObjectName(u"cbLabel_7")
+        self.cbLabel_7.setFont(font3)
+
+        self.gridLayout.addWidget(self.cbLabel_7, 7, 0, 1, 1)
+
+        self.cbProgressBar_7 = QProgressBar(self.cbPage)
+        self.cbProgressBar_7.setObjectName(u"cbProgressBar_7")
+        self.cbProgressBar_7.setFont(font3)
+        self.cbProgressBar_7.setValue(0)
+        self.cbProgressBar_7.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_7.setTextVisible(True)
+
+        self.gridLayout.addWidget(self.cbProgressBar_7, 7, 1, 1, 1)
+
+        self.cbLabel_8 = QLabel(self.cbPage)
+        self.cbLabel_8.setObjectName(u"cbLabel_8")
+        self.cbLabel_8.setFont(font3)
+
+        self.gridLayout.addWidget(self.cbLabel_8, 8, 0, 1, 1)
+
+        self.cbProgressBar_8 = QProgressBar(self.cbPage)
+        self.cbProgressBar_8.setObjectName(u"cbProgressBar_8")
+        self.cbProgressBar_8.setFont(font3)
+        self.cbProgressBar_8.setValue(0)
+        self.cbProgressBar_8.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_8.setTextVisible(True)
+
+        self.gridLayout.addWidget(self.cbProgressBar_8, 8, 1, 1, 1)
+
+        self.cbLabel_9 = QLabel(self.cbPage)
+        self.cbLabel_9.setObjectName(u"cbLabel_9")
+        self.cbLabel_9.setFont(font3)
+
+        self.gridLayout.addWidget(self.cbLabel_9, 9, 0, 1, 1)
+
+        self.cbProgressBar_9 = QProgressBar(self.cbPage)
+        self.cbProgressBar_9.setObjectName(u"cbProgressBar_9")
+        self.cbProgressBar_9.setFont(font3)
+        self.cbProgressBar_9.setValue(0)
+        self.cbProgressBar_9.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_9.setTextVisible(True)
+
+        self.gridLayout.addWidget(self.cbProgressBar_9, 9, 1, 1, 1)
+
+        self.cbLabel_10 = QLabel(self.cbPage)
+        self.cbLabel_10.setObjectName(u"cbLabel_10")
+        self.cbLabel_10.setFont(font3)
+
+        self.gridLayout.addWidget(self.cbLabel_10, 10, 0, 1, 1)
+
+        self.cbProgressBar_10 = QProgressBar(self.cbPage)
+        self.cbProgressBar_10.setObjectName(u"cbProgressBar_10")
+        self.cbProgressBar_10.setFont(font3)
+        self.cbProgressBar_10.setValue(0)
+        self.cbProgressBar_10.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_10.setTextVisible(True)
+
+        self.gridLayout.addWidget(self.cbProgressBar_10, 10, 1, 1, 1)
+
+        self.cbLabel_11 = QLabel(self.cbPage)
+        self.cbLabel_11.setObjectName(u"cbLabel_11")
+        self.cbLabel_11.setFont(font3)
+
+        self.gridLayout.addWidget(self.cbLabel_11, 11, 0, 1, 1)
+
+        self.cbProgressBar_11 = QProgressBar(self.cbPage)
+        self.cbProgressBar_11.setObjectName(u"cbProgressBar_11")
+        self.cbProgressBar_11.setFont(font3)
+        self.cbProgressBar_11.setValue(0)
+        self.cbProgressBar_11.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_11.setTextVisible(True)
+
+        self.gridLayout.addWidget(self.cbProgressBar_11, 11, 1, 1, 1)
+
+        self.cbLabel_12 = QLabel(self.cbPage)
+        self.cbLabel_12.setObjectName(u"cbLabel_12")
+        self.cbLabel_12.setFont(font3)
+
+        self.gridLayout.addWidget(self.cbLabel_12, 12, 0, 1, 1)
+
+        self.cbProgressBar_12 = QProgressBar(self.cbPage)
+        self.cbProgressBar_12.setObjectName(u"cbProgressBar_12")
+        self.cbProgressBar_12.setFont(font3)
+        self.cbProgressBar_12.setValue(0)
+        self.cbProgressBar_12.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_12.setTextVisible(True)
+
+        self.gridLayout.addWidget(self.cbProgressBar_12, 12, 1, 1, 1)
+
+        self.cbLabel_13 = QLabel(self.cbPage)
+        self.cbLabel_13.setObjectName(u"cbLabel_13")
+        self.cbLabel_13.setFont(font3)
+
+        self.gridLayout.addWidget(self.cbLabel_13, 13, 0, 1, 1)
+
+        self.cbProgressBar_13 = QProgressBar(self.cbPage)
+        self.cbProgressBar_13.setObjectName(u"cbProgressBar_13")
+        self.cbProgressBar_13.setFont(font3)
+        self.cbProgressBar_13.setValue(0)
+        self.cbProgressBar_13.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_13.setTextVisible(True)
+
+        self.gridLayout.addWidget(self.cbProgressBar_13, 13, 1, 1, 1)
+
+        self.cbLabel_14 = QLabel(self.cbPage)
+        self.cbLabel_14.setObjectName(u"cbLabel_14")
+        self.cbLabel_14.setFont(font3)
+
+        self.gridLayout.addWidget(self.cbLabel_14, 14, 0, 1, 1)
+
+        self.cbProgressBar_14 = QProgressBar(self.cbPage)
+        self.cbProgressBar_14.setObjectName(u"cbProgressBar_14")
+        self.cbProgressBar_14.setFont(font3)
+        self.cbProgressBar_14.setValue(0)
+        self.cbProgressBar_14.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_14.setTextVisible(True)
+
+        self.gridLayout.addWidget(self.cbProgressBar_14, 14, 1, 1, 1)
+
+        self.cbStackedWidget.addWidget(self.cbPage)
+        self.cbPage_2 = QWidget()
+        self.cbPage_2.setObjectName(u"cbPage_2")
+        self.cbVerticalLayout = QVBoxLayout(self.cbPage_2)
+        self.cbVerticalLayout.setObjectName(u"cbVerticalLayout")
+        self.cbPushButtonSoC = QPushButton(self.cbPage_2)
+        self.cbPushButtonSoC.setObjectName(u"cbPushButtonSoC")
+
+        self.cbVerticalLayout.addWidget(self.cbPushButtonSoC)
+
+        self.cbStackedWidget.addWidget(self.cbPage_2)
+
+        self.verticalLayout_3.addWidget(self.cbStackedWidget)
+
 
         self.batteryData_6Layout.addWidget(self.CellBalancingGroupBox)
 
@@ -793,11 +1064,11 @@ class Ui_MainWindow(object):
 
         self.nameLabel = QLabel(self.monitorGroupBox)
         self.nameLabel.setObjectName(u"nameLabel")
-        font4 = QFont()
-        font4.setFamilies([u"Arial"])
-        font4.setBold(True)
-        font4.setItalic(True)
-        self.nameLabel.setFont(font4)
+        font5 = QFont()
+        font5.setFamilies([u"Arial"])
+        font5.setBold(True)
+        font5.setItalic(True)
+        self.nameLabel.setFont(font5)
 
         self.monitorGroupBoxLayout.addWidget(self.nameLabel)
 
@@ -825,6 +1096,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         self.monitorWindowTab.setCurrentIndex(0)
+        self.cbStackedWidget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -883,8 +1155,11 @@ class Ui_MainWindow(object):
         self.resetStatusButton.setText(QCoreApplication.translate("MainWindow", u"Reset Status", None))
         self.clearDataButton.setText(QCoreApplication.translate("MainWindow", u"Clear Data", None))
         self.recordGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Recording", None))
+        self.recordTextLabel.setText(QCoreApplication.translate("MainWindow", u"Time Interval", None))
         self.startRecordButton.setText(QCoreApplication.translate("MainWindow", u"Start Recoding", None))
         self.stopRecordButton.setText(QCoreApplication.translate("MainWindow", u"Stop Recording", None))
+        self.recordTextLabel_2.setText(QCoreApplication.translate("MainWindow", u"Hour (s)", None))
+        self.printButton.setText(QCoreApplication.translate("MainWindow", u"Print Data", None))
         self.loadGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Loading", None))
         self.loadingButton.setText(QCoreApplication.translate("MainWindow", u"Load file", None))
         self.thresholdGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Set thresholds", None))
@@ -1000,6 +1275,23 @@ class Ui_MainWindow(object):
         self.StartBalancingButton.setText(QCoreApplication.translate("MainWindow", u"Start Balancing", None))
         self.StopBalancingButton.setText(QCoreApplication.translate("MainWindow", u"Stop Balancing", None))
         self.CellBalancingStatusDisplay.setText(QCoreApplication.translate("MainWindow", u"Balancing Status", None))
+        self.cbPushButtonControl.setText(QCoreApplication.translate("MainWindow", u"Control Status View", None))
+        self.cbLabel.setText(QCoreApplication.translate("MainWindow", u"Cell 1 SoC", None))
+        self.cbProgressBar.setFormat(QCoreApplication.translate("MainWindow", u"%p%", None))
+        self.cbLabel_2.setText(QCoreApplication.translate("MainWindow", u"Cell 2 SoC", None))
+        self.cbLabel_3.setText(QCoreApplication.translate("MainWindow", u"Cell 3 SoC", None))
+        self.cbLabel_4.setText(QCoreApplication.translate("MainWindow", u"Cell 4 SoC", None))
+        self.cbLabel_5.setText(QCoreApplication.translate("MainWindow", u"Cell 5 SoC", None))
+        self.cbLabel_6.setText(QCoreApplication.translate("MainWindow", u"Cell 6 SoC", None))
+        self.cbLabel_7.setText(QCoreApplication.translate("MainWindow", u"Cell 7 SoC", None))
+        self.cbLabel_8.setText(QCoreApplication.translate("MainWindow", u"Cell 8 SoC", None))
+        self.cbLabel_9.setText(QCoreApplication.translate("MainWindow", u"Cell 9 SoC", None))
+        self.cbLabel_10.setText(QCoreApplication.translate("MainWindow", u"Cell 10 SoC", None))
+        self.cbLabel_11.setText(QCoreApplication.translate("MainWindow", u"Cell 11 SoC", None))
+        self.cbLabel_12.setText(QCoreApplication.translate("MainWindow", u"Cell 12 SoC", None))
+        self.cbLabel_13.setText(QCoreApplication.translate("MainWindow", u"Cell 13 SoC", None))
+        self.cbLabel_14.setText(QCoreApplication.translate("MainWindow", u"Cell 14 SoC", None))
+        self.cbPushButtonSoC.setText(QCoreApplication.translate("MainWindow", u"State of Charge View", None))
         self.monitorWindowTab.setTabText(self.monitorWindowTab.indexOf(self.batteryData_6), QCoreApplication.translate("MainWindow", u"Cell Balancing", None))
         self.nameLabel.setText(QCoreApplication.translate("MainWindow", u"Made by Zhe Yuan", None))
         self.menuSetting.setTitle(QCoreApplication.translate("MainWindow", u"Setting", None))

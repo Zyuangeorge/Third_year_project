@@ -111,6 +111,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Battery status flag
         self.statusUpdateFlag = [0 for _ in range(17)]
 
+        # Output time interval
+        self.outputTimeInterval = int(self.recordDoubleSpinBox.value() * 3600)
+
         # ===================Real time data====================
 
         self.outputData = np.zeros((1,45)).astype(np.int32)
@@ -291,8 +294,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         zoomLayout.addWidget(self.zoomButton_4)
 
         # Add graph panels
-        self.batteryData_6Layout.addLayout(graphPageLayout)
-        self.batteryData_6Layout.addLayout(zoomLayout)
+        self.cbVerticalLayout.addLayout(graphPageLayout)
+        self.cbVerticalLayout.addLayout(zoomLayout)
 
     def init(self):
         """GUI initialisation"""
@@ -320,10 +323,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Init record button
         self.startRecordButton.setEnabled(False)
         self.stopRecordButton.setChecked(True)
-
-        # Add print button
-        self.printButton = QPushButton("Print Data")
-        self.recordGroupBoxLayout.addWidget(self.printButton)
         
         # Add Plotly button
         self.plotlyButton = QPushButton("Plot by Plotly")
@@ -444,6 +443,13 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.loadingButton.clicked.connect(self.openFile)
         self.plotlyButton.clicked.connect(self.plotByPlotly)
 
+        # Connect stack widgets functions
+        self.cbPushButtonSoC.clicked.connect(lambda: self.cbStackedWidget.setCurrentIndex(0))
+        self.cbPushButtonControl.clicked.connect(lambda: self.cbStackedWidget.setCurrentIndex(1))
+
+        # Connect output time interval function
+        self.recordDoubleSpinBox.valueChanged.connect(self.updateOutputTimeInterval)
+
         # Update threshold values
         self.voltageMaxLineEdit.textChanged.connect(self.updateThreshold)
         self.voltageMiniLineEdit.textChanged.connect(self.updateThreshold)
@@ -465,18 +471,12 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """This function is used to update the threshold values"""
         self.currentThreshold = [int(self.currentMiniLineEdit.text()), int(
             self.currentMaxLineEdit.text())]
-        #print("Current threshold: ")
-        #print(self.currentThreshold)
 
         self.voltageThreshold = [int(self.voltageMiniLineEdit.text()), int(
             self.voltageMaxLineEdit.text())]
-        #print("Voltage threshold: ")
-        #print(self.voltageThreshold)
         
         self.tempThreshold = [int(self.tempMiniLineEdit.text()), int(
             self.tempMaxLineEdit.text())]
-        #print("Temperature threshold: ")
-        #print(self.tempThreshold)
 
 # ===================Clear and reset data====================
 
@@ -513,9 +513,66 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.SOC_SOHData = [0 for _ in range(28)]
 
         try:
-            for i in range(0,59):
-                self.curveList[i].setData(self.xaxis,self.graphData[i], _callSync='off')
-                self.stopPlotting()
+            self.stopPlotting()
+            self.cellCurve0.setData(self.xaxis,self.graphData[0], _callSync='off')
+            self.cellCurve1.setData(self.xaxis,self.graphData[1], _callSync='off')
+            self.cellCurve2.setData(self.xaxis,self.graphData[2], _callSync='off')
+            self.cellCurve3.setData(self.xaxis,self.graphData[3], _callSync='off')
+            self.cellCurve4.setData(self.xaxis,self.graphData[4], _callSync='off')
+            self.cellCurve5.setData(self.xaxis,self.graphData[5], _callSync='off')
+            self.cellCurve6.setData(self.xaxis,self.graphData[6], _callSync='off')
+            self.cellCurve7.setData(self.xaxis,self.graphData[7], _callSync='off')
+            self.cellCurve8.setData(self.xaxis,self.graphData[8], _callSync='off')
+            self.cellCurve9.setData(self.xaxis,self.graphData[9], _callSync='off')
+            self.cellCurve10.setData(self.xaxis,self.graphData[10], _callSync='off')
+            self.cellCurve11.setData(self.xaxis,self.graphData[11], _callSync='off')
+            self.cellCurve12.setData(self.xaxis,self.graphData[12], _callSync='off')
+            self.cellCurve13.setData(self.xaxis,self.graphData[13], _callSync='off')
+            self.cellCurve14.setData(self.xaxis,self.graphData[14], _callSync='off')
+            self.cellCurve15.setData(self.xaxis,self.graphData[15], _callSync='off')
+            self.cellCurve16.setData(self.xaxis,self.graphData[16], _callSync='off')
+            self.cellCurve17.setData(self.xaxis,self.graphData[17], _callSync='off')
+            self.cellCurve18.setData(self.xaxis,self.graphData[18], _callSync='off')
+            self.cellCurve19.setData(self.xaxis,self.graphData[19], _callSync='off')
+            self.cellCurve20.setData(self.xaxis,self.graphData[20], _callSync='off')
+            self.cellCurve21.setData(self.xaxis,self.graphData[21], _callSync='off')
+            self.cellCurve22.setData(self.xaxis,self.graphData[22], _callSync='off')
+            self.cellCurve23.setData(self.xaxis,self.graphData[23], _callSync='off')
+            self.cellCurve24.setData(self.xaxis,self.graphData[24], _callSync='off')
+            self.cellCurve25.setData(self.xaxis,self.graphData[25], _callSync='off')
+            self.cellCurve26.setData(self.xaxis,self.graphData[26], _callSync='off')
+            self.cellCurve27.setData(self.xaxis,self.graphData[27], _callSync='off')
+            self.cellCurve28.setData(self.xaxis,self.graphData[28], _callSync='off')
+            self.cellCurve29.setData(self.xaxis,self.graphData[29], _callSync='off')
+            self.cellCurve30.setData(self.xaxis,self.graphData[30], _callSync='off')
+            self.cellCurve31.setData(self.xaxis,self.graphData[31], _callSync='off')
+            self.cellCurve32.setData(self.xaxis,self.graphData[32], _callSync='off')
+            self.cellCurve33.setData(self.xaxis,self.graphData[33], _callSync='off')
+            self.cellCurve34.setData(self.xaxis,self.graphData[34], _callSync='off')
+            self.cellCurve35.setData(self.xaxis,self.graphData[35], _callSync='off')
+            self.cellCurve36.setData(self.xaxis,self.graphData[36], _callSync='off')
+            self.cellCurve37.setData(self.xaxis,self.graphData[37], _callSync='off')
+            self.cellCurve38.setData(self.xaxis,self.graphData[38], _callSync='off')
+            self.cellCurve39.setData(self.xaxis,self.graphData[39], _callSync='off')
+            self.cellCurve40.setData(self.xaxis,self.graphData[40], _callSync='off')
+            self.cellCurve41.setData(self.xaxis,self.graphData[41], _callSync='off')
+            self.cellCurve42.setData(self.xaxis,self.graphData[42], _callSync='off')
+            self.cellCurve43.setData(self.xaxis,self.graphData[43], _callSync='off')
+            self.cellCurve44.setData(self.xaxis,self.graphData[44], _callSync='off')
+            self.cellCurve45.setData(self.xaxis,self.graphData[45], _callSync='off')
+            self.cellCurve46.setData(self.xaxis,self.graphData[46], _callSync='off')
+            self.cellCurve47.setData(self.xaxis,self.graphData[47], _callSync='off')
+            self.cellCurve48.setData(self.xaxis,self.graphData[48], _callSync='off')
+            self.cellCurve49.setData(self.xaxis,self.graphData[49], _callSync='off')
+            self.cellCurve50.setData(self.xaxis,self.graphData[50], _callSync='off')
+            self.cellCurve51.setData(self.xaxis,self.graphData[51], _callSync='off')
+            self.cellCurve52.setData(self.xaxis,self.graphData[52], _callSync='off')
+            self.cellCurve53.setData(self.xaxis,self.graphData[53], _callSync='off')
+            self.cellCurve54.setData(self.xaxis,self.graphData[54], _callSync='off')
+            self.cellCurve55.setData(self.xaxis,self.graphData[55], _callSync='off')
+            self.cellCurve56.setData(self.xaxis,self.graphData[56], _callSync='off')
+            self.cellCurve57.setData(self.xaxis,self.graphData[57], _callSync='off')
+            self.cellCurve58.setData(self.xaxis,self.graphData[58], _callSync='off')
         except:
             pass
 
@@ -647,10 +704,20 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Detect port status
         self.timer3.start(1000) # 1s
 
+        # Disable change output time interval function
+        self.recordDoubleSpinBox.setEnabled(False)
+
     def stopRecording(self):
         """Handler for stop data recording"""
         self.timer3.stop()
 
+        # Enable change output time interval function
+        self.recordDoubleSpinBox.setEnabled(True)
+
+    def updateOutputTimeInterval(self):
+        """Handler for changing output time interval"""
+        self.outputTimeInterval = int(self.recordDoubleSpinBox.value() * 3600)
+        
     def recordData(self):
         """Handler for updating data"""
         # Update real time data
@@ -669,7 +736,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             self.outputData = np.append(self.outputData, [realTimeData], axis = 0) # Convert to two dimension and add to output data
             
-            if self.outputData.shape[0] > 3600: # Automatic Recording
+            if self.outputData.shape[0] > self.outputTimeInterval: # Automatic Recording
                 columnName = [
                             'cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
                             'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 
@@ -790,72 +857,50 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.cellCurve15 = self.graphWindow.ICTempP.plot()
         self.cellCurve16 = self.graphWindow.packCurrentP.plot()
 
-        self.cellCurve18 = self.graphWindow_SOC.p0.plot()
-        self.cellCurve19 = self.graphWindow_SOC.p1.plot()
-        self.cellCurve20 = self.graphWindow_SOC.p2.plot()
-        self.cellCurve21 = self.graphWindow_SOC.p3.plot()
-        self.cellCurve22 = self.graphWindow_SOC.p4.plot()
-        self.cellCurve23 = self.graphWindow_SOC.p5.plot()
-        self.cellCurve24 = self.graphWindow_SOC.p6.plot()
-        self.cellCurve25 = self.graphWindow_SOC.p7.plot()
-        self.cellCurve26 = self.graphWindow_SOC.p8.plot()
-        self.cellCurve27 = self.graphWindow_SOC.p9.plot()
-        self.cellCurve28 = self.graphWindow_SOC.p10.plot()
-        self.cellCurve29 = self.graphWindow_SOC.p11.plot()
-        self.cellCurve30 = self.graphWindow_SOC.p12.plot()
-        self.cellCurve31 = self.graphWindow_SOC.p13.plot()
+        self.cellCurve17 = self.graphWindow_SOC.p0.plot()
+        self.cellCurve18 = self.graphWindow_SOC.p1.plot()
+        self.cellCurve19 = self.graphWindow_SOC.p2.plot()
+        self.cellCurve20 = self.graphWindow_SOC.p3.plot()
+        self.cellCurve21 = self.graphWindow_SOC.p4.plot()
+        self.cellCurve22 = self.graphWindow_SOC.p5.plot()
+        self.cellCurve23 = self.graphWindow_SOC.p6.plot()
+        self.cellCurve24 = self.graphWindow_SOC.p7.plot()
+        self.cellCurve25 = self.graphWindow_SOC.p8.plot()
+        self.cellCurve26 = self.graphWindow_SOC.p9.plot()
+        self.cellCurve27 = self.graphWindow_SOC.p10.plot()
+        self.cellCurve28 = self.graphWindow_SOC.p11.plot()
+        self.cellCurve29 = self.graphWindow_SOC.p12.plot()
+        self.cellCurve30 = self.graphWindow_SOC.p13.plot()
 
-        self.cellCurve32 = self.graphWindow_SOH.p0.plot()
-        self.cellCurve33 = self.graphWindow_SOH.p1.plot()
-        self.cellCurve34 = self.graphWindow_SOH.p2.plot()
-        self.cellCurve35 = self.graphWindow_SOH.p3.plot()
-        self.cellCurve36 = self.graphWindow_SOH.p4.plot()
-        self.cellCurve37 = self.graphWindow_SOH.p5.plot()
-        self.cellCurve38 = self.graphWindow_SOH.p6.plot()
-        self.cellCurve39 = self.graphWindow_SOH.p7.plot()
-        self.cellCurve40 = self.graphWindow_SOH.p8.plot()
-        self.cellCurve41 = self.graphWindow_SOH.p9.plot()
-        self.cellCurve42 = self.graphWindow_SOH.p10.plot()
-        self.cellCurve43 = self.graphWindow_SOH.p11.plot()
-        self.cellCurve44 = self.graphWindow_SOH.p12.plot()
-        self.cellCurve45 = self.graphWindow_SOH.p13.plot()
+        self.cellCurve31 = self.graphWindow_SOH.p0.plot()
+        self.cellCurve32 = self.graphWindow_SOH.p1.plot()
+        self.cellCurve33 = self.graphWindow_SOH.p2.plot()
+        self.cellCurve34 = self.graphWindow_SOH.p3.plot()
+        self.cellCurve35 = self.graphWindow_SOH.p4.plot()
+        self.cellCurve36 = self.graphWindow_SOH.p5.plot()
+        self.cellCurve37 = self.graphWindow_SOH.p6.plot()
+        self.cellCurve38 = self.graphWindow_SOH.p7.plot()
+        self.cellCurve39 = self.graphWindow_SOH.p8.plot()
+        self.cellCurve40 = self.graphWindow_SOH.p9.plot()
+        self.cellCurve41 = self.graphWindow_SOH.p10.plot()
+        self.cellCurve42 = self.graphWindow_SOH.p11.plot()
+        self.cellCurve43 = self.graphWindow_SOH.p12.plot()
+        self.cellCurve44 = self.graphWindow_SOH.p13.plot()
 
-        self.cellCurve46 = self.graphWindow_CB.p0.plot()
-        self.cellCurve47 = self.graphWindow_CB.p1.plot()
-        self.cellCurve48 = self.graphWindow_CB.p2.plot()
-        self.cellCurve49 = self.graphWindow_CB.p3.plot()
-        self.cellCurve50 = self.graphWindow_CB.p4.plot()
-        self.cellCurve51 = self.graphWindow_CB.p5.plot()
-        self.cellCurve52 = self.graphWindow_CB.p6.plot()
-        self.cellCurve53 = self.graphWindow_CB.p7.plot()
-        self.cellCurve54 = self.graphWindow_CB.p8.plot()
-        self.cellCurve55 = self.graphWindow_CB.p9.plot()
-        self.cellCurve56 = self.graphWindow_CB.p10.plot()
-        self.cellCurve57 = self.graphWindow_CB.p11.plot()
-        self.cellCurve58 = self.graphWindow_CB.p12.plot()
-        self.cellCurve59 = self.graphWindow_CB.p13.plot()
-
-        self.curveList = [
-            self.cellCurve0, self.cellCurve1,  self.cellCurve2, 
-            self.cellCurve3, self.cellCurve4,  self.cellCurve5, 
-            self.cellCurve6, self.cellCurve7,  self.cellCurve8, 
-            self.cellCurve9, self.cellCurve10, self.cellCurve11, 
-            self.cellCurve12,self.cellCurve13, self.cellCurve14, 
-            self.cellCurve15,self.cellCurve16, self.cellCurve18, 
-            self.cellCurve19,self.cellCurve20, self.cellCurve21, 
-            self.cellCurve22,self.cellCurve23, self.cellCurve24, 
-            self.cellCurve25,self.cellCurve26, self.cellCurve27, 
-            self.cellCurve28,self.cellCurve29, self.cellCurve30, 
-            self.cellCurve31,self.cellCurve32, self.cellCurve33, 
-            self.cellCurve34,self.cellCurve35, self.cellCurve36, 
-            self.cellCurve37,self.cellCurve38, self.cellCurve39, 
-            self.cellCurve40,self.cellCurve41, self.cellCurve42, 
-            self.cellCurve43,self.cellCurve44, self.cellCurve45,
-            self.cellCurve46,self.cellCurve47, self.cellCurve48, 
-            self.cellCurve49,self.cellCurve50, self.cellCurve51, 
-            self.cellCurve52,self.cellCurve53, self.cellCurve54, 
-            self.cellCurve55,self.cellCurve56, self.cellCurve57, 
-            self.cellCurve58,self.cellCurve59]
+        self.cellCurve45 = self.graphWindow_CB.p0.plot()
+        self.cellCurve46 = self.graphWindow_CB.p1.plot()
+        self.cellCurve47 = self.graphWindow_CB.p2.plot()
+        self.cellCurve48 = self.graphWindow_CB.p3.plot()
+        self.cellCurve49 = self.graphWindow_CB.p4.plot()
+        self.cellCurve50 = self.graphWindow_CB.p5.plot()
+        self.cellCurve51 = self.graphWindow_CB.p6.plot()
+        self.cellCurve52 = self.graphWindow_CB.p7.plot()
+        self.cellCurve53 = self.graphWindow_CB.p8.plot()
+        self.cellCurve54 = self.graphWindow_CB.p9.plot()
+        self.cellCurve55 = self.graphWindow_CB.p10.plot()
+        self.cellCurve56 = self.graphWindow_CB.p11.plot()
+        self.cellCurve57 = self.graphWindow_CB.p12.plot()
+        self.cellCurve58 = self.graphWindow_CB.p13.plot()
 
         if self.serial.isOpen():
             self.timer2.start(200)
@@ -884,8 +929,80 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.xaxis = self.xaxis[1:]  # Remove the first x element.
             self.graphData = np.delete(self.graphData, 0, axis = 1) # Remove first column
 
-        for i in range(0,59):
-            self.curveList[i].setData(self.xaxis,self.graphData[i], _callSync='off')
+        self.cellCurve0.setData(self.xaxis,self.graphData[0], _callSync='off')
+        self.cellCurve1.setData(self.xaxis,self.graphData[1], _callSync='off')
+        self.cellCurve2.setData(self.xaxis,self.graphData[2], _callSync='off')
+        self.cellCurve3.setData(self.xaxis,self.graphData[3], _callSync='off')
+        self.cellCurve4.setData(self.xaxis,self.graphData[4], _callSync='off')
+        self.cellCurve5.setData(self.xaxis,self.graphData[5], _callSync='off')
+        self.cellCurve6.setData(self.xaxis,self.graphData[6], _callSync='off')
+        self.cellCurve7.setData(self.xaxis,self.graphData[7], _callSync='off')
+        self.cellCurve8.setData(self.xaxis,self.graphData[8], _callSync='off')
+        self.cellCurve9.setData(self.xaxis,self.graphData[9], _callSync='off')
+        self.cellCurve10.setData(self.xaxis,self.graphData[10], _callSync='off')
+        self.cellCurve11.setData(self.xaxis,self.graphData[11], _callSync='off')
+        self.cellCurve12.setData(self.xaxis,self.graphData[12], _callSync='off')
+        self.cellCurve13.setData(self.xaxis,self.graphData[13], _callSync='off')
+        self.cellCurve14.setData(self.xaxis,self.graphData[14], _callSync='off')
+        self.cellCurve15.setData(self.xaxis,self.graphData[15], _callSync='off')
+        self.cellCurve16.setData(self.xaxis,self.graphData[16], _callSync='off')
+        self.cellCurve17.setData(self.xaxis,self.graphData[17], _callSync='off')
+        self.cellCurve18.setData(self.xaxis,self.graphData[18], _callSync='off')
+        self.cellCurve19.setData(self.xaxis,self.graphData[19], _callSync='off')
+        self.cellCurve20.setData(self.xaxis,self.graphData[20], _callSync='off')
+        self.cellCurve21.setData(self.xaxis,self.graphData[21], _callSync='off')
+        self.cellCurve22.setData(self.xaxis,self.graphData[22], _callSync='off')
+        self.cellCurve23.setData(self.xaxis,self.graphData[23], _callSync='off')
+        self.cellCurve24.setData(self.xaxis,self.graphData[24], _callSync='off')
+        self.cellCurve25.setData(self.xaxis,self.graphData[25], _callSync='off')
+        self.cellCurve26.setData(self.xaxis,self.graphData[26], _callSync='off')
+        self.cellCurve27.setData(self.xaxis,self.graphData[27], _callSync='off')
+        self.cellCurve28.setData(self.xaxis,self.graphData[28], _callSync='off')
+        self.cellCurve29.setData(self.xaxis,self.graphData[29], _callSync='off')
+        self.cellCurve30.setData(self.xaxis,self.graphData[30], _callSync='off')
+        self.cellCurve31.setData(self.xaxis,self.graphData[31], _callSync='off')
+        self.cellCurve32.setData(self.xaxis,self.graphData[32], _callSync='off')
+        self.cellCurve33.setData(self.xaxis,self.graphData[33], _callSync='off')
+        self.cellCurve34.setData(self.xaxis,self.graphData[34], _callSync='off')
+        self.cellCurve35.setData(self.xaxis,self.graphData[35], _callSync='off')
+        self.cellCurve36.setData(self.xaxis,self.graphData[36], _callSync='off')
+        self.cellCurve37.setData(self.xaxis,self.graphData[37], _callSync='off')
+        self.cellCurve38.setData(self.xaxis,self.graphData[38], _callSync='off')
+        self.cellCurve39.setData(self.xaxis,self.graphData[39], _callSync='off')
+        self.cellCurve40.setData(self.xaxis,self.graphData[40], _callSync='off')
+        self.cellCurve41.setData(self.xaxis,self.graphData[41], _callSync='off')
+        self.cellCurve42.setData(self.xaxis,self.graphData[42], _callSync='off')
+        self.cellCurve43.setData(self.xaxis,self.graphData[43], _callSync='off')
+        self.cellCurve44.setData(self.xaxis,self.graphData[44], _callSync='off')
+        self.cellCurve45.setData(self.xaxis,self.graphData[45], _callSync='off')
+        self.cellCurve46.setData(self.xaxis,self.graphData[46], _callSync='off')
+        self.cellCurve47.setData(self.xaxis,self.graphData[47], _callSync='off')
+        self.cellCurve48.setData(self.xaxis,self.graphData[48], _callSync='off')
+        self.cellCurve49.setData(self.xaxis,self.graphData[49], _callSync='off')
+        self.cellCurve50.setData(self.xaxis,self.graphData[50], _callSync='off')
+        self.cellCurve51.setData(self.xaxis,self.graphData[51], _callSync='off')
+        self.cellCurve52.setData(self.xaxis,self.graphData[52], _callSync='off')
+        self.cellCurve53.setData(self.xaxis,self.graphData[53], _callSync='off')
+        self.cellCurve54.setData(self.xaxis,self.graphData[54], _callSync='off')
+        self.cellCurve55.setData(self.xaxis,self.graphData[55], _callSync='off')
+        self.cellCurve56.setData(self.xaxis,self.graphData[56], _callSync='off')
+        self.cellCurve57.setData(self.xaxis,self.graphData[57], _callSync='off')
+        self.cellCurve58.setData(self.xaxis,self.graphData[58], _callSync='off')
+
+        self.cbProgressBar.setValue(round(self.graphData[17]))
+        self.cbProgressBar_2.setValue(round(self.graphData[18]))
+        self.cbProgressBar_3.setValue(round(self.graphData[19]))
+        self.cbProgressBar_4.setValue(round(self.graphData[20]))
+        self.cbProgressBar_5.setValue(round(self.graphData[21]))
+        self.cbProgressBar_6.setValue(round(self.graphData[22]))
+        self.cbProgressBar_7.setValue(round(self.graphData[23]))
+        self.cbProgressBar_8.setValue(round(self.graphData[24]))
+        self.cbProgressBar_9.setValue(round(self.graphData[25]))
+        self.cbProgressBar_10.setValue(round(self.graphData[26]))
+        self.cbProgressBar_11.setValue(round(self.graphData[27]))
+        self.cbProgressBar_12.setValue(round(self.graphData[28]))
+        self.cbProgressBar_13.setValue(round(self.graphData[29]))
+        self.cbProgressBar_14.setValue(round(self.graphData[30]))
 
         del insertData
         gc.collect()
