@@ -636,7 +636,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Set Baud rate
         self.serial.baudrate = int(self.baudRateComboBox.currentText())
-        # print("Baud rate: " + str(self.serial.baudrate))
 
         # Set Parity
         parity = self.parityComboBox.currentText()
