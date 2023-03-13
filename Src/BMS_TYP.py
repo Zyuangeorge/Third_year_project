@@ -116,7 +116,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # ===================Real time data====================
 
-        self.outputData = np.zeros((1,45)).astype(np.int32)
+        self.outputData = np.zeros((1,59)).astype(np.int32)
 
         self.graphData = np.zeros((59,1)).astype(np.float16)
 
@@ -509,7 +509,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.graphData = np.zeros((59,1)).astype(np.float16)
         self.xaxis = np.zeros(1).astype(np.float16)
 
-        self.outputData = np.zeros((1,45)).astype(np.int32)
+        self.outputData = np.zeros((1,59)).astype(np.int32)
 
         # Clear battery data
         self.bccData = [0 for _ in range(17)]
@@ -725,7 +725,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
     def recordData(self):
         """Handler for updating data"""
         # Update real time data
-        realTimeData = [0 for _ in range(45)]
+        realTimeData = [0 for _ in range(59)]
 
         if self.serial.isOpen():
             # Set time information
@@ -736,7 +736,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             realTimeData[14] = self.bccData[16] # Pack Current Data
             realTimeData[15:43] = self.SOC_SOHData # SoC and SoH Data
             realTimeData[43] = self.EFC_Data
-            realTimeData[44] = timeInfo # Time information
+            realTimeData[44:58] = self.CBData
+            realTimeData[58] = timeInfo # Time information
 
             self.outputData = np.append(self.outputData, [realTimeData], axis = 0) # Convert to two dimension and add to output data
             
@@ -758,6 +759,11 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                             'cellSoH_9','cellSoH_10','cellSoH_11','cellSoH_12',
                             'cellSoH_13','cellSoH_14',
                             'equivalentFullCycle',
+
+                            'cellCB_1','cellCB_2','cellCB_3','cellCB_4',
+                            'cellCB_5','cellCB_6','cellCB_7','cellCB_8',
+                            'cellCB_9','cellCB_10','cellCB_11','cellCB_12',
+                            'cellCB_13','cellCB_14',
 
                             'Date']
 
@@ -786,7 +792,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 df = pd.DataFrame(self.outputData, columns = columnName) 
                 df.to_csv(fileName, index=False, line_terminator='\n')
 
-                self.outputData = np.zeros((1,45)).astype(np.int32)
+                self.outputData = np.zeros((1,59)).astype(np.int32)
                 del df
 
         del realTimeData
@@ -819,6 +825,11 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             'cellSoH_13','cellSoH_14',
             'equivalentFullCycle',
 
+            'cellCB_1','cellCB_2','cellCB_3','cellCB_4',
+            'cellCB_5','cellCB_6','cellCB_7','cellCB_8',
+            'cellCB_9','cellCB_10','cellCB_11','cellCB_12',
+            'cellCB_13','cellCB_14',
+
             'Date']
 
             df = pd.DataFrame(self.outputData, columns = columnName)
@@ -830,7 +841,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             except:
                 pass
 
-            self.outputData = np.zeros((1,45)).astype(np.int32)
+            self.outputData = np.zeros((1,59)).astype(np.int32)
             gc.collect() # Collect garbage
 
         else:

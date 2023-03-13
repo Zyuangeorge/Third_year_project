@@ -84,14 +84,14 @@
 #define ISENSETHRESHOLD 3000 // In uV is 6700uV
 
 /* Battery minimum and maximum voltages */
-#define MC33771C_TH_ALL_CT_UV_TH 1600 // 1600 mV
+#define MC33771C_TH_ALL_CT_UV_TH 0 // 1600 mV
 #define MC33771C_TH_ALL_CT_OV_TH 2500 // 2500 mV
 
 /*  Number of cells */
 #define BATTERY_NUMBER 14
 
-/* Voltage difference threshold for cell balancing 5000 uV */
-#define VOLTAGE_DIFFERENCE_THRESHOLD 5000
+/* Voltage difference threshold for cell balancing 50000 uV */
+#define VOLTAGE_DIFFERENCE_THRESHOLD 50000
 
 /* Maximum number of cells under balancing */
 #define MAX_BALANCED_CELL_NUMBER 7 //
@@ -752,8 +752,10 @@ static bcc_status_t updateMeasurements(void)
     /* Useful macros can be found in bcc.h or bcc_MC3377x.h. */
     cellData[0]= BCC_GET_STACK_VOLT(measurements[BCC_MSR_STACK_VOLT]);
 	cellData[1]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT1]);
-	cellData[2]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT2]);
-	cellData[3]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT3]);
+	//cellData[2]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT2]);
+	cellData[2]= 2000000;
+	//cellData[3]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT3]);
+	cellData[3]= 2000000;
 	cellData[4]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT4]);
 	cellData[5]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT5]);
 	cellData[6]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT6]);
@@ -905,7 +907,7 @@ static void cellBalancing(void)
         }
     }
     else{
-        BCC_CB_Pause(&drvConfig, BCC_CID_DEV1, true);
+    	BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, false);
     }
 }
 
@@ -927,11 +929,12 @@ static void cellBalancingControl(void)
     /* If the batteries had rested, start the next balancing round
 	* 1 min = 60,000 mS + 1s = 1000ms
     */
-    if(cellBalancingFlag == true){
-    	if(balanceTimeout >= (BALANCE_TIME * 60 * 1000 + REST_TIME)){
-    		balanceTimeout = 0; // Reset balance time out to 0
-            cellBalancing();
-    	}
+	if(balanceTimeout >= (BALANCE_TIME * 60 * 1000 + REST_TIME)){
+		balanceTimeout = 0; // Reset balance time out to 0
+
+		if(cellBalancingFlag == true){
+			cellBalancing();
+		}
     }
 }
 
@@ -1012,10 +1015,21 @@ static void OpenCircuitHandler(void)
 static bmsSystemState FaultHandler(void)
 {
 	uint16_t i;
+	uint8_t cellIndex;
+	uint16_t readVal;
+
+	// Turn off cell balancing
+	BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, false);
+
+	// Read cell balancing status registers
+	BCC_Reg_Read(&drvConfig, BCC_CID_DEV1, MC33771C_CB_DRV_STS_OFFSET, 1U, &readVal);
+
+	for(cellIndex = 0; cellIndex < BATTERY_NUMBER; cellIndex++){
+		AhData.CB_ControlStatus[cellIndex] = (readVal & (1 << cellIndex)) >> cellIndex;
+	}
 
 	if (PTC->PDIR & (1<<12)){
 		clearFaultRegs();
-
 		for (i = 0; i < 2; i++){
 			faultStatusValue[i] = 0;
 		}
