@@ -1,5 +1,5 @@
 """
-BMS GUI Version 1.1.0
+BMS GUI Version 1.1.1
 Features:
     Support PC, uC transmission
 
@@ -346,6 +346,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 str(self.cellData['voltage'][num])))
             self.voltageTable.setItem(num, 1, QTableWidgetItem('mV'))
 
+        # Disable spinbox line edit
+        self.recordDoubleSpinBox.lineEdit().setReadOnly(True)
+
         # Set the stop monitoring button to close
         self.stopButton.setEnabled(False)
 
@@ -688,6 +691,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.timer2.stop()
             self.stopPlotting()
             self.stopRecordButton.setChecked(True) #Stop timer 3
+            self.stopCellBalancing()
             self.serial.close()
         except:
             QMessageBox.critical(self, "COM error", "COM close failed")
@@ -989,20 +993,20 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.cellCurve57.setData(self.xaxis,self.graphData[57], _callSync='off')
         self.cellCurve58.setData(self.xaxis,self.graphData[58], _callSync='off')
 
-        self.cbProgressBar.setValue(round(self.graphData[17]))
-        self.cbProgressBar_2.setValue(round(self.graphData[18]))
-        self.cbProgressBar_3.setValue(round(self.graphData[19]))
-        self.cbProgressBar_4.setValue(round(self.graphData[20]))
-        self.cbProgressBar_5.setValue(round(self.graphData[21]))
-        self.cbProgressBar_6.setValue(round(self.graphData[22]))
-        self.cbProgressBar_7.setValue(round(self.graphData[23]))
-        self.cbProgressBar_8.setValue(round(self.graphData[24]))
-        self.cbProgressBar_9.setValue(round(self.graphData[25]))
-        self.cbProgressBar_10.setValue(round(self.graphData[26]))
-        self.cbProgressBar_11.setValue(round(self.graphData[27]))
-        self.cbProgressBar_12.setValue(round(self.graphData[28]))
-        self.cbProgressBar_13.setValue(round(self.graphData[29]))
-        self.cbProgressBar_14.setValue(round(self.graphData[30]))
+        self.cbProgressBar.setValue(round(self.SOC_SOHData[0]*0.1))
+        self.cbProgressBar_2.setValue(round(self.SOC_SOHData[1]*0.1))
+        self.cbProgressBar_3.setValue(round(self.SOC_SOHData[2]*0.1))
+        self.cbProgressBar_4.setValue(round(self.SOC_SOHData[3]*0.1))
+        self.cbProgressBar_5.setValue(round(self.SOC_SOHData[4]*0.1))
+        self.cbProgressBar_6.setValue(round(self.SOC_SOHData[5]*0.1))
+        self.cbProgressBar_7.setValue(round(self.SOC_SOHData[6]*0.1))
+        self.cbProgressBar_8.setValue(round(self.SOC_SOHData[7]*0.1))
+        self.cbProgressBar_9.setValue(round(self.SOC_SOHData[8]*0.1))
+        self.cbProgressBar_10.setValue(round(self.SOC_SOHData[9]*0.1))
+        self.cbProgressBar_11.setValue(round(self.SOC_SOHData[10]*0.1))
+        self.cbProgressBar_12.setValue(round(self.SOC_SOHData[11]*0.1))
+        self.cbProgressBar_13.setValue(round(self.SOC_SOHData[12]*0.1))
+        self.cbProgressBar_14.setValue(round(self.SOC_SOHData[13]*0.1))
 
         del insertData
         gc.collect()
@@ -1463,7 +1467,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
 if __name__ == "__main__":
     application = QApplication(sys.argv)
-    application.setStyle('Fusion')
+    application.setStyle('QtCurve')
     gui = mainWindow()
     gui.show()
     sys.exit(application.exec())

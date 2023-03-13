@@ -836,9 +836,14 @@ class Ui_MainWindow(object):
 
         self.cbProgressBar = QProgressBar(self.cbPage)
         self.cbProgressBar.setObjectName(u"cbProgressBar")
-        self.cbProgressBar.setFont(font3)
+        font5 = QFont()
+        font5.setFamilies([u"Arial"])
+        font5.setBold(True)
+        font5.setStrikeOut(False)
+        font5.setKerning(True)
+        self.cbProgressBar.setFont(font5)
         self.cbProgressBar.setValue(0)
-        self.cbProgressBar.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar.setAlignment(Qt.AlignJustify|Qt.AlignTop)
         self.cbProgressBar.setTextVisible(True)
         self.cbProgressBar.setInvertedAppearance(False)
         self.cbProgressBar.setTextDirection(QProgressBar.TopToBottom)
@@ -853,9 +858,9 @@ class Ui_MainWindow(object):
 
         self.cbProgressBar_2 = QProgressBar(self.cbPage)
         self.cbProgressBar_2.setObjectName(u"cbProgressBar_2")
-        self.cbProgressBar_2.setFont(font3)
+        self.cbProgressBar_2.setFont(font5)
         self.cbProgressBar_2.setValue(0)
-        self.cbProgressBar_2.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_2.setAlignment(Qt.AlignJustify|Qt.AlignTop)
         self.cbProgressBar_2.setTextVisible(True)
 
         self.gridLayout.addWidget(self.cbProgressBar_2, 2, 1, 1, 1)
@@ -868,9 +873,9 @@ class Ui_MainWindow(object):
 
         self.cbProgressBar_3 = QProgressBar(self.cbPage)
         self.cbProgressBar_3.setObjectName(u"cbProgressBar_3")
-        self.cbProgressBar_3.setFont(font3)
+        self.cbProgressBar_3.setFont(font5)
         self.cbProgressBar_3.setValue(0)
-        self.cbProgressBar_3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_3.setAlignment(Qt.AlignJustify|Qt.AlignTop)
         self.cbProgressBar_3.setTextVisible(True)
         self.cbProgressBar_3.setOrientation(Qt.Horizontal)
 
@@ -884,9 +889,9 @@ class Ui_MainWindow(object):
 
         self.cbProgressBar_4 = QProgressBar(self.cbPage)
         self.cbProgressBar_4.setObjectName(u"cbProgressBar_4")
-        self.cbProgressBar_4.setFont(font3)
+        self.cbProgressBar_4.setFont(font5)
         self.cbProgressBar_4.setValue(0)
-        self.cbProgressBar_4.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_4.setAlignment(Qt.AlignJustify|Qt.AlignTop)
         self.cbProgressBar_4.setTextVisible(True)
 
         self.gridLayout.addWidget(self.cbProgressBar_4, 4, 1, 1, 1)
@@ -899,9 +904,9 @@ class Ui_MainWindow(object):
 
         self.cbProgressBar_5 = QProgressBar(self.cbPage)
         self.cbProgressBar_5.setObjectName(u"cbProgressBar_5")
-        self.cbProgressBar_5.setFont(font3)
+        self.cbProgressBar_5.setFont(font5)
         self.cbProgressBar_5.setValue(0)
-        self.cbProgressBar_5.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_5.setAlignment(Qt.AlignJustify|Qt.AlignTop)
         self.cbProgressBar_5.setTextVisible(True)
 
         self.gridLayout.addWidget(self.cbProgressBar_5, 5, 1, 1, 1)
@@ -914,9 +919,9 @@ class Ui_MainWindow(object):
 
         self.cbProgressBar_6 = QProgressBar(self.cbPage)
         self.cbProgressBar_6.setObjectName(u"cbProgressBar_6")
-        self.cbProgressBar_6.setFont(font3)
+        self.cbProgressBar_6.setFont(font5)
         self.cbProgressBar_6.setValue(0)
-        self.cbProgressBar_6.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_6.setAlignment(Qt.AlignJustify|Qt.AlignTop)
         self.cbProgressBar_6.setTextVisible(True)
 
         self.gridLayout.addWidget(self.cbProgressBar_6, 6, 1, 1, 1)
@@ -929,9 +934,9 @@ class Ui_MainWindow(object):
 
         self.cbProgressBar_7 = QProgressBar(self.cbPage)
         self.cbProgressBar_7.setObjectName(u"cbProgressBar_7")
-        self.cbProgressBar_7.setFont(font3)
+        self.cbProgressBar_7.setFont(font5)
         self.cbProgressBar_7.setValue(0)
-        self.cbProgressBar_7.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_7.setAlignment(Qt.AlignJustify|Qt.AlignTop)
         self.cbProgressBar_7.setTextVisible(True)
 
         self.gridLayout.addWidget(self.cbProgressBar_7, 7, 1, 1, 1)
@@ -944,9 +949,9 @@ class Ui_MainWindow(object):
 
         self.cbProgressBar_8 = QProgressBar(self.cbPage)
         self.cbProgressBar_8.setObjectName(u"cbProgressBar_8")
-        self.cbProgressBar_8.setFont(font3)
+        self.cbProgressBar_8.setFont(font5)
         self.cbProgressBar_8.setValue(0)
-        self.cbProgressBar_8.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_8.setAlignment(Qt.AlignJustify|Qt.AlignTop)
         self.cbProgressBar_8.setTextVisible(True)
 
         self.gridLayout.addWidget(self.cbProgressBar_8, 8, 1, 1, 1)
@@ -959,9 +964,9 @@ class Ui_MainWindow(object):
 
         self.cbProgressBar_9 = QProgressBar(self.cbPage)
         self.cbProgressBar_9.setObjectName(u"cbProgressBar_9")
-        self.cbProgressBar_9.setFont(font3)
+        self.cbProgressBar_9.setFont(font5)
         self.cbProgressBar_9.setValue(0)
-        self.cbProgressBar_9.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_9.setAlignment(Qt.AlignJustify|Qt.AlignTop)
         self.cbProgressBar_9.setTextVisible(True)
 
         self.gridLayout.addWidget(self.cbProgressBar_9, 9, 1, 1, 1)
@@ -974,9 +979,9 @@ class Ui_MainWindow(object):
 
         self.cbProgressBar_10 = QProgressBar(self.cbPage)
         self.cbProgressBar_10.setObjectName(u"cbProgressBar_10")
-        self.cbProgressBar_10.setFont(font3)
+        self.cbProgressBar_10.setFont(font5)
         self.cbProgressBar_10.setValue(0)
-        self.cbProgressBar_10.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_10.setAlignment(Qt.AlignJustify|Qt.AlignTop)
         self.cbProgressBar_10.setTextVisible(True)
 
         self.gridLayout.addWidget(self.cbProgressBar_10, 10, 1, 1, 1)
@@ -989,9 +994,9 @@ class Ui_MainWindow(object):
 
         self.cbProgressBar_11 = QProgressBar(self.cbPage)
         self.cbProgressBar_11.setObjectName(u"cbProgressBar_11")
-        self.cbProgressBar_11.setFont(font3)
+        self.cbProgressBar_11.setFont(font5)
         self.cbProgressBar_11.setValue(0)
-        self.cbProgressBar_11.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_11.setAlignment(Qt.AlignJustify|Qt.AlignTop)
         self.cbProgressBar_11.setTextVisible(True)
 
         self.gridLayout.addWidget(self.cbProgressBar_11, 11, 1, 1, 1)
@@ -1004,9 +1009,9 @@ class Ui_MainWindow(object):
 
         self.cbProgressBar_12 = QProgressBar(self.cbPage)
         self.cbProgressBar_12.setObjectName(u"cbProgressBar_12")
-        self.cbProgressBar_12.setFont(font3)
+        self.cbProgressBar_12.setFont(font5)
         self.cbProgressBar_12.setValue(0)
-        self.cbProgressBar_12.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_12.setAlignment(Qt.AlignJustify|Qt.AlignTop)
         self.cbProgressBar_12.setTextVisible(True)
 
         self.gridLayout.addWidget(self.cbProgressBar_12, 12, 1, 1, 1)
@@ -1019,9 +1024,9 @@ class Ui_MainWindow(object):
 
         self.cbProgressBar_13 = QProgressBar(self.cbPage)
         self.cbProgressBar_13.setObjectName(u"cbProgressBar_13")
-        self.cbProgressBar_13.setFont(font3)
+        self.cbProgressBar_13.setFont(font5)
         self.cbProgressBar_13.setValue(0)
-        self.cbProgressBar_13.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_13.setAlignment(Qt.AlignJustify|Qt.AlignTop)
         self.cbProgressBar_13.setTextVisible(True)
 
         self.gridLayout.addWidget(self.cbProgressBar_13, 13, 1, 1, 1)
@@ -1034,9 +1039,9 @@ class Ui_MainWindow(object):
 
         self.cbProgressBar_14 = QProgressBar(self.cbPage)
         self.cbProgressBar_14.setObjectName(u"cbProgressBar_14")
-        self.cbProgressBar_14.setFont(font3)
+        self.cbProgressBar_14.setFont(font5)
         self.cbProgressBar_14.setValue(0)
-        self.cbProgressBar_14.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.cbProgressBar_14.setAlignment(Qt.AlignJustify|Qt.AlignTop)
         self.cbProgressBar_14.setTextVisible(True)
 
         self.gridLayout.addWidget(self.cbProgressBar_14, 14, 1, 1, 1)
@@ -1064,11 +1069,11 @@ class Ui_MainWindow(object):
 
         self.nameLabel = QLabel(self.monitorGroupBox)
         self.nameLabel.setObjectName(u"nameLabel")
-        font5 = QFont()
-        font5.setFamilies([u"Arial"])
-        font5.setBold(True)
-        font5.setItalic(True)
-        self.nameLabel.setFont(font5)
+        font6 = QFont()
+        font6.setFamilies([u"Arial"])
+        font6.setBold(True)
+        font6.setItalic(True)
+        self.nameLabel.setFont(font6)
 
         self.monitorGroupBoxLayout.addWidget(self.nameLabel)
 
@@ -1096,7 +1101,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         self.monitorWindowTab.setCurrentIndex(0)
-        self.cbStackedWidget.setCurrentIndex(1)
+        self.cbStackedWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)

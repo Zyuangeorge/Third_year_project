@@ -1416,7 +1416,7 @@
               <item>
                <widget class="QStackedWidget" name="cbStackedWidget">
                 <property name="currentIndex">
-                 <number>1</number>
+                 <number>0</number>
                 </property>
                 <widget class="QWidget" name="cbPage">
                  <layout class="QGridLayout" name="gridLayout">
@@ -1446,13 +1446,15 @@
                      <font>
                       <family>Arial</family>
                       <bold>true</bold>
+                      <strikeout>false</strikeout>
+                      <kerning>true</kerning>
                      </font>
                     </property>
                     <property name="value">
                      <number>0</number>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignJustify|Qt::AlignTop</set>
                     </property>
                     <property name="textVisible">
                      <bool>true</bool>
@@ -1487,13 +1489,15 @@
                      <font>
                       <family>Arial</family>
                       <bold>true</bold>
+                      <strikeout>false</strikeout>
+                      <kerning>true</kerning>
                      </font>
                     </property>
                     <property name="value">
                      <number>0</number>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignJustify|Qt::AlignTop</set>
                     </property>
                     <property name="textVisible">
                      <bool>true</bool>
@@ -1519,13 +1523,15 @@
                      <font>
                       <family>Arial</family>
                       <bold>true</bold>
+                      <strikeout>false</strikeout>
+                      <kerning>true</kerning>
                      </font>
                     </property>
                     <property name="value">
                      <number>0</number>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignJustify|Qt::AlignTop</set>
                     </property>
                     <property name="textVisible">
                      <bool>true</bool>
@@ -1554,13 +1560,15 @@
                      <font>
                       <family>Arial</family>
                       <bold>true</bold>
+                      <strikeout>false</strikeout>
+                      <kerning>true</kerning>
                      </font>
                     </property>
                     <property name="value">
                      <number>0</number>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignJustify|Qt::AlignTop</set>
                     </property>
                     <property name="textVisible">
                      <bool>true</bool>
@@ -1586,13 +1594,15 @@
                      <font>
                       <family>Arial</family>
                       <bold>true</bold>
+                      <strikeout>false</strikeout>
+                      <kerning>true</kerning>
                      </font>
                     </property>
                     <property name="value">
                      <number>0</number>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignJustify|Qt::AlignTop</set>
                     </property>
                     <property name="textVisible">
                      <bool>true</bool>
@@ -1618,13 +1628,15 @@
                      <font>
                       <family>Arial</family>
                       <bold>true</bold>
+                      <strikeout>false</strikeout>
+                      <kerning>true</kerning>
                      </font>
                     </property>
                     <property name="value">
                      <number>0</number>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignJustify|Qt::AlignTop</set>
                     </property>
                     <property name="textVisible">
                      <bool>true</bool>
@@ -1650,13 +1662,15 @@
                      <font>
                       <family>Arial</family>
                       <bold>true</bold>
+                      <strikeout>false</strikeout>
+                      <kerning>true</kerning>
                      </font>
                     </property>
                     <property name="value">
                      <number>0</number>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignJustify|Qt::AlignTop</set>
                     </property>
                     <property name="textVisible">
                      <bool>true</bool>
@@ -1682,13 +1696,15 @@
                      <font>
                       <family>Arial</family>
                       <bold>true</bold>
+                      <strikeout>false</strikeout>
+                      <kerning>true</kerning>
                      </font>
                     </property>
                     <property name="value">
                      <number>0</number>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignJustify|Qt::AlignTop</set>
                     </property>
                     <property name="textVisible">
                      <bool>true</bool>
@@ -1714,13 +1730,15 @@
                      <font>
                       <family>Arial</family>
                       <bold>true</bold>
+                      <strikeout>false</strikeout>
+                      <kerning>true</kerning>
                      </font>
                     </property>
                     <property name="value">
                      <number>0</number>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignJustify|Qt::AlignTop</set>
                     </property>
                     <property name="textVisible">
                      <bool>true</bool>
@@ -1746,13 +1764,15 @@
                      <font>
                       <family>Arial</family>
                       <bold>true</bold>
+                      <strikeout>false</strikeout>
+                      <kerning>true</kerning>
                      </font>
                     </property>
                     <property name="value">
                      <number>0</number>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignJustify|Qt::AlignTop</set>
                     </property>
                     <property name="textVisible">
                      <bool>true</bool>
@@ -1778,13 +1798,15 @@
                      <font>
                       <family>Arial</family>
                       <bold>true</bold>
+                      <strikeout>false</strikeout>
+                      <kerning>true</kerning>
                      </font>
                     </property>
                     <property name="value">
                      <number>0</number>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignJustify|Qt::AlignTop</set>
                     </property>
                     <property name="textVisible">
                      <bool>true</bool>
@@ -1810,13 +1832,15 @@
                      <font>
                       <family>Arial</family>
                       <bold>true</bold>
+                      <strikeout>false</strikeout>
+                      <kerning>true</kerning>
                      </font>
                     </property>
                     <property name="value">
                      <number>0</number>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignJustify|Qt::AlignTop</set>
                     </property>
                     <property name="textVisible">
                      <bool>true</bool>
@@ -1842,13 +1866,15 @@
                      <font>
                       <family>Arial</family>
                       <bold>true</bold>
+                      <strikeout>false</strikeout>
+                      <kerning>true</kerning>
                      </font>
                     </property>
                     <property name="value">
                      <number>0</number>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignJustify|Qt::AlignTop</set>
                     </property>
                     <property name="textVisible">
                      <bool>true</bool>
@@ -1874,13 +1900,15 @@
                      <font>
                       <family>Arial</family>
                       <bold>true</bold>
+                      <strikeout>false</strikeout>
+                      <kerning>true</kerning>
                      </font>
                     </property>
                     <property name="value">
                      <number>0</number>
                     </property>
                     <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     <set>Qt::AlignJustify|Qt::AlignTop</set>
                     </property>
                     <property name="textVisible">
                      <bool>true</bool>
