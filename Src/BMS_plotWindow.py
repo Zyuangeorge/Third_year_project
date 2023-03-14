@@ -1,12 +1,15 @@
 import numpy as np
 import pyqtgraph as pg
 from PySide6.QtWidgets import (QComboBox, QDialog, QHBoxLayout, QMessageBox,
-                               QPushButton, QVBoxLayout,QTabWidget,QLabel,QWidget)
+                               QPushButton, QVBoxLayout,QTabWidget,QLabel,QWidget,QApplication)
 from PySide6.QtGui import QIcon
 
 # Expend file path
 import sys
 sys.path.append('.')
+
+# Import 
+from UI.initDialog import Ui_InitValueDialog
 
 class plotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
@@ -523,3 +526,39 @@ class CBPlotWindow(pg.GraphicsLayoutWidget):
             curve.setLabel('bottom', "Time (s)")
             curve.setLabel('left', "CB (On/Off)")
             curve.enableAutoRange(axis='y')
+
+class setInitValueDialog(QDialog, Ui_InitValueDialog):
+    """Main window widget for BMS GUI"""
+    def __init__(self):
+        super(setInitValueDialog, self).__init__()
+
+        # Display UI
+        self.setupUi(self)
+
+        # Set up window logo and disable window size modification
+        self.setWindowIcon(QIcon("./UI/sheffield_logo.png"))
+        # use this when using pyinstaller to pack the program
+        # self.setWindowIcon(QIcon(util.get_resource_path("img/sheffield_logo.png")))
+
+        self.initBatteryNameLineEdit.setText("Default battery type")
+        self.recordingTimeInitDoubleSpinBox.lineEdit().setReadOnly(True)
+        self.initValuePushButton.clicked.connect(self.accept)
+
+    def closeEvent(self, event):
+        """Handler for closing the GUI"""
+        yesButton = QMessageBox.StandardButton.Yes
+        noButton = QMessageBox.StandardButton.Cancel
+
+        msg = QMessageBox.warning(
+            self, "Warning", "You need to set the initial value first!", yesButton, noButton)
+        if msg == QMessageBox.Yes:
+            event.ignore()
+        else:
+            self.reject()
+
+if __name__ == "__main__":
+    application = QApplication(sys.argv)
+    application.setStyle('QtCurve')
+    gui = setInitValueDialog()
+    gui.show()
+    sys.exit(application.exec())

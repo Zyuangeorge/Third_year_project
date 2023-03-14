@@ -31,19 +31,21 @@ class cellDataPlotting:
             batteryData['cellSoC_' + str(batteryNumber + 1)] = batteryData['cellSoC_' + str(batteryNumber + 1)].map(lambda x:x / 10)
             batteryData['cellSoH_' + str(batteryNumber + 1)] = batteryData['cellSoH_' + str(batteryNumber + 1)].map(lambda x:x / 10)
 
-        fig = make_subplots(rows=2, cols=2, subplot_titles=("Pack Current", 'Cell Voltage', 'Cell SoC', 'Cell SoH'))
+        fig = make_subplots(rows=3, cols=2, subplot_titles=("Pack Current", 'Cell Voltage', 'Cell SoC', 'Cell SoH', 'Cell CB Control'))
 
         # Update xaxis properties
         fig.update_xaxes(title_text="Time(s)", row=1, col=1)
         fig.update_xaxes(title_text="Time(s)", row=1, col=2)
         fig.update_xaxes(title_text="Time(s)", row=2, col=1)
         fig.update_xaxes(title_text="Time(s)", row=2, col=2)
+        fig.update_xaxes(title_text="Time(s)", row=3, col=1)
 
         # Update yaxis properties
         fig.update_yaxes(title_text="Current (mA)", row=1, col=1)
         fig.update_yaxes(title_text="Voltage (mV)", row=1, col=2)
         fig.update_yaxes(title_text="SoC (%)", row=2, col=1)
         fig.update_yaxes(title_text="SoH (%)", row=2, col=2)
+        fig.update_yaxes(title_text="Control (On/Off)", row=3, col=1)
 
         fig.add_trace(go.Scatter(x=batteryData['Time(s)'], y=batteryData['packCurrent'], 
                                     mode='lines',
@@ -65,7 +67,12 @@ class cellDataPlotting:
                                     mode='lines',
                                     name='cellSoH_' + str(batteryNumber + 1)),
                                     row=2, col=2)
-
+            
+            fig.add_trace(go.Scatter(x=batteryData['Time(s)'], y=batteryData['cellCB_' + str(batteryNumber + 1)], 
+                                    mode='lines',
+                                    name='cellCB_' + str(batteryNumber + 1)),
+                                    row=3, col=1)
+            
         fig.update_layout(
             title='Battery Data' + self.folder[6:],
             xaxis_title='Time(s)',

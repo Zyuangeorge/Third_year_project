@@ -1,3 +1,6 @@
+import sys
+import os
+
 def listData2strData(dataList):
     """This function is used to transfer the bcc UART data to bcc data list"""
     dataList.reverse()  # Reverse the UART data list
@@ -16,3 +19,9 @@ def listData2strData(dataList):
     outputData.reverse()  # Reverse the data list again to correct order
     
     return outputData
+
+def get_resource_path(self, relative_path):
+    '''Handler used for inserting image when using pyinstaller'''
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)

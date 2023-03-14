@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>InitValueDialog</class>
+ <widget class="QDialog" name="InitValueDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>369</width>
+    <height>424</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Initial Value Setting</string>
+  </property>
+  <property name="locale">
+   <locale language="English" country="UnitedKingdom"/>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="thresholdGroupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+      </font>
+     </property>
+     <property name="title">
+      <string>Battery Specifications</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QLabel" name="initBatteryNameLabel">
+        <property name="text">
+         <string>Battery Name:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="initBatteryNameLineEdit">
+        <property name="placeholderText">
+         <string>Add battery name</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QGridLayout" name="initCurrentThresholdLayout">
+        <item row="3" column="0" rowspan="5">
+         <widget class="QLabel" name="initCurrentMaxLabel">
+          <property name="text">
+           <string>Maximum:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" rowspan="3" colspan="2">
+         <widget class="QLabel" name="initCurrentThresholdLabel">
+          <property name="text">
+           <string>Pack Current threshold (mA):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1" rowspan="5">
+         <widget class="QLineEdit" name="initCurrentMaxLineEdit">
+          <property name="acceptDrops">
+           <bool>false</bool>
+          </property>
+          <property name="inputMethodHints">
+           <set>Qt::ImhDigitsOnly</set>
+          </property>
+          <property name="text">
+           <string>1500</string>
+          </property>
+          <property name="placeholderText">
+           <string>Default value 1500mA</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QGridLayout" name="initVoltageThresholdLayout">
+        <item row="2" column="0">
+         <widget class="QLabel" name="initVoltageMiniLabel">
+          <property name="text">
+           <string>Minimum:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" rowspan="2" colspan="2">
+         <widget class="QLabel" name="initVoltageThresholdLabel">
+          <property name="text">
+           <string>Cell voltage threshold (mV):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLineEdit" name="initVoltageMiniLineEdit">
+          <property name="acceptDrops">
+           <bool>false</bool>
+          </property>
+          <property name="inputMethodHints">
+           <set>Qt::ImhDigitsOnly</set>
+          </property>
+          <property name="text">
+           <string>1700</string>
+          </property>
+          <property name="placeholderText">
+           <string>Default value 1700mV</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="initVoltageMaxLabel">
+          <property name="text">
+           <string>Maximum:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLineEdit" name="initVoltageMaxLineEdit">
+          <property name="acceptDrops">
+           <bool>false</bool>
+          </property>
+          <property name="inputMethodHints">
+           <set>Qt::ImhDigitsOnly</set>
+          </property>
+          <property name="text">
+           <string>2500</string>
+          </property>
+          <property name="placeholderText">
+           <string>Default value 2500mV</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QGridLayout" name="initTempThresholdLayout">
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="initTempMiniLineEdit">
+          <property name="acceptDrops">
+           <bool>false</bool>
+          </property>
+          <property name="inputMethodHints">
+           <set>Qt::ImhDigitsOnly</set>
+          </property>
+          <property name="text">
+           <string>-40</string>
+          </property>
+          <property name="placeholderText">
+           <string>Default value -40C</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <widget class="QLabel" name="initTempThresholdLabel">
+          <property name="text">
+           <string>IC temperature threshold (℃):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLineEdit" name="initTempMaxLineEdit">
+          <property name="acceptDrops">
+           <bool>false</bool>
+          </property>
+          <property name="inputMethodHints">
+           <set>Qt::ImhDigitsOnly</set>
+          </property>
+          <property name="text">
+           <string>120</string>
+          </property>
+          <property name="placeholderText">
+           <string>Default value 120C</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="initTempMaxLabel">
+          <property name="text">
+           <string>Maximum:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="initTempMiniLabel">
+          <property name="text">
+           <string>Minimum:</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="GUISettingGroupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+      </font>
+     </property>
+     <property name="title">
+      <string>GUI Settings</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <layout class="QHBoxLayout" name="recordingTimeLayout">
+        <item>
+         <widget class="QLabel" name="recordingTimeInitlabel_2">
+          <property name="text">
+           <string>Recording Time Interval:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="recordingTimeInitDoubleSpinBox">
+          <property name="inputMethodHints">
+           <set>Qt::ImhDigitsOnly|Qt::ImhFormattedNumbersOnly</set>
+          </property>
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="minimum">
+           <double>0.500000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.500000000000000</double>
+          </property>
+          <property name="value">
+           <double>1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="recordingTimeInitlabel">
+          <property name="text">
+           <string>Hour (s)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="openCircuitCurrentLayout">
+        <item>
+         <widget class="QLabel" name="openCircuitCurrentThresholdLablel_2">
+          <property name="text">
+           <string>Open-circuit Current Threshold:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="OpenCircuitCurrentThresholdLineEdit">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="inputMethodHints">
+           <set>Qt::ImhDigitsOnly</set>
+          </property>
+          <property name="text">
+           <string>100</string>
+          </property>
+          <property name="placeholderText">
+           <string>Default value 100mA</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="openCircuitCurrentThresholdLablel">
+          <property name="text">
+           <string>mA</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="initValuePushButton">
+        <property name="text">
+         <string>Done</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

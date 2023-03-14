@@ -1,11 +1,29 @@
 """
-BMS GUI Version 1.1.1
+BMS GUI Version 1.2.1
 Features:
-    Support PC, uC transmission
+    Add output CB control data
+    Add init dialog
+    Add close window warning
+    Add more comments
 
-pipenv Install:
-pyinstaller --add-data="sheffield_logo.png;img" -w -i guiLogo.ico --distpath Release/ --clean BMS_TYP.py
+pipenv Install codes:
+1. Open the terminal under the file path
+2. Use these codes in the terminal
+
+    pipenv install --python 3.10
+    pipenv shell
+    pipenv install pyinstaller
+    pipenv install numpy
+    pipenv install pandas
+    pipenv install pyserial
+    pipenv install pyside6
+    pipenv install pyqtgraph
+    pipenv install plotly
+    pyinstaller --add-data="sheffield_logo.png;img" -w -i guiLogo.ico --distpath Release/ --clean BMS_TYP.py
+    pipenv --rm
+
 """
+
 # Import functions in other folders
 import sys
 import gc
@@ -31,16 +49,30 @@ from PySide6.QtGui import QIcon, QIntValidator
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox,
                                QFileDialog, QHBoxLayout, QLabel, QMainWindow,
                                QMessageBox, QPushButton, QSizePolicy,
-                               QSpacerItem, QTableWidgetItem, QVBoxLayout)
+                               QSpacerItem, QTableWidgetItem, QVBoxLayout, QDialog)
 
 # Import util functions
 import util.util as util
 # Import graph window
-from BMS_plotWindow import loadGraphWindow, plotWindow, zoomWindow, SOCPlotWindow, SOHPlotWindow, CBPlotWindow
+from BMS_plotWindow import loadGraphWindow, plotWindow, zoomWindow, SOCPlotWindow, SOHPlotWindow, CBPlotWindow, setInitValueDialog
 # Import UI file
 from UI.BMS_GUI import Ui_MainWindow
 # Import Plotly file
 from Plotly_Src.cellDataPlot import cellDataPlotting
+
+""" 
+
+# Using these codes instead when using pyinstaller
+# Import util functions
+import util as util
+# Import graph window
+from BMS_plotWindow import loadGraphWindow, plotWindow, zoomWindow, SOCPlotWindow, SOHPlotWindow, CBPlotWindow
+# Import UI file
+from BMS_GUI import Ui_MainWindow
+# Import Plotly file
+from cellDataPlot import cellDataPlotting 
+
+"""
 
 class voltageStatus(Enum):
     DEFAULT = "NORMAL"
@@ -69,16 +101,27 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         # Set up window logo and disable window size modification
-        self.setWindowIcon(QIcon("./UI/sheffield_logo.jpg"))
+        self.setWindowIcon(QIcon("./UI/sheffield_logo.png"))
+
+        # use this when using pyinstaller to pack the program
+        # self.setWindowIcon(QIcon(util.get_resource_path("img/sheffield_logo.png")))
+
         self.setMinimumWidth(1100)
 
         # ===================Data used for GUI displaying====================
 
         # Threshold variables
-        self.currentThreshold = [0, 1500]
-        self.voltageThreshold = [1700, 2500]
-        self.tempThreshold = [20, 105]
-        self.packVoltageThreshold = [i * 14 for i in self.voltageThreshold]
+        self.currentThreshold = []
+        self.voltageThreshold = []
+        self.tempThreshold = []
+        self.packVoltageThreshold = []
+        
+        # Open circuit current threshold used for determine system condition
+        self.openCircuitCurrentThreshold = 0
+
+        # Output time interval
+        # Set recordDoubleSpinBox value based on init value
+        self.outputTimeInterval = 0
 
         # Pack data
         self.packData = {'voltage': 0, 'current': 0,
@@ -110,9 +153,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Battery status flag
         self.statusUpdateFlag = [0 for _ in range(17)]
-
-        # Output time interval
-        self.outputTimeInterval = int(self.recordDoubleSpinBox.value() * 3600)
 
         # ===================Real time data====================
 
@@ -151,9 +191,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.timer = QTimer() # Timer for GUI data displaying
         self.timer2 = QTimer() # Timer for data plotting
         self.timer3 = QTimer() # Timer for data recoding
-
-        # Initialisation of the GUI
-        self.init()
 
 # ===================Class initialisation====================
 
@@ -304,6 +341,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.initGraphPage_3()
         self.initGraphPage_4()
 
+        # Set record spin box based on init value dialog
+        self.recordDoubleSpinBox.setValue(self.outputTimeInterval / 3600)
+
         # Init plot button
         plotButtonLayout = QHBoxLayout()
 
@@ -329,8 +369,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.verticalLayout_2.addWidget(self.plotlyButton)
 
         # Set QLineEdit restrictions
-        self.voltageMaxLineEdit.setValidator(QIntValidator(0,2400))
-        self.voltageMiniLineEdit.setValidator(QIntValidator(0,2400))
+        self.voltageMaxLineEdit.setValidator(QIntValidator(0,5000))
+        self.voltageMiniLineEdit.setValidator(QIntValidator(0,5000))
         self.currentMaxLineEdit.setValidator(QIntValidator(0,1500))
         self.currentMiniLineEdit.setValidator(QIntValidator(0,1500))
         self.tempMaxLineEdit.setValidator(QIntValidator(-40,120))
@@ -756,7 +796,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             self.outputData = np.append(self.outputData, [realTimeData], axis = 0) # Convert to two dimension and add to output data
             
-            if self.outputData.shape[0] > self.outputTimeInterval: # Automatic Recording
+            if self.outputData.shape[0] > 20: # Automatic Recording
                 columnName = [
                             'cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
                             'cellVoltage_5', 'cellVoltage_6', 'cellVoltage_7', 'cellVoltage_8', 
@@ -799,9 +839,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 if not os.path.exists(outputDir_3):
                     os.mkdir(outputDir_3)
 
-                if self.outputData[1][14] < -80: # Current smaller then -80mA
+                if self.outputData[1][14] < -self.openCircuitCurrentThreshold: # Current smaller then -100mA
                     fileName = outputDir_1 + "/" + str(timeInfo) + ".csv" # Address name
-                elif self.outputData[1][14] > 80:
+                elif self.outputData[1][14] > self.openCircuitCurrentThreshold:
                     fileName = outputDir_2 + "/" + str(timeInfo) + ".csv" # Address name
                 else:
                     fileName = outputDir_3 + "/" + str(timeInfo) + ".csv" # Address name
@@ -1492,12 +1532,36 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 pass
         else:
             pass
+    
+    def closeEvent(self, event):
+        """ Handler for closing event """
+        yesButton = QMessageBox.StandardButton.Yes
+        noButton = QMessageBox.StandardButton.Cancel
+
+        msg = QMessageBox.warning(
+            self, "Warning", "You are going to close the GUI!", yesButton, noButton)
+        if msg == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
 
 # ===================Main====================
 
 if __name__ == "__main__":
     application = QApplication(sys.argv)
     application.setStyle('QtCurve')
-    gui = mainWindow()
-    gui.show()
-    sys.exit(application.exec())
+    
+    initValueDialog = setInitValueDialog()
+    result = initValueDialog.exec()
+    
+    if (result == QDialog.Accepted):
+        gui = mainWindow()
+        gui.currentThreshold = [0, int(initValueDialog.initCurrentMaxLineEdit.text())]
+        gui.voltageThreshold = [int(initValueDialog.initVoltageMiniLineEdit.text()), int(initValueDialog.initVoltageMaxLineEdit.text())]
+        gui.tempThreshold = [int(initValueDialog.initTempMiniLineEdit.text()), int(initValueDialog.initTempMaxLineEdit.text())]
+        gui.packVoltageThreshold = [i * 14 for i in gui.voltageThreshold]
+        gui.openCircuitCurrentThreshold = int(initValueDialog.OpenCircuitCurrentThresholdLineEdit.text())
+        gui.outputTimeInterval = int(initValueDialog.recordingTimeInitDoubleSpinBox.value() * 3600)
+        gui.init()
+        gui.show()
+        sys.exit(application.exec())
