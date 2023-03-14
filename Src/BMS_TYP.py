@@ -576,6 +576,22 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.cellCurve56.setData(self.xaxis,self.graphData[56], _callSync='off')
             self.cellCurve57.setData(self.xaxis,self.graphData[57], _callSync='off')
             self.cellCurve58.setData(self.xaxis,self.graphData[58], _callSync='off')
+
+            self.cbProgressBar.setValue(round(self.SOC_SOHData[0]*0.1))
+            self.cbProgressBar_2.setValue(round(self.SOC_SOHData[1]*0.1))
+            self.cbProgressBar_3.setValue(round(self.SOC_SOHData[2]*0.1))
+            self.cbProgressBar_4.setValue(round(self.SOC_SOHData[3]*0.1))
+            self.cbProgressBar_5.setValue(round(self.SOC_SOHData[4]*0.1))
+            self.cbProgressBar_6.setValue(round(self.SOC_SOHData[5]*0.1))
+            self.cbProgressBar_7.setValue(round(self.SOC_SOHData[6]*0.1))
+            self.cbProgressBar_8.setValue(round(self.SOC_SOHData[7]*0.1))
+            self.cbProgressBar_9.setValue(round(self.SOC_SOHData[8]*0.1))
+            self.cbProgressBar_10.setValue(round(self.SOC_SOHData[9]*0.1))
+            self.cbProgressBar_11.setValue(round(self.SOC_SOHData[10]*0.1))
+            self.cbProgressBar_12.setValue(round(self.SOC_SOHData[11]*0.1))
+            self.cbProgressBar_13.setValue(round(self.SOC_SOHData[12]*0.1))
+            self.cbProgressBar_14.setValue(round(self.SOC_SOHData[13]*0.1))
+
         except:
             pass
 
@@ -765,10 +781,14 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                             'cellCB_13','cellCB_14',
 
                             'Date']
-
+                
+                outputDir = './Data'
                 outputDir_1 = './Data/Charging'
                 outputDir_2 = './Data/Discharging'
                 outputDir_3 = './Data/OpenCircuit'
+
+                if not os.path.exists(outputDir):
+                    os.mkdir(outputDir)
 
                 if not os.path.exists(outputDir_1):
                     os.mkdir(outputDir_1)
@@ -779,9 +799,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 if not os.path.exists(outputDir_3):
                     os.mkdir(outputDir_3)
 
-                if self.outputData[1][14] < 0: # Current smaller then 0
+                if self.outputData[1][14] < -80: # Current smaller then -80mA
                     fileName = outputDir_1 + "/" + str(timeInfo) + ".csv" # Address name
-                elif self.outputData[1][14] > 20:
+                elif self.outputData[1][14] > 80:
                     fileName = outputDir_2 + "/" + str(timeInfo) + ".csv" # Address name
                 else:
                     fileName = outputDir_3 + "/" + str(timeInfo) + ".csv" # Address name
