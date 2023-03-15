@@ -555,10 +555,3 @@ class setInitValueDialog(QDialog, Ui_InitValueDialog):
             event.ignore()
         else:
             self.reject()
-
-if __name__ == "__main__":
-    application = QApplication(sys.argv)
-    application.setStyle('QtCurve')
-    gui = setInitValueDialog()
-    gui.show()
-    sys.exit(application.exec())

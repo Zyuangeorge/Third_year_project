@@ -7,8 +7,10 @@ Features:
     Add more comments
 
 pipenv Install codes:
-1. Open the terminal under the file path
-2. Use these codes in the terminal
+1. Move all the files in one folder
+2. Change the import codes
+3. Open the terminal under the file path
+4. Use these codes in the terminal
 
     pipenv install --python 3.10
     pipenv shell
@@ -50,6 +52,9 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox,
                                QFileDialog, QHBoxLayout, QLabel, QMainWindow,
                                QMessageBox, QPushButton, QSizePolicy,
                                QSpacerItem, QTableWidgetItem, QVBoxLayout, QDialog)
+# Import style sheet
+import qdarkstyle
+# from qdarkstyle.light.palette import LightPalette # Light Style
 
 # Import util functions
 import util.util as util
@@ -77,6 +82,14 @@ class tempStatus(Enum):
     DEFAULT = "NORMAL"
     UNDERTEMPERATURE = "UNDERTEMPERATURE"
     OVERTEMPERATURE = "OVERTEMPERATURE"
+
+
+class systemStatus(Enum):
+    IDLE = 0
+    CHARGE = 1
+    DISCHARGE = 2
+    OPENCIRCUIT = 3
+    FAULT = 4
 
 
 class mainWindow(QMainWindow, Ui_MainWindow):
@@ -109,11 +122,18 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         # Output time interval
         # Set recordDoubleSpinBox value based on init value
         self.outputTimeInterval = 0
+        
+        # System status
+        self.systemStatus = systemStatus.IDLE.value;
+
+        # Battery type
+        self.batteryType = "Default"
 
         # Pack data
         self.packData = {'voltage': 0, 'current': 0,
                          'voltageStatus': voltageStatus.DEFAULT,
-                         'currentStatus': currentStatus.DEFAULT}
+                         'currentStatus': currentStatus.DEFAULT,
+                         'packVoltageDifference': 0}
 
         # IC data
         self.ICData = {'temp': 0,
@@ -330,6 +350,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Set record spin box based on init value dialog
         self.recordDoubleSpinBox.setValue(self.outputTimeInterval / 3600)
+
+        # Set battery type line edit text
+        self.batteryTypeLineEdit.setText(self.batteryType)
 
         # Init plot button
         plotButtonLayout = QHBoxLayout()
@@ -1253,7 +1276,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         """Handler for Plotly plotting"""
         try:
             
-            dischargingPlot = cellDataPlotting('.\Data\Discharging')
+            dischargingPlot = cellDataPlotting('./Data/Discharging')
             dischargingPlot.plotBatteryData()
 
             del dischargingPlot 
@@ -1262,7 +1285,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 self, 'Data error', 'No discharging data, please check folder')
         
         try:
-            chargingPlot = cellDataPlotting('.\Data\Charging')
+            chargingPlot = cellDataPlotting('./Data/Charging')
             chargingPlot.plotBatteryData()
         
             del chargingPlot
@@ -1270,7 +1293,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.critical(
                 self, 'Data error', 'No charging data, please check folder')
         try:
-            openCircuitPlot = cellDataPlotting('.\Data\OpenCircuit')
+            openCircuitPlot = cellDataPlotting('./Data/OpenCircuit')
             openCircuitPlot.plotBatteryData()
 
             del openCircuitPlot
@@ -1342,7 +1365,35 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 "background-color: rgb(255, 0, 0)")
         else:
             pass
-        
+
+        # Update system status data
+        if self.systemStatus == systemStatus.IDLE.value:
+            self.systemStatusPushButton.setStyleSheet(
+                "background-color: rgb(0, 0, 0)")
+            self.systemStatusPushButton.setText("IDLE")
+
+        elif self.systemStatus == systemStatus.CHARGE.value:
+            self.systemStatusPushButton.setStyleSheet(
+                "background-color: rgb(65, 105, 225)")
+            self.systemStatusPushButton.setText("CHARGE")
+
+        elif self.systemStatus == systemStatus.DISCHARGE.value:
+            self.systemStatusPushButton.setStyleSheet(
+                "background-color: rgb(0, 201, 87)")
+            self.systemStatusPushButton.setText("DISCHARGE")
+
+        elif self.systemStatus == systemStatus.OPENCIRCUIT.value:
+            self.systemStatusPushButton.setStyleSheet(
+                "background-color: rgb(192, 192, 192)")
+            self.systemStatusPushButton.setText("OPENCIRCUIT")
+
+        elif self.systemStatus == systemStatus.FAULT.value:
+            self.systemStatusPushButton.setStyleSheet(
+                "background-color: rgb(255, 0, 0)")
+            self.systemStatusPushButton.setText("FAULT")
+        else:
+            pass
+
         # Set EFC value
         self.efcLineEdit.setText(str(self.EFC_Data))
 
@@ -1354,6 +1405,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             self.packData['currentStatus'].value)
 
         self.ICStatusDisplay.setText(self.ICData['tempStatus'].value)
+
+        self.packVoltageDifferenceLineEdit.setText(str(self.packData['packVoltageDifference']))
 
 # ===================Cell balancing====================
     def startCellBalancing(self):
@@ -1479,6 +1532,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             else:
                 self.ICData['tempStatus'] = tempStatus.DEFAULT
 
+        # Update pack voltage difference
+        self.packData['packVoltageDifference'] = np.ptp(np.array(self.bccData[1:15])) / 1000 # Convert uV to mV
+        
     def receiveData(self):
         """Handler for receiving data"""
         bccRawData = []
@@ -1506,12 +1562,13 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             dataList = list(hex(data) for data in list(bccRawData))
 
             # Filter out incorrect inputs
-            if len(dataList) == 240:
+            if len(dataList) == 244:
                 data = util.listData2strData(dataList)
                 self.bccData = data[0:17]
                 self.SOC_SOHData = data[17:45]
                 self.EFC_Data = data[45]
                 self.CBData = data[46:60]
+                self.systemStatus = data[60]
 
                 self.updateData()
                 self.updateGUIData()
@@ -1536,8 +1593,10 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
 if __name__ == "__main__":
     application = QApplication(sys.argv)
-    application.setStyle('QtCurve')
-    
+
+    application.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyside6'))
+    #application.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyside6', palette=LightPalette())) # Light style
+
     initValueDialog = setInitValueDialog()
     result = initValueDialog.exec()
     
@@ -1549,6 +1608,7 @@ if __name__ == "__main__":
         gui.packVoltageThreshold = [i * 14 for i in gui.voltageThreshold]
         gui.openCircuitCurrentThreshold = int(initValueDialog.OpenCircuitCurrentThresholdLineEdit.text())
         gui.outputTimeInterval = int(initValueDialog.recordingTimeInitDoubleSpinBox.value() * 3600)
+        gui.batteryType = str(initValueDialog.initBatteryNameLineEdit.text())
         gui.init()
         gui.show()
         sys.exit(application.exec())

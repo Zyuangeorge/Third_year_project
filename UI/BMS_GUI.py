@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(742, 791)
+        MainWindow.resize(943, 791)
         font = QFont()
         font.setFamilies([u"Arial"])
         MainWindow.setFont(font)
@@ -390,6 +390,83 @@ class Ui_MainWindow(object):
         self.monitorGroupBox.setObjectName(u"monitorGroupBox")
         self.monitorGroupBoxLayout = QVBoxLayout(self.monitorGroupBox)
         self.monitorGroupBoxLayout.setObjectName(u"monitorGroupBoxLayout")
+        self.systemStatusGroupBox = QGroupBox(self.monitorGroupBox)
+        self.systemStatusGroupBox.setObjectName(u"systemStatusGroupBox")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.systemStatusGroupBox.sizePolicy().hasHeightForWidth())
+        self.systemStatusGroupBox.setSizePolicy(sizePolicy2)
+        self.verticalLayout_4 = QVBoxLayout(self.systemStatusGroupBox)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.systemStatusLayout = QHBoxLayout()
+        self.systemStatusLayout.setObjectName(u"systemStatusLayout")
+        self.systemStatusLabel = QLabel(self.systemStatusGroupBox)
+        self.systemStatusLabel.setObjectName(u"systemStatusLabel")
+
+        self.systemStatusLayout.addWidget(self.systemStatusLabel)
+
+        self.systemStatusPushButton = QPushButton(self.systemStatusGroupBox)
+        self.systemStatusPushButton.setObjectName(u"systemStatusPushButton")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.systemStatusPushButton.sizePolicy().hasHeightForWidth())
+        self.systemStatusPushButton.setSizePolicy(sizePolicy3)
+        self.systemStatusPushButton.setFocusPolicy(Qt.StrongFocus)
+
+        self.systemStatusLayout.addWidget(self.systemStatusPushButton)
+
+        self.horizontalSpacer_13 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.systemStatusLayout.addItem(self.horizontalSpacer_13)
+
+        self.SystemStatusLabel_3 = QLabel(self.systemStatusGroupBox)
+        self.SystemStatusLabel_3.setObjectName(u"SystemStatusLabel_3")
+
+        self.systemStatusLayout.addWidget(self.SystemStatusLabel_3)
+
+        self.batteryTypeLineEdit = QLineEdit(self.systemStatusGroupBox)
+        self.batteryTypeLineEdit.setObjectName(u"batteryTypeLineEdit")
+        sizePolicy4 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        sizePolicy4.setHorizontalStretch(0)
+        sizePolicy4.setVerticalStretch(0)
+        sizePolicy4.setHeightForWidth(self.batteryTypeLineEdit.sizePolicy().hasHeightForWidth())
+        self.batteryTypeLineEdit.setSizePolicy(sizePolicy4)
+        self.batteryTypeLineEdit.setFocusPolicy(Qt.StrongFocus)
+        self.batteryTypeLineEdit.setReadOnly(True)
+
+        self.systemStatusLayout.addWidget(self.batteryTypeLineEdit)
+
+        self.horizontalSpacer_14 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.systemStatusLayout.addItem(self.horizontalSpacer_14)
+
+        self.SystemStatusLabel_2 = QLabel(self.systemStatusGroupBox)
+        self.SystemStatusLabel_2.setObjectName(u"SystemStatusLabel_2")
+
+        self.systemStatusLayout.addWidget(self.SystemStatusLabel_2)
+
+        self.packVoltageDifferenceLineEdit = QLineEdit(self.systemStatusGroupBox)
+        self.packVoltageDifferenceLineEdit.setObjectName(u"packVoltageDifferenceLineEdit")
+        sizePolicy4.setHeightForWidth(self.packVoltageDifferenceLineEdit.sizePolicy().hasHeightForWidth())
+        self.packVoltageDifferenceLineEdit.setSizePolicy(sizePolicy4)
+        self.packVoltageDifferenceLineEdit.setFocusPolicy(Qt.StrongFocus)
+        self.packVoltageDifferenceLineEdit.setReadOnly(True)
+
+        self.systemStatusLayout.addWidget(self.packVoltageDifferenceLineEdit)
+
+        self.SystemStatusLabel_4 = QLabel(self.systemStatusGroupBox)
+        self.SystemStatusLabel_4.setObjectName(u"SystemStatusLabel_4")
+
+        self.systemStatusLayout.addWidget(self.SystemStatusLabel_4)
+
+
+        self.verticalLayout_4.addLayout(self.systemStatusLayout)
+
+
+        self.monitorGroupBoxLayout.addWidget(self.systemStatusGroupBox)
+
         self.monitorWindowTab = QTabWidget(self.monitorGroupBox)
         self.monitorWindowTab.setObjectName(u"monitorWindowTab")
         self.batteryData_1 = QWidget()
@@ -730,11 +807,8 @@ class Ui_MainWindow(object):
 
         self.packCurrentStatusDisplay = QLineEdit(self.statusGroupBox)
         self.packCurrentStatusDisplay.setObjectName(u"packCurrentStatusDisplay")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.packCurrentStatusDisplay.sizePolicy().hasHeightForWidth())
-        self.packCurrentStatusDisplay.setSizePolicy(sizePolicy2)
+        sizePolicy3.setHeightForWidth(self.packCurrentStatusDisplay.sizePolicy().hasHeightForWidth())
+        self.packCurrentStatusDisplay.setSizePolicy(sizePolicy3)
         self.packCurrentStatusDisplay.setMouseTracking(False)
         self.packCurrentStatusDisplay.setFocusPolicy(Qt.NoFocus)
         self.packCurrentStatusDisplay.setAcceptDrops(False)
@@ -1083,7 +1157,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 742, 20))
+        self.menubar.setGeometry(QRect(0, 0, 943, 20))
         self.menuSetting = QMenu(self.menubar)
         self.menuSetting.setObjectName(u"menuSetting")
         self.menuHelp = QMenu(self.menubar)
@@ -1178,6 +1252,14 @@ class Ui_MainWindow(object):
         self.currentMiniLabel.setText(QCoreApplication.translate("MainWindow", u"Minimum:", None))
         self.currentMaxLabel.setText(QCoreApplication.translate("MainWindow", u"Maximum:", None))
         self.monitorGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Monitoring", None))
+        self.systemStatusGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"System Status", None))
+        self.systemStatusLabel.setText(QCoreApplication.translate("MainWindow", u"System State:", None))
+        self.systemStatusPushButton.setText(QCoreApplication.translate("MainWindow", u"DEFAULT", None))
+        self.SystemStatusLabel_3.setText(QCoreApplication.translate("MainWindow", u"Battery Type:", None))
+        self.batteryTypeLineEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Default Type", None))
+        self.SystemStatusLabel_2.setText(QCoreApplication.translate("MainWindow", u"Pack Voltage Difference:", None))
+        self.packVoltageDifferenceLineEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"No Connection", None))
+        self.SystemStatusLabel_4.setText(QCoreApplication.translate("MainWindow", u"mV", None))
         ___qtablewidgetitem = self.voltageTable.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"Voltage", None));
         ___qtablewidgetitem1 = self.voltageTable.horizontalHeaderItem(1)
