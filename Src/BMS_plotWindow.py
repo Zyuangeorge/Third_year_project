@@ -538,7 +538,7 @@ class setInitValueDialog(QDialog, Ui_InitValueDialog):
         # Set up window logo and disable window size modification
         self.setWindowIcon(QIcon("./UI/sheffield_logo.png"))
         # use this when using pyinstaller to pack the program
-        # self.setWindowIcon(QIcon(util.get_resource_path("img/sheffield_logo.png")))
+        # self.setWindowIcon(QIcon(util.get_resource_path(self, "img/sheffield_logo.png")))
 
         self.initBatteryNameLineEdit.setText("Default battery type")
         self.recordingTimeInitDoubleSpinBox.lineEdit().setReadOnly(True)

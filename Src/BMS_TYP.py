@@ -60,19 +60,6 @@ from UI.BMS_GUI import Ui_MainWindow
 # Import Plotly file
 from Plotly_Src.cellDataPlot import cellDataPlotting
 
-""" 
-
-# Using these codes instead when using pyinstaller
-# Import util functions
-import util as util
-# Import graph window
-from BMS_plotWindow import loadGraphWindow, plotWindow, zoomWindow, SOCPlotWindow, SOHPlotWindow, CBPlotWindow
-# Import UI file
-from BMS_GUI import Ui_MainWindow
-# Import Plotly file
-from cellDataPlot import cellDataPlotting 
-
-"""
 
 class voltageStatus(Enum):
     DEFAULT = "NORMAL"
@@ -104,7 +91,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowIcon(QIcon("./UI/sheffield_logo.png"))
 
         # use this when using pyinstaller to pack the program
-        # self.setWindowIcon(QIcon(util.get_resource_path("img/sheffield_logo.png")))
+        # self.setWindowIcon(QIcon(util.get_resource_path(self, "img/sheffield_logo.png")))
 
         self.setMinimumWidth(1100)
 
