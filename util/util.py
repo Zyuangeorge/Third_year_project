@@ -25,3 +25,9 @@ def get_resource_path(self, relative_path):
     if hasattr(sys, '_MEIPASS'):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
+
+def app_path():
+    """Handler for freezing the path"""
+    if hasattr(sys,'frozen'):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(__file__)

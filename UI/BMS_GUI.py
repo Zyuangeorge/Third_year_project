@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(943, 791)
+        MainWindow.resize(967, 791)
         font = QFont()
         font.setFamilies([u"Arial"])
         MainWindow.setFont(font)
@@ -891,7 +891,10 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_3.addLayout(self.CellBalancingButtonLayout)
 
-        self.cbStackedWidget = QStackedWidget(self.CellBalancingGroupBox)
+
+        self.batteryData_6Layout.addWidget(self.CellBalancingGroupBox)
+
+        self.cbStackedWidget = QStackedWidget(self.batteryData_6)
         self.cbStackedWidget.setObjectName(u"cbStackedWidget")
         self.cbPage = QWidget()
         self.cbPage.setObjectName(u"cbPage")
@@ -1132,10 +1135,7 @@ class Ui_MainWindow(object):
 
         self.cbStackedWidget.addWidget(self.cbPage_2)
 
-        self.verticalLayout_3.addWidget(self.cbStackedWidget)
-
-
-        self.batteryData_6Layout.addWidget(self.CellBalancingGroupBox)
+        self.batteryData_6Layout.addWidget(self.cbStackedWidget)
 
         self.monitorWindowTab.addTab(self.batteryData_6, "")
 
@@ -1157,7 +1157,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 943, 20))
+        self.menubar.setGeometry(QRect(0, 0, 967, 20))
         self.menuSetting = QMenu(self.menubar)
         self.menuSetting.setObjectName(u"menuSetting")
         self.menuHelp = QMenu(self.menubar)

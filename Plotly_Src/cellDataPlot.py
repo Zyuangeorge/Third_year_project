@@ -16,7 +16,7 @@ class cellDataPlotting:
 
         dataList = []
 
-        fileList = [self.folder + '\\' + file for file in list(os.listdir(self.folder))]
+        fileList = [self.folder + '/' + file for file in list(os.listdir(self.folder))]
         fileList.sort()
 
         for fileName in fileList:

@@ -110,13 +110,17 @@ class loadGraphWindow(QDialog):
     """Window for zooming graphs"""
     def __init__(self):
         super().__init__()
-        self.setWindowIcon(QIcon("./UI/sheffield_logo.jpg"))
+        self.setWindowIcon(QIcon("./UI/sheffield_logo.png"))
+        # use this when using pyinstaller to pack the program
+        # self.setWindowIcon(QIcon(util.get_resource_path(self, "img/sheffield_logo.png")))
+
         self.plotTabWindow = plotWindow()
         self.plotTabWindow.removeItem(self.plotTabWindow.packVoltageP)
         self.plotTabWindow.removeItem(self.plotTabWindow.ICTempP)
 
         self.plotTabWindow_2 = SOCPlotWindow()
         self.plotTabWindow_3 = SOHPlotWindow()
+        self.plotTabWindow_4 = CBPlotWindow()
         
         # Reset x axis
         for curve in self.plotTabWindow.voltageCurves:
@@ -127,6 +131,9 @@ class loadGraphWindow(QDialog):
             curve.setLabel('bottom', "Time (s)")
         
         for curve in self.plotTabWindow_3.SoHCurves:
+            curve.setLabel('bottom', "Time (s)")
+
+        for curve in self.plotTabWindow_4.CBCurves:
             curve.setLabel('bottom', "Time (s)")
 
         self.tabWidget = QTabWidget()
@@ -240,23 +247,61 @@ class loadGraphWindow(QDialog):
         self.batteryData_3Layout.addLayout(graphPageLayout)
         self.batteryData_3Layout.addLayout(zoomLayout)
 
+    def initGraphPage_4(self):
+        # Init graph page layout
+        graphPageLayout = QVBoxLayout()
+        graphPageLayout.addWidget(self.plotTabWindow_4)
+
+        # Add zoom item combo box
+        self.zoomGraphComboBox_4 = QComboBox()
+        self.zoomGraphComboBox_4.addItem('Cell 1 CB Control')
+        self.zoomGraphComboBox_4.addItem('Cell 2 CB Control')
+        self.zoomGraphComboBox_4.addItem('Cell 3 CB Control')
+        self.zoomGraphComboBox_4.addItem('Cell 4 CB Control')
+        self.zoomGraphComboBox_4.addItem('Cell 5 CB Control')
+        self.zoomGraphComboBox_4.addItem('Cell 6 CB Control')
+        self.zoomGraphComboBox_4.addItem('Cell 7 CB Control')
+        self.zoomGraphComboBox_4.addItem('Cell 8 CB Control')
+        self.zoomGraphComboBox_4.addItem('Cell 9 CB Control')
+        self.zoomGraphComboBox_4.addItem('Cell 10 CB Control')
+        self.zoomGraphComboBox_4.addItem('Cell 11 CB Control')
+        self.zoomGraphComboBox_4.addItem('Cell 12 CB Control')
+        self.zoomGraphComboBox_4.addItem('Cell 13 CB Control')
+        self.zoomGraphComboBox_4.addItem('Cell 14 CB Control')
+
+        self.zoomButton_4 = QPushButton("Zoom Graph")
+        
+        zoomLayout = QHBoxLayout()
+        zoomLabel = QLabel("Choose to zoom")
+        zoomLayout.addWidget(zoomLabel)
+        zoomLayout.addWidget(self.zoomGraphComboBox_4)
+        zoomLayout.addWidget(self.zoomButton_4)
+
+        # Add graph panels
+        self.batteryData_4Layout.addLayout(graphPageLayout)
+        self.batteryData_4Layout.addLayout(zoomLayout)
+
     def initGraph(self):
         """Handler for initialisation graph window"""
         self.batteryData_1 = QWidget()
         self.batteryData_2 = QWidget()
         self.batteryData_3 = QWidget()
+        self.batteryData_4 = QWidget()
 
         self.batteryData_1Layout = QVBoxLayout(self.batteryData_1)
         self.batteryData_2Layout = QVBoxLayout(self.batteryData_2)
         self.batteryData_3Layout = QVBoxLayout(self.batteryData_3)
+        self.batteryData_4Layout = QVBoxLayout(self.batteryData_4)
 
         self.tabWidget.addTab(self.batteryData_1,"Battery Cell Information")
         self.tabWidget.addTab(self.batteryData_2,"State of Charge Graphs")
         self.tabWidget.addTab(self.batteryData_3,"State of Health Graphs")
+        self.tabWidget.addTab(self.batteryData_4,"CB Control Status Graphs")
 
         self.initGraphPage_1()
         self.initGraphPage_2()
         self.initGraphPage_3()
+        self.initGraphPage_4()
         self.setWindowTitle(self.title)
 
         layout = QVBoxLayout()
@@ -267,6 +312,7 @@ class loadGraphWindow(QDialog):
         self.zoomButton.clicked.connect(self.zoomGraph)
         self.zoomButton_2.clicked.connect(self.zoomGraph_2)
         self.zoomButton_3.clicked.connect(self.zoomGraph_3)
+        self.zoomButton_4.clicked.connect(self.zoomGraph_4)
     
     def loadGraphData(self, readFile):
         """Handler for loading curve data"""
@@ -284,6 +330,7 @@ class loadGraphWindow(QDialog):
             self.plotTabWindow.voltageCurves[j].plot(list(i / 1000000 for i in self.data[j])) # Set voltage data in order
             self.plotTabWindow_2.SoCCurves[j].plot(list(i / 10 for i in self.data[j+15]))
             self.plotTabWindow_3.SoHCurves[j].plot(list(i / 10 for i in self.data[j+29]))
+            self.plotTabWindow_4.CBCurves[j].plot(list(i / 10 for i in self.data[j+43]))
         self.plotTabWindow.packCurrentP.plot(list(i for i in self.data[14]))
 
     def zoomGraph(self):
@@ -397,7 +444,42 @@ class loadGraphWindow(QDialog):
         else:
             QMessageBox.critical(
                 self, 'Data error', 'No curve data, please restart plotting')
+            
+    def zoomGraph_4(self):
+            """Handler for zooming graph 4"""
+            zoomedGraph = self.zoomGraphComboBox_4.currentText()
+            zoomedGraphDict = {
+                'Cell 1 CB Control': 45,
+                'Cell 2 CB Control': 46,
+                'Cell 3 CB Control': 47,
+                'Cell 4 CB Control': 48,
+                'Cell 5 CB Control': 49,
+                'Cell 6 CB Control': 50,
+                'Cell 7 CB Control': 51,
+                'Cell 8 CB Control': 52,
+                'Cell 9 CB Control': 53,
+                'Cell 10 CB Control': 54,
+                'Cell 11 CB Control': 55,
+                'Cell 12 CB Control': 56,
+                'Cell 13 CB Control': 57,
+                'Cell 14 CB Control': 58,
+            }
 
+            if self.data.shape[0] > 2:
+                graphItemIndex = zoomedGraphDict.get(zoomedGraph)
+                
+                title = self.zoomGraphComboBox_4.currentText()
+                
+                yLabel = "On/Off"
+
+                graphWindow = zoomWindow() # Init zoom window
+                graphWindow.labels = [title, yLabel]
+                graphWindow.plot.plot(self.data[graphItemIndex]) # Plot Curve
+                graphWindow.updateGraph() # Update labels
+                graphWindow.exec()
+            else:
+                QMessageBox.critical(
+                    self, 'Data error', 'No curve data, please restart plotting')
 
 class SOCPlotWindow(pg.GraphicsLayoutWidget):
     """Window for plotting graphs"""
