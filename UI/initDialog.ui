@@ -274,43 +274,6 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="openCircuitCurrentLayout">
-        <item>
-         <widget class="QLabel" name="openCircuitCurrentThresholdLablel_2">
-          <property name="text">
-           <string>Open-circuit Current Threshold:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="OpenCircuitCurrentThresholdLineEdit">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="inputMethodHints">
-           <set>Qt::ImhDigitsOnly</set>
-          </property>
-          <property name="text">
-           <string>100</string>
-          </property>
-          <property name="placeholderText">
-           <string>Default value 100mA</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="openCircuitCurrentThresholdLablel">
-          <property name="text">
-           <string>mA</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
        <widget class="QPushButton" name="initValuePushButton">
         <property name="text">
          <string>Done</string>

@@ -190,32 +190,6 @@ class Ui_InitValueDialog(object):
 
         self.verticalLayout_2.addLayout(self.recordingTimeLayout)
 
-        self.openCircuitCurrentLayout = QHBoxLayout()
-        self.openCircuitCurrentLayout.setObjectName(u"openCircuitCurrentLayout")
-        self.openCircuitCurrentThresholdLablel_2 = QLabel(self.GUISettingGroupBox)
-        self.openCircuitCurrentThresholdLablel_2.setObjectName(u"openCircuitCurrentThresholdLablel_2")
-
-        self.openCircuitCurrentLayout.addWidget(self.openCircuitCurrentThresholdLablel_2)
-
-        self.OpenCircuitCurrentThresholdLineEdit = QLineEdit(self.GUISettingGroupBox)
-        self.OpenCircuitCurrentThresholdLineEdit.setObjectName(u"OpenCircuitCurrentThresholdLineEdit")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.OpenCircuitCurrentThresholdLineEdit.sizePolicy().hasHeightForWidth())
-        self.OpenCircuitCurrentThresholdLineEdit.setSizePolicy(sizePolicy2)
-        self.OpenCircuitCurrentThresholdLineEdit.setInputMethodHints(Qt.ImhDigitsOnly)
-
-        self.openCircuitCurrentLayout.addWidget(self.OpenCircuitCurrentThresholdLineEdit)
-
-        self.openCircuitCurrentThresholdLablel = QLabel(self.GUISettingGroupBox)
-        self.openCircuitCurrentThresholdLablel.setObjectName(u"openCircuitCurrentThresholdLablel")
-
-        self.openCircuitCurrentLayout.addWidget(self.openCircuitCurrentThresholdLablel)
-
-
-        self.verticalLayout_2.addLayout(self.openCircuitCurrentLayout)
-
         self.initValuePushButton = QPushButton(self.GUISettingGroupBox)
         self.initValuePushButton.setObjectName(u"initValuePushButton")
 
@@ -258,10 +232,6 @@ class Ui_InitValueDialog(object):
         self.GUISettingGroupBox.setTitle(QCoreApplication.translate("InitValueDialog", u"GUI Settings", None))
         self.recordingTimeInitlabel_2.setText(QCoreApplication.translate("InitValueDialog", u"Recording Time Interval:", None))
         self.recordingTimeInitlabel.setText(QCoreApplication.translate("InitValueDialog", u"Hour (s)", None))
-        self.openCircuitCurrentThresholdLablel_2.setText(QCoreApplication.translate("InitValueDialog", u"Open-circuit Current Threshold:", None))
-        self.OpenCircuitCurrentThresholdLineEdit.setText(QCoreApplication.translate("InitValueDialog", u"100", None))
-        self.OpenCircuitCurrentThresholdLineEdit.setPlaceholderText(QCoreApplication.translate("InitValueDialog", u"Default value 100mA", None))
-        self.openCircuitCurrentThresholdLablel.setText(QCoreApplication.translate("InitValueDialog", u"mA", None))
         self.initValuePushButton.setText(QCoreApplication.translate("InitValueDialog", u"Done", None))
     # retranslateUi
 

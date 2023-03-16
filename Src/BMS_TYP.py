@@ -119,7 +119,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.packVoltageThreshold = []
         
         # Open circuit current threshold used for determine system condition
-        self.openCircuitCurrentThreshold = 0
+        # self.openCircuitCurrentThreshold = 0
 
         # Output time interval
         # Set recordDoubleSpinBox value based on init value
@@ -1604,7 +1604,6 @@ if __name__ == "__main__":
         gui.voltageThreshold = [int(initValueDialog.initVoltageMiniLineEdit.text()), int(initValueDialog.initVoltageMaxLineEdit.text())]
         gui.tempThreshold = [int(initValueDialog.initTempMiniLineEdit.text()), int(initValueDialog.initTempMaxLineEdit.text())]
         gui.packVoltageThreshold = [i * 14 for i in gui.voltageThreshold]
-        gui.openCircuitCurrentThreshold = int(initValueDialog.OpenCircuitCurrentThresholdLineEdit.text())
         gui.outputTimeInterval = int(initValueDialog.recordingTimeInitDoubleSpinBox.value() * 3600)
         gui.batteryType = initValueDialog.getBatteryType()
         gui.init()
