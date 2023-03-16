@@ -1,5 +1,5 @@
 """
-BMS GUI Version 1.2.1
+BMS GUI Version 1.2.2
 Features:
     Add output CB control data
     Add init dialog
@@ -20,7 +20,8 @@ pipenv Install codes:
     pipenv install pyserial
     pipenv install pyside6
     pipenv install pyqtgraph
-    pipenv install plotly
+    pipenv install qdarkstyle
+    # pipenv install plotly (Function removed, don't need this)
     pyinstaller --add-data="sheffield_logo.png;img" -w -i guiLogo.ico --distpath Release/ --clean BMS_TYP.py
     pipenv --rm
 
@@ -63,7 +64,8 @@ from BMS_plotWindow import loadGraphWindow, plotWindow, zoomWindow, SOCPlotWindo
 # Import UI file
 from UI.BMS_GUI import Ui_MainWindow
 # Import Plotly file
-from Plotly_Src.cellDataPlot import cellDataPlotting
+# Function removed
+# from Plotly_Src.cellDataPlot import cellDataPlotting
 
 
 class voltageStatus(Enum):
@@ -375,8 +377,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         self.stopRecordButton.setChecked(True)
         
         # Add Plotly button
-        self.plotlyButton = QPushButton("Plot by Plotly")
-        self.verticalLayout_2.addWidget(self.plotlyButton)
+        # Not work for win32, function removed
+        #self.plotlyButton = QPushButton("Plot by Plotly")
+        #self.verticalLayout_2.addWidget(self.plotlyButton)
 
         # Set QLineEdit restrictions
         self.voltageMaxLineEdit.setValidator(QIntValidator(0,5000))
@@ -494,7 +497,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Connect load button function
         self.loadingButton.clicked.connect(self.openFile)
-        self.plotlyButton.clicked.connect(self.plotByPlotly)
+        # self.plotlyButton.clicked.connect(self.plotByPlotly) # Not work, function removed
 
         # Connect stack widgets functions
         self.cbPushButtonSoC.clicked.connect(lambda: self.cbStackedWidget.setCurrentIndex(0))
@@ -835,12 +838,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
                             'Date']
                 
-                outputDir = '.\\Data'
-                outputDir_1 = outputDir + '\\' + self.batteryType
+                outputDir_1 = '.\\Data' + '\\' + self.batteryType
                 outputDir_2 = outputDir_1 + '\\' + currentTime.toString('dd-MM-yyyy')
-
-                if not os.path.exists(outputDir):
-                    os.mkdir(outputDir)
 
                 if not os.path.exists(outputDir_1):
                     os.mkdir(outputDir_1)
@@ -1266,8 +1265,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         except:
             pass
     
-    def plotByPlotly(self):
-        """ Handler for Plotly plotting """
+    """ def plotByPlotly(self):
+        Handler for Plotly plotting
+        Not working for win32, this function is removed
         try:
             
             dischargingPlot = cellDataPlotting('./Data/Discharging')
@@ -1295,7 +1295,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.critical(
                 self, 'Data error', 'No open circuit data, please check folder')
         
-        gc.collect()
+        gc.collect() """
 
 # ===================Status display====================
 
@@ -1606,7 +1606,7 @@ if __name__ == "__main__":
         gui.packVoltageThreshold = [i * 14 for i in gui.voltageThreshold]
         gui.openCircuitCurrentThreshold = int(initValueDialog.OpenCircuitCurrentThresholdLineEdit.text())
         gui.outputTimeInterval = int(initValueDialog.recordingTimeInitDoubleSpinBox.value() * 3600)
-        gui.batteryType = str(initValueDialog.initBatteryNameLineEdit.text())
+        gui.batteryType = initValueDialog.getBatteryType()
         gui.init()
         gui.show()
         sys.exit(application.exec())

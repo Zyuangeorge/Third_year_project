@@ -6,6 +6,7 @@ from PySide6.QtGui import QIcon
 
 # Expend file path
 import sys
+import os
 sys.path.append('.')
 
 # Import 
@@ -622,9 +623,35 @@ class setInitValueDialog(QDialog, Ui_InitValueDialog):
         # use this when using pyinstaller to pack the program
         # self.setWindowIcon(QIcon(util.get_resource_path(self, "img/sheffield_logo.png")))
 
-        self.initBatteryNameLineEdit.setText("Default battery type")
+        self.batteryType = 'Default battery type'
+
         self.recordingTimeInitDoubleSpinBox.lineEdit().setReadOnly(True)
         self.initValuePushButton.clicked.connect(self.accept)
+        self.detectBatteryType()
+
+    def detectBatteryType(self):
+        """Handler for detecting the battery types"""
+
+        self.initBatteryNameComboBox.clear()
+
+        if not os.path.exists('.\\Data'):
+            os.mkdir('.\\Data')
+
+        batteryTypes = list(os.listdir('.\\Data'))
+
+        if len(batteryTypes) == 0:
+            self.initBatteryNameComboBox.addItem("Default battery type")
+        else:
+            for type in batteryTypes:
+                self.initBatteryNameComboBox.addItem(type)
+
+    def getBatteryType(self):
+        """Handler for getting the battery type"""
+        type = self.initBatteryNameLineEdit.text()
+        if type == '':
+            return self.initBatteryNameComboBox.currentText()
+        else:
+            return self.initBatteryNameLineEdit.text()
 
     def closeEvent(self, event):
         """Handler for closing the GUI"""

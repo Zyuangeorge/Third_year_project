@@ -15,16 +15,17 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDialog, QDoubleSpinBox, QGridLayout,
-    QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-    QPushButton, QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QDoubleSpinBox,
+    QGridLayout, QGroupBox, QHBoxLayout, QLabel,
+    QLineEdit, QPushButton, QSizePolicy, QVBoxLayout,
+    QWidget)
 
 class Ui_InitValueDialog(object):
     def setupUi(self, InitValueDialog):
         if not InitValueDialog.objectName():
             InitValueDialog.setObjectName(u"InitValueDialog")
-        InitValueDialog.resize(369, 424)
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        InitValueDialog.resize(291, 444)
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(InitValueDialog.sizePolicy().hasHeightForWidth())
@@ -53,6 +54,16 @@ class Ui_InitValueDialog(object):
         self.initBatteryNameLineEdit.setObjectName(u"initBatteryNameLineEdit")
 
         self.verticalLayout_3.addWidget(self.initBatteryNameLineEdit)
+
+        self.label = QLabel(self.thresholdGroupBox)
+        self.label.setObjectName(u"label")
+
+        self.verticalLayout_3.addWidget(self.label)
+
+        self.initBatteryNameComboBox = QComboBox(self.thresholdGroupBox)
+        self.initBatteryNameComboBox.setObjectName(u"initBatteryNameComboBox")
+
+        self.verticalLayout_3.addWidget(self.initBatteryNameComboBox)
 
         self.initCurrentThresholdLayout = QGridLayout()
         self.initCurrentThresholdLayout.setObjectName(u"initCurrentThresholdLayout")
@@ -222,8 +233,10 @@ class Ui_InitValueDialog(object):
     def retranslateUi(self, InitValueDialog):
         InitValueDialog.setWindowTitle(QCoreApplication.translate("InitValueDialog", u"Initial Value Setting", None))
         self.thresholdGroupBox.setTitle(QCoreApplication.translate("InitValueDialog", u"Battery Specifications", None))
-        self.initBatteryNameLabel.setText(QCoreApplication.translate("InitValueDialog", u"Battery Name:", None))
-        self.initBatteryNameLineEdit.setPlaceholderText(QCoreApplication.translate("InitValueDialog", u"Add battery name", None))
+        self.initBatteryNameLabel.setText(QCoreApplication.translate("InitValueDialog", u"Add battery type:", None))
+        self.initBatteryNameLineEdit.setPlaceholderText(QCoreApplication.translate("InitValueDialog", u"Add battery type", None))
+        self.label.setText(QCoreApplication.translate("InitValueDialog", u"Or choose an existing name:", None))
+        self.initBatteryNameComboBox.setPlaceholderText("")
         self.initCurrentMaxLabel.setText(QCoreApplication.translate("InitValueDialog", u"Maximum:", None))
         self.initCurrentThresholdLabel.setText(QCoreApplication.translate("InitValueDialog", u"Pack Current threshold (mA):", None))
         self.initCurrentMaxLineEdit.setText(QCoreApplication.translate("InitValueDialog", u"1500", None))
