@@ -796,7 +796,8 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         if self.serial.isOpen():
             # Set time information
-            timeInfo = QDateTime.currentDateTime().toSecsSinceEpoch()
+            currentTime = QDateTime.currentDateTime()
+            timeInfo = currentTime.toSecsSinceEpoch()
 
             # Add realtime data
             realTimeData[0:14] = self.bccData[1:15] # Cell Voltage Data
@@ -834,10 +835,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
                             'Date']
                 
-                outputDir = './Data'
-                outputDir_1 = './Data/Charging'
-                outputDir_2 = './Data/Discharging'
-                outputDir_3 = './Data/OpenCircuit'
+                outputDir = '.\\Data'
+                outputDir_1 = outputDir + '\\' + self.batteryType
+                outputDir_2 = outputDir_1 + '\\' + currentTime.toString('dd-MM-yyyy')
 
                 if not os.path.exists(outputDir):
                     os.mkdir(outputDir)
@@ -848,15 +848,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 if not os.path.exists(outputDir_2):
                     os.mkdir(outputDir_2)
 
-                if not os.path.exists(outputDir_3):
-                    os.mkdir(outputDir_3)
-
-                if self.outputData[1][14] < -self.openCircuitCurrentThreshold: # Current smaller then -100mA
-                    fileName = outputDir_1 + "/" + str(timeInfo) + ".csv" # Address name
-                elif self.outputData[1][14] > self.openCircuitCurrentThreshold:
-                    fileName = outputDir_2 + "/" + str(timeInfo) + ".csv" # Address name
-                else:
-                    fileName = outputDir_3 + "/" + str(timeInfo) + ".csv" # Address name
+                fileName = outputDir_2 + "\\" + str(timeInfo) + ".csv" # Address name
 
                 self.outputData = np.delete(self.outputData, 0, axis = 0) # Remove first line
 
@@ -1275,7 +1267,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             pass
     
     def plotByPlotly(self):
-        """Handler for Plotly plotting"""
+        """ Handler for Plotly plotting """
         try:
             
             dischargingPlot = cellDataPlotting('./Data/Discharging')
@@ -1589,8 +1581,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         if msg == QMessageBox.Yes:
             # Send stop balancing command before close the GUI
             if self.serial.isOpen():
-                self.command = b'OVER\t'
-                self.serial.write(self.command)
+                self.stopMonitor()
                 
             event.accept()
         else:
