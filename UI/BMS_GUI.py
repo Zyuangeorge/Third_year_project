@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(967, 791)
+        MainWindow.resize(1193, 791)
         font = QFont()
         font.setFamilies([u"Arial"])
         MainWindow.setFont(font)
@@ -428,11 +428,8 @@ class Ui_MainWindow(object):
 
         self.batteryTypeLineEdit = QLineEdit(self.systemStatusGroupBox)
         self.batteryTypeLineEdit.setObjectName(u"batteryTypeLineEdit")
-        sizePolicy4 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
-        sizePolicy4.setHorizontalStretch(0)
-        sizePolicy4.setVerticalStretch(0)
-        sizePolicy4.setHeightForWidth(self.batteryTypeLineEdit.sizePolicy().hasHeightForWidth())
-        self.batteryTypeLineEdit.setSizePolicy(sizePolicy4)
+        sizePolicy3.setHeightForWidth(self.batteryTypeLineEdit.sizePolicy().hasHeightForWidth())
+        self.batteryTypeLineEdit.setSizePolicy(sizePolicy3)
         self.batteryTypeLineEdit.setFocusPolicy(Qt.StrongFocus)
         self.batteryTypeLineEdit.setReadOnly(True)
 
@@ -444,13 +441,15 @@ class Ui_MainWindow(object):
 
         self.SystemStatusLabel_2 = QLabel(self.systemStatusGroupBox)
         self.SystemStatusLabel_2.setObjectName(u"SystemStatusLabel_2")
+        sizePolicy2.setHeightForWidth(self.SystemStatusLabel_2.sizePolicy().hasHeightForWidth())
+        self.SystemStatusLabel_2.setSizePolicy(sizePolicy2)
 
         self.systemStatusLayout.addWidget(self.SystemStatusLabel_2)
 
         self.packVoltageDifferenceLineEdit = QLineEdit(self.systemStatusGroupBox)
         self.packVoltageDifferenceLineEdit.setObjectName(u"packVoltageDifferenceLineEdit")
-        sizePolicy4.setHeightForWidth(self.packVoltageDifferenceLineEdit.sizePolicy().hasHeightForWidth())
-        self.packVoltageDifferenceLineEdit.setSizePolicy(sizePolicy4)
+        sizePolicy3.setHeightForWidth(self.packVoltageDifferenceLineEdit.sizePolicy().hasHeightForWidth())
+        self.packVoltageDifferenceLineEdit.setSizePolicy(sizePolicy3)
         self.packVoltageDifferenceLineEdit.setFocusPolicy(Qt.StrongFocus)
         self.packVoltageDifferenceLineEdit.setReadOnly(True)
 
@@ -460,6 +459,27 @@ class Ui_MainWindow(object):
         self.SystemStatusLabel_4.setObjectName(u"SystemStatusLabel_4")
 
         self.systemStatusLayout.addWidget(self.SystemStatusLabel_4)
+
+        self.horizontalSpacer_15 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.systemStatusLayout.addItem(self.horizontalSpacer_15)
+
+        self.SystemStatusLabel_5 = QLabel(self.systemStatusGroupBox)
+        self.SystemStatusLabel_5.setObjectName(u"SystemStatusLabel_5")
+
+        self.systemStatusLayout.addWidget(self.SystemStatusLabel_5)
+
+        self.cbThresholdLineEdit = QLineEdit(self.systemStatusGroupBox)
+        self.cbThresholdLineEdit.setObjectName(u"cbThresholdLineEdit")
+        sizePolicy3.setHeightForWidth(self.cbThresholdLineEdit.sizePolicy().hasHeightForWidth())
+        self.cbThresholdLineEdit.setSizePolicy(sizePolicy3)
+
+        self.systemStatusLayout.addWidget(self.cbThresholdLineEdit)
+
+        self.SystemStatusLabel_46 = QLabel(self.systemStatusGroupBox)
+        self.SystemStatusLabel_46.setObjectName(u"SystemStatusLabel_46")
+
+        self.systemStatusLayout.addWidget(self.SystemStatusLabel_46)
 
 
         self.verticalLayout_4.addLayout(self.systemStatusLayout)
@@ -1157,7 +1177,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 967, 20))
+        self.menubar.setGeometry(QRect(0, 0, 1193, 20))
         self.menuSetting = QMenu(self.menubar)
         self.menuSetting.setObjectName(u"menuSetting")
         self.menuHelp = QMenu(self.menubar)
@@ -1260,6 +1280,9 @@ class Ui_MainWindow(object):
         self.SystemStatusLabel_2.setText(QCoreApplication.translate("MainWindow", u"Pack Voltage Difference:", None))
         self.packVoltageDifferenceLineEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"No Connection", None))
         self.SystemStatusLabel_4.setText(QCoreApplication.translate("MainWindow", u"mV", None))
+        self.SystemStatusLabel_5.setText(QCoreApplication.translate("MainWindow", u"Cell Balancing Threshold:", None))
+        self.cbThresholdLineEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"No Connection", None))
+        self.SystemStatusLabel_46.setText(QCoreApplication.translate("MainWindow", u"mV", None))
         ___qtablewidgetitem = self.voltageTable.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"Voltage", None));
         ___qtablewidgetitem1 = self.voltageTable.horizontalHeaderItem(1)

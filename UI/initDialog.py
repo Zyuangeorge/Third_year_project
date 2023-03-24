@@ -17,8 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QDoubleSpinBox,
     QGridLayout, QGroupBox, QHBoxLayout, QLabel,
-    QLineEdit, QPushButton, QSizePolicy, QVBoxLayout,
-    QWidget)
+    QLineEdit, QPushButton, QSizePolicy, QSpinBox,
+    QVBoxLayout, QWidget)
 
 class Ui_InitValueDialog(object):
     def setupUi(self, InitValueDialog):
@@ -190,6 +190,23 @@ class Ui_InitValueDialog(object):
 
         self.verticalLayout_2.addLayout(self.recordingTimeLayout)
 
+        self.guiSettingLayout = QHBoxLayout()
+        self.guiSettingLayout.setObjectName(u"guiSettingLayout")
+        self.cbThresholdLabel = QLabel(self.GUISettingGroupBox)
+        self.cbThresholdLabel.setObjectName(u"cbThresholdLabel")
+
+        self.guiSettingLayout.addWidget(self.cbThresholdLabel)
+
+        self.cbThresholdSpinBox = QSpinBox(self.GUISettingGroupBox)
+        self.cbThresholdSpinBox.setObjectName(u"cbThresholdSpinBox")
+        self.cbThresholdSpinBox.setMaximum(2000)
+        self.cbThresholdSpinBox.setValue(5)
+
+        self.guiSettingLayout.addWidget(self.cbThresholdSpinBox)
+
+
+        self.verticalLayout_2.addLayout(self.guiSettingLayout)
+
         self.initValuePushButton = QPushButton(self.GUISettingGroupBox)
         self.initValuePushButton.setObjectName(u"initValuePushButton")
 
@@ -232,6 +249,7 @@ class Ui_InitValueDialog(object):
         self.GUISettingGroupBox.setTitle(QCoreApplication.translate("InitValueDialog", u"GUI Settings", None))
         self.recordingTimeInitlabel_2.setText(QCoreApplication.translate("InitValueDialog", u"Recording Time Interval:", None))
         self.recordingTimeInitlabel.setText(QCoreApplication.translate("InitValueDialog", u"Hour (s)", None))
+        self.cbThresholdLabel.setText(QCoreApplication.translate("InitValueDialog", u"Cell Balancing Threshold (mV):", None))
         self.initValuePushButton.setText(QCoreApplication.translate("InitValueDialog", u"Done", None))
     # retranslateUi
 

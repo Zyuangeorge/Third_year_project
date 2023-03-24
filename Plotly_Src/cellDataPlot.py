@@ -2,6 +2,7 @@ import os
 import sys
 
 import plotly.graph_objects as go
+import plotly.express as px
 from plotly.subplots import make_subplots
 import pandas as pd
 
@@ -80,3 +81,9 @@ class cellDataPlotting:
         )
 
         fig.show()
+
+if __name__ == "__main__":
+    folder = 'Data\\Cyclon_2.5Ah_LeadAcid\\22-03-2023'
+    folder2 = 'Data\\Cyclon_2.5Ah_LeadAcid\\21-03-2023'
+    cellDataPlotting(folder).plotBatteryData()
+    cellDataPlotting(folder2).plotBatteryData()

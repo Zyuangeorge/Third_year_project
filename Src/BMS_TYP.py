@@ -94,6 +94,11 @@ class systemStatus(Enum):
     FAULT = 4
 
 
+class balancingStatus(Enum):
+    OFF = 0
+    ON = 1
+
+
 class mainWindow(QMainWindow, Ui_MainWindow):
     """Main window widget for BMS GUI"""
     def __init__(self):
@@ -127,6 +132,12 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         
         # System status
         self.systemStatus = systemStatus.IDLE.value;
+
+        # Cell balancing status flag
+        self.cbStatus = 0
+
+        # Cell balancing threshold
+        self.cbThreshold = 9
 
         # Battery type
         self.batteryType = "Default"
@@ -1408,10 +1419,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         if self.serial.isOpen():
             self.command = b'OPEN\t'
             self.serial.write(self.command)
-            
+
             self.StartBalancingButton.setEnabled(False)
             self.StopBalancingButton.setEnabled(True)
-            self.CellBalancingStatusDisplay.setChecked(True)
         else:
             QMessageBox.critical(
                 self, 'COM error', 'COM data error, please reconnect the port')
@@ -1424,7 +1434,6 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
             self.StartBalancingButton.setEnabled(True)
             self.StopBalancingButton.setEnabled(False)
-            self.CellBalancingStatusDisplay.setChecked(False)
         else:
             QMessageBox.critical(
                 self, 'COM error', 'COM data error, please reconnect the port')
@@ -1528,7 +1537,17 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Update pack voltage difference
         self.packData['packVoltageDifference'] = np.ptp(np.array(self.bccData[1:15])) / 1000 # Convert uV to mV
+
+        # Close the cb if the voltage difference is less than threshold
+        if self.packData['packVoltageDifference'] <= self.cbThreshold:
+            self.stopCellBalancing()
         
+        # Update cell balancing status
+        if self.cbStatus == balancingStatus.ON.value:
+            self.CellBalancingStatusDisplay.setChecked(True)
+        else:
+            self.CellBalancingStatusDisplay.setChecked(False)
+
     def receiveData(self):
         """Handler for receiving data"""
         bccRawData = []
@@ -1556,16 +1575,21 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             dataList = list(hex(data) for data in list(bccRawData))
 
             # Filter out incorrect inputs
-            if len(dataList) == 244:
+            if len(dataList) == 248:
                 data = util.listData2strData(dataList)
-                self.bccData = data[0:17]
-                self.SOC_SOHData = data[17:45]
-                self.EFC_Data = data[45]
-                self.CBData = data[46:60]
-                self.systemStatus = data[60]
 
-                self.updateData()
-                self.updateGUIData()
+                if data[46] > 2: # 46 is the cb control of cell 1, if it is larger than 2, it is incorrect
+                    self.serial.reset_input_buffer()
+                else:
+                    self.bccData = data[0:17]
+                    self.SOC_SOHData = data[17:45]
+                    self.EFC_Data = data[45]
+                    self.CBData = data[46:60]
+                    self.systemStatus = data[60]
+                    self.cbStatus = data[61]
+
+                    self.updateData()
+                    self.updateGUIData()
             else:
                 pass
         else:
@@ -1605,6 +1629,8 @@ if __name__ == "__main__":
         gui.tempThreshold = [int(initValueDialog.initTempMiniLineEdit.text()), int(initValueDialog.initTempMaxLineEdit.text())]
         gui.packVoltageThreshold = [i * 14 for i in gui.voltageThreshold]
         gui.outputTimeInterval = int(initValueDialog.recordingTimeInitDoubleSpinBox.value() * 3600)
+        gui.cbThreshold = int(initValueDialog.cbThresholdSpinBox.value())
+        gui.cbThresholdLineEdit.setText(str(initValueDialog.cbThresholdSpinBox.value()))
         gui.batteryType = initValueDialog.getBatteryType()
         gui.init()
         gui.show()
