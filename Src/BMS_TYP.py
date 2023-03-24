@@ -1,5 +1,5 @@
 """
-BMS GUI Version 1.2.2
+BMS GUI Version 1.2.3
 Features:
     Add output CB control data
     Add init dialog
