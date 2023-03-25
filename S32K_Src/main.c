@@ -510,9 +510,9 @@ void fillOcvTable(const ocv_config_t* const ocvConfig)
         term_3 = ocvConfig->coefficient_2nd * (soc * 0.1) * (soc * 0.1);
         term_4 = ocvConfig->coefficient_1st * (soc * 0.1);
 
-        sum = (term_1 + term_2 + term_3 + term_4 + ocvConfig->constant) * 1000000;
+        sum = term_1 + term_2 + term_3 + term_4 + ocvConfig->constant;
 
-        g_ocvTable[i] = (uint32_t)round(sum); // Round the result of the function so that all the value will be integer
+        g_ocvTable[i] = (uint32_t)round(sum * 1000000); // Round the result of the function so that all the value will be integer
 
         i++;
     }
@@ -532,11 +532,13 @@ static void getSOCResult(uint32_t cellVoltage, int16_t *soc)
     if (g_ocvTable[OCV_TABLE_SIZE - 1] <= cellVoltage)
     {
         *soc = OCV_TABLE_SIZE - 1;
+        return;
     }
 
     if (g_ocvTable[0] >= cellVoltage)
     {
         *soc = 0;
+        return;
     }
 
     /* Search for an element that is close to the input voltage */
@@ -1005,7 +1007,7 @@ static void DischargeHandler(void)
     int16_t flag;
 
     for (i = 0; i < BATTERY_NUMBER; i++){
-        if (cellData[i + 1] <= (MC33771C_TH_ALL_CT_UV_TH + 150) * 1000){ // 150mV margin
+        if (cellData[i + 1] <= (MC33771C_TH_ALL_CT_UV_TH + 10) * 1000){ // 10mV margin
             AhData.SOH[i] = AhData.DOD_c[i]; // DoD is equal to the maximum releasable capacity
             AhData.SOC_c[i] = 0; // When the cell is fully discharged, the SoC is 0, DoD is not 0
             flag = 1;
@@ -1031,7 +1033,7 @@ static void ChargeHandler(void)
     int16_t flag;
 
     for (i = 0; i < BATTERY_NUMBER; i++){
-        if ((cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 100) * 1000) && (-isenseVolt <= (ISENSETHRESHOLD + 50))){ // At the end of CV process (10mV and 50uV margin)
+        if ((cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 10) * 1000) && (-isenseVolt <= (ISENSETHRESHOLD + 50))){ // At the end of CV process (10mV and 50uV margin)
             AhData.SOH[i] = AhData.SOC_c[i] - AhData.DOD_c[i]; // Calibrate SOH for each cell
             AhData.SOC_c[i] = AhData.SOH[i]; // SoC equals to SoH
             AhData.DOD_c[i] = 0; // When the battery is fully charged, the DoD is 0
