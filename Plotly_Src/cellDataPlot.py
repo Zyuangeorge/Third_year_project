@@ -3,7 +3,6 @@ import sys
 
 import plotly.graph_objects as go
 import numpy as np
-import plotly.express as px
 from plotly.subplots import make_subplots
 import pandas as pd
 
@@ -40,16 +39,14 @@ class cellDataPlotting:
             batteryData['cellSoH_' + str(batteryNumber + 1)] = batteryData['cellSoH_' + str(
                 batteryNumber + 1)].map(lambda x: x / 10)
 
-        batteryData = batteryData[0:5300] # [0:5300] is for cell balancing data
-
         return batteryData
 
     def plotBatteryData(self):
         """Plot multiple battery data"""
         batteryData = self.prepareDataSet()
+        batteryData = batteryData[7216:11216] # [0:5300] is for cell balancing data
 
-        fig = make_subplots(rows=2, cols=2, subplot_titles=(
-            "Pack Current", 'Cell Voltage', 'Cell SoC', 'Cell SoH', 'Cell CB Control'))
+        fig = make_subplots(rows=2, cols=2)
 
         fig.add_trace(go.Scatter(x=batteryData['Time(s)'], y=batteryData['packCurrent'],
                                  mode='lines',
@@ -75,10 +72,7 @@ class cellDataPlotting:
         fig = self.changeStyle(fig, 'Time(s)', "Current (mA)", False)
 
         # Update xaxis properties
-        fig.update_xaxes(title_text="Time(s)", row=1, col=1)
-        fig.update_xaxes(title_text="Time(s)", row=1, col=2)
-        fig.update_xaxes(title_text="Time(s)", row=2, col=1)
-        fig.update_xaxes(title_text="Time(s)", row=2, col=2)
+        fig.update_xaxes(title_text="Time(s)")
 
         # Update yaxis properties
         fig.update_yaxes(title_text="Current (mA)", row=1, col=1)
@@ -86,15 +80,29 @@ class cellDataPlotting:
         fig.update_yaxes(title_text="SoC (%)", row=2, col=1)
         fig.update_yaxes(title_text="SoH (%)", row=2, col=2)
 
-        fig.update_layout(
-            hovermode='x',
-        )
+        newnames = {
+                    'packCurrent': 'Current',
+                    'cellVoltage_1': 'Cell 1 Voltage', 'cellVoltage_2': 'Cell 2 Voltage', 'cellVoltage_3': 'Cell 3 Voltage', 'cellVoltage_4': 'Cell 4 Voltage', 'cellVoltage_5': 'Cell 5 Voltage',
+                    'cellVoltage_6': 'Cell 6 Voltage', 'cellVoltage_7': 'Cell 7 Voltage', 'cellVoltage_8': 'Cell 8 Voltage', 'cellVoltage_9': 'Cell 9 Voltage', 'cellVoltage_10': 'Cell 10 Voltage',
+                    'cellVoltage_11': 'Cell 11 Voltage', 'cellVoltage_12': 'Cell 12 Voltage', 'cellVoltage_13': 'Cell 13 Voltage', 'cellVoltage_14': 'Cell 14 Voltage',
+
+                    'cellSoC_1': 'Cell 1 SoC', 'cellSoC_2': 'Cell 2 SoC', 'cellSoC_3': 'Cell 3 SoC', 'cellSoC_4': 'Cell 4 SoC', 'cellSoC_5': 'Cell 5 SoC',
+                    'cellSoC_6': 'Cell 6 SoC', 'cellSoC_7': 'Cell 7 SoC', 'cellSoC_8': 'Cell 8 SoC', 'cellSoC_9': 'Cell 9 SoC', 'cellSoC_10': 'Cell 10 SoC',
+                    'cellSoC_11': 'Cell 11 SoC', 'cellSoC_12': 'Cell 12 SoC', 'cellSoC_13': 'Cell 13 SoC', 'cellSoC_14': 'Cell 14 SoC',
+
+                    'cellSoH_1': 'Cell 1 SoH', 'cellSoH_2': 'Cell 2 SoH', 'cellSoH_3': 'Cell 3 SoH', 'cellSoH_4': 'Cell 4 SoH', 'cellSoH_5': 'Cell 5 SoH',
+                    'cellSoH_6': 'Cell 6 SoH', 'cellSoH_7': 'Cell 7 SoH', 'cellSoH_8': 'Cell 8 SoH', 'cellSoH_9': 'Cell 9 SoH', 'cellSoH_10': 'Cell 10 SoH',
+                    'cellSoH_11': 'Cell 11 SoH', 'cellSoH_12': 'Cell 12 SoH', 'cellSoH_13': 'Cell 13 SoH', 'cellSoH_14': 'Cell 14 SoH',
+                    }
+        
+        fig.for_each_trace(lambda t: t.update(name=newnames[t.name]))
 
         fig.show()
 
     def plotCBControlData(self):
         """Plot CB control signal data"""
         batteryData = self.prepareDataSet()
+        batteryData = batteryData[0:5300] # [0:5300] is for cell balancing data
 
         # Create a separate trace for each signal in a different subplot
         traces = []
@@ -120,6 +128,7 @@ class cellDataPlotting:
                     'cellCB_6': 'Cell 6', 'cellCB_7': 'Cell 7', 'cellCB_8': 'Cell 8', 'cellCB_9': 'Cell 9', 'cellCB_10': 'Cell 10',
                     'cellCB_11': 'Cell 11', 'cellCB_12': 'Cell 12', 'cellCB_13': 'Cell 13', 'cellCB_14': 'Cell 14'}
         fig.for_each_trace(lambda t: t.update(name=newnames[t.name]))
+
         fig.show()
 
         fig2 = go.Figure()
@@ -172,7 +181,7 @@ class cellDataPlotting:
     def changeStyle(self, fig, xLabel, yLabel, stackPlot):
         # choose the figure font
         font_dict = dict(family='Times New Roman',
-                         size=18,
+                         size=20,
                          color='black'
                          )
 
@@ -192,7 +201,6 @@ class cellDataPlotting:
                           )
 
         if stackPlot == False:
-            # x and y-axis formatting
             fig.update_yaxes(title_text=yLabel,  # axis label
                              showline=True,  # add line at x=0
                              linecolor='black',  # line color
@@ -229,7 +237,6 @@ class cellDataPlotting:
                 type="category",
             )
 
-            # fig.update_yaxes(ticksuffix='Cell 1', showtickprefix = 'first', row=1, col=1)  # axis label
             fig.update_yaxes(title_text='Balancing control signal',
                              row=7, col=1)  # axis label
 
