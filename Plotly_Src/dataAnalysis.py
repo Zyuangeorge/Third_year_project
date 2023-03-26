@@ -232,7 +232,7 @@ class Battery():
         outputData = pd.DataFrame(data=data, columns=colName, dtype=np.float32)
         outputData['BatteryType'] = self.type
 
-        # Data cleaning, remove all the data larger than 100
+        # Data cleaning, record all the error data
         for x in outputData.index:
             if outputData.loc[x, "Capacity"] > 110 or outputData.loc[x, "Capacity"] < 0 or outputData.loc[x, "Capacity"] == np.nan:
                 self.error['BatteryType'].append(
