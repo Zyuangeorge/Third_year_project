@@ -113,13 +113,13 @@ class cellDataPlotting:
 
         newnames = {
                     'packCurrent': 'Current',
-                    'cellVoltage_1': 'Cell 1 Voltage', 'cellVoltage_2': 'Cell 2 Voltage', 'cellVoltage_3': 'Cell 3 Voltage', 'cellVoltage_4': 'Cell 4 Voltage', 'cellVoltage_5': 'Cell 5 Voltage',
-                    'cellVoltage_6': 'Cell 6 Voltage', 'cellVoltage_7': 'Cell 7 Voltage', 'cellVoltage_8': 'Cell 8 Voltage', 'cellVoltage_9': 'Cell 9 Voltage', 'cellVoltage_10': 'Cell 10 Voltage',
-                    'cellVoltage_11': 'Cell 11 Voltage', 'cellVoltage_12': 'Cell 12 Voltage', 'cellVoltage_13': 'Cell 13 Voltage', 'cellVoltage_14': 'Cell 14 Voltage',
+                    'cellVoltage_1': 'Cell 1', 'cellVoltage_2': 'Cell 2', 'cellVoltage_3': 'Cell 3', 'cellVoltage_4': 'Cell 4', 'cellVoltage_5': 'Cell 5',
+                    'cellVoltage_6': 'Cell 6', 'cellVoltage_7': 'Cell 7', 'cellVoltage_8': 'Cell 8', 'cellVoltage_9': 'Cell 9', 'cellVoltage_10': 'Cell 10',
+                    'cellVoltage_11': 'Cell 11', 'cellVoltage_12': 'Cell 12', 'cellVoltage_13': 'Cell 13', 'cellVoltage_14': 'Cell 14',
 
-                    'cellSoC_1': 'Cell 1 SoC', 'cellSoC_2': 'Cell 2 SoC', 'cellSoC_3': 'Cell 3 SoC', 'cellSoC_4': 'Cell 4 SoC', 'cellSoC_5': 'Cell 5 SoC',
-                    'cellSoC_6': 'Cell 6 SoC', 'cellSoC_7': 'Cell 7 SoC', 'cellSoC_8': 'Cell 8 SoC', 'cellSoC_9': 'Cell 9 SoC', 'cellSoC_10': 'Cell 10 SoC',
-                    'cellSoC_11': 'Cell 11 SoC', 'cellSoC_12': 'Cell 12 SoC', 'cellSoC_13': 'Cell 13 SoC', 'cellSoC_14': 'Cell 14 SoC',
+                    'cellSoC_1': 'Cell 1', 'cellSoC_2': 'Cell 2', 'cellSoC_3': 'Cell 3', 'cellSoC_4': 'Cell 4', 'cellSoC_5': 'Cell 5',
+                    'cellSoC_6': 'Cell 6', 'cellSoC_7': 'Cell 7', 'cellSoC_8': 'Cell 8', 'cellSoC_9': 'Cell 9', 'cellSoC_10': 'Cell 10',
+                    'cellSoC_11': 'Cell 11', 'cellSoC_12': 'Cell 12', 'cellSoC_13': 'Cell 13', 'cellSoC_14': 'Cell 14',
 
                     'Accurate SoC':'Accurate SoC'
                     #'cellSoH_1': 'Cell 1 SoH', 'cellSoH_2': 'Cell 2 SoH', 'cellSoH_3': 'Cell 3 SoH', 'cellSoH_4': 'Cell 4 SoH', 'cellSoH_5': 'Cell 5 SoH',
@@ -128,6 +128,23 @@ class cellDataPlotting:
                     }
         
         fig.for_each_trace(lambda t: t.update(name=newnames[t.name]))
+
+        fig.update_traces(selector=dict(name='Cell 1'), marker=dict(color='blue'))
+        fig.update_traces(selector=dict(name='Cell 2'), marker=dict(color='green'))
+        fig.update_traces(selector=dict(name='Cell 3'), marker=dict(color='red'))
+        fig.update_traces(selector=dict(name='Cell 4'), marker=dict(color='purple'))
+        fig.update_traces(selector=dict(name='Cell 5'), marker=dict(color='orange'))
+        fig.update_traces(selector=dict(name='Cell 6'), marker=dict(color='yellow'))
+        fig.update_traces(selector=dict(name='Cell 7'), marker=dict(color='brown'))
+        fig.update_traces(selector=dict(name='Cell 8'), marker=dict(color='pink'))
+        fig.update_traces(selector=dict(name='Cell 9'), marker=dict(color='gray'))
+        fig.update_traces(selector=dict(name='Cell 10'), marker=dict(color='black'))
+        fig.update_traces(selector=dict(name='Cell 11'), marker=dict(color='cyan'))
+        fig.update_traces(selector=dict(name='Cell 12'), marker=dict(color='magenta'))
+        fig.update_traces(selector=dict(name='Cell 13'), marker=dict(color='olive'))
+        fig.update_traces(selector=dict(name='Cell 14'), marker=dict(color='teal'))
+
+        fig.update_traces(showlegend=False, row=2, col=1)
 
         fig.show()
 
@@ -226,7 +243,7 @@ class cellDataPlotting:
             trendData = trendData.loc[(dataColumn >= mean - 3 * sigma) & (
                 dataColumn <= mean + 3 * sigma)]
 
-            trendData.fillna(method='bfill')
+            trendData = trendData.fillna(method='bfill')
 
             # Median filter
             trendData.loc[:, 'filteredCellVoltage_' + str(batteryNumber + 1)] = trendData.loc[:, 'cellVoltage_' + str(batteryNumber + 1)].rolling(65, center=True).median().values
