@@ -1,5 +1,7 @@
 import os
 import sys
+# Import enum to define status
+from enum import Enum
 
 import plotly.graph_objects as go
 import numpy as np
@@ -7,6 +9,21 @@ from plotly.subplots import make_subplots
 import pandas as pd
 
 sys.path.append('.')
+
+
+class selectedPowerSupplyDataLines(Enum):
+    skiprows = 8328
+    nrows = 3880
+
+
+class selectedBatteryDataLines(Enum):
+    LOWER = 7216
+    UPPER = 11087
+
+
+class selectedCBDataLines(Enum):
+    LOWER = 0
+    UPPER = 5300
 
 
 class cellDataPlotting:
@@ -28,6 +45,8 @@ class cellDataPlotting:
 
         batteryData = pd.concat(
             dataList, axis=0, join='outer', ignore_index=True)
+        # batteryData['Time(s)'] = pd.to_datetime(batteryData['Date'], unit='s')
+
         batteryData['Time(s)'] = batteryData['Date'].map(
             lambda x: x - batteryData.loc[0, 'Date'])
 
@@ -44,7 +63,10 @@ class cellDataPlotting:
     def plotBatteryData(self):
         """Plot multiple battery data"""
         batteryData = self.prepareDataSet()
-        batteryData = batteryData[7216:11216] # [0:5300] is for cell balancing data
+
+        batteryData = batteryData[selectedBatteryDataLines.LOWER.value:selectedBatteryDataLines.UPPER.value]
+
+        batteryData['Time(s)'] = batteryData['Time(s)'] - batteryData['Time(s)'][selectedBatteryDataLines.LOWER.value]
 
         fig = make_subplots(rows=2, cols=2)
 
@@ -52,6 +74,14 @@ class cellDataPlotting:
                                  mode='lines',
                                  name='packCurrent'),
                       row=1, col=1)
+        
+        # Add accurate SoC data
+        df = self.getAccurateSoC()
+        
+        fig.add_trace(go.Scatter(x=df.index, y=df['Accurate SoC'],
+                                 mode='lines',
+                                 name='Accurate SoC'),
+                                 row=2, col=2)
 
         for batteryNumber in range(14):
             fig.add_trace(go.Scatter(x=batteryData['Time(s)'], y=batteryData['cellVoltage_' + str(batteryNumber + 1)],
@@ -64,10 +94,10 @@ class cellDataPlotting:
                                      name='cellSoC_' + str(batteryNumber + 1)),
                           row=2, col=1)
 
-            fig.add_trace(go.Scatter(x=batteryData['Time(s)'], y=batteryData['cellSoH_' + str(batteryNumber + 1)],
+            """ fig.add_trace(go.Scatter(x=batteryData['Time(s)'], y=batteryData['cellSoH_' + str(batteryNumber + 1)],
                                      mode='lines',
                                      name='cellSoH_' + str(batteryNumber + 1)),
-                          row=2, col=2)
+                          row=3, col=1) """
 
         fig = self.changeStyle(fig, 'Time(s)', "Current (mA)", False)
 
@@ -78,7 +108,8 @@ class cellDataPlotting:
         fig.update_yaxes(title_text="Current (mA)", row=1, col=1)
         fig.update_yaxes(title_text="Voltage (mV)", row=1, col=2)
         fig.update_yaxes(title_text="SoC (%)", row=2, col=1)
-        fig.update_yaxes(title_text="SoH (%)", row=2, col=2)
+        fig.update_yaxes(title_text="Accurate SoC (%)", row=2, col=2) 
+        #fig.update_yaxes(title_text="SoH (%)", row=3, col=1)
 
         newnames = {
                     'packCurrent': 'Current',
@@ -90,19 +121,39 @@ class cellDataPlotting:
                     'cellSoC_6': 'Cell 6 SoC', 'cellSoC_7': 'Cell 7 SoC', 'cellSoC_8': 'Cell 8 SoC', 'cellSoC_9': 'Cell 9 SoC', 'cellSoC_10': 'Cell 10 SoC',
                     'cellSoC_11': 'Cell 11 SoC', 'cellSoC_12': 'Cell 12 SoC', 'cellSoC_13': 'Cell 13 SoC', 'cellSoC_14': 'Cell 14 SoC',
 
-                    'cellSoH_1': 'Cell 1 SoH', 'cellSoH_2': 'Cell 2 SoH', 'cellSoH_3': 'Cell 3 SoH', 'cellSoH_4': 'Cell 4 SoH', 'cellSoH_5': 'Cell 5 SoH',
-                    'cellSoH_6': 'Cell 6 SoH', 'cellSoH_7': 'Cell 7 SoH', 'cellSoH_8': 'Cell 8 SoH', 'cellSoH_9': 'Cell 9 SoH', 'cellSoH_10': 'Cell 10 SoH',
-                    'cellSoH_11': 'Cell 11 SoH', 'cellSoH_12': 'Cell 12 SoH', 'cellSoH_13': 'Cell 13 SoH', 'cellSoH_14': 'Cell 14 SoH',
+                    'Accurate SoC':'Accurate SoC'
+                    #'cellSoH_1': 'Cell 1 SoH', 'cellSoH_2': 'Cell 2 SoH', 'cellSoH_3': 'Cell 3 SoH', 'cellSoH_4': 'Cell 4 SoH', 'cellSoH_5': 'Cell 5 SoH',
+                    #'cellSoH_6': 'Cell 6 SoH', 'cellSoH_7': 'Cell 7 SoH', 'cellSoH_8': 'Cell 8 SoH', 'cellSoH_9': 'Cell 9 SoH', 'cellSoH_10': 'Cell 10 SoH',
+                    #'cellSoH_11': 'Cell 11 SoH', 'cellSoH_12': 'Cell 12 SoH', 'cellSoH_13': 'Cell 13 SoH', 'cellSoH_14': 'Cell 14 SoH',
                     }
         
         fig.for_each_trace(lambda t: t.update(name=newnames[t.name]))
 
         fig.show()
 
+    def getAccurateSoC(self):
+
+        df = pd.read_csv("E:\\Workspace for VSCode\\Third_year_project\\Data\\PowerSupply\\23-3-2023-Charge-9-40.csv", delimiter=";",skiprows=selectedPowerSupplyDataLines.skiprows.value, nrows=selectedPowerSupplyDataLines.nrows.value)
+
+        # Convert the 'Time' column to datetime format
+        df['Time'] = pd.to_datetime(df['Time'])
+
+        df['I actual'] = df['I actual'].str.replace(',', '.').str.replace('A', '').astype(float)
+
+        df['I actual cumsum'] = df['I actual'].cumsum()
+
+        df['Accurate SoC'] = df.iloc[:, 13].apply(lambda x:x/(2.5*36))
+
+        df['Time(s)'] = df['Time'].map(
+            lambda x: x - df.loc[0, 'Time'])
+
+        return df
+    
     def plotCBControlData(self):
         """Plot CB control signal data"""
         batteryData = self.prepareDataSet()
-        batteryData = batteryData[0:5300] # [0:5300] is for cell balancing data
+
+        batteryData = batteryData[selectedCBDataLines.LOWER.value:selectedCBDataLines.UPPER.value] # [0:5300] is for cell balancing data
 
         # Create a separate trace for each signal in a different subplot
         traces = []
