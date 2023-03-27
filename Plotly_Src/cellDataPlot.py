@@ -12,22 +12,24 @@ sys.path.append('.')
 
 
 class selectedPowerSupplyDataLines(Enum):
-    #skiprows = 8328
-    #nrows = 3880
-    skiprows = 0
-    nrows = 7300
+    #skiprows = 8328 #23th
+    #nrows = 3880 #23th
+    skiprows = 0 #27th
+    nrows = 7300 #27th
 
 
 class selectedBatteryDataLines(Enum):
     #LOWER = 7216
     #UPPER = 11087
-    LOWER = 0
-    UPPER = 7283
+    LOWER = 0 #27th
+    UPPER = 7283 #27th
 
 
 class selectedCBDataLines(Enum):
-    LOWER = 0
-    UPPER = 5300
+    #LOWER = 0 #24th
+    #UPPER = 5300 #24th
+    LOWER = 0 #27th
+    UPPER = 9199 #27th
 
 
 class cellDataPlotting:
@@ -362,9 +364,12 @@ class cellDataPlotting:
 
 if __name__ == "__main__":
     cbAndSoCData = 'Data\\Cyclon_2.5Ah_LeadAcid\\24-03-2023'
+    # cellDataPlotting(cbAndSoCData).plotCBControlData()
+
     charingData = 'Data\\Cyclon_2.5Ah_LeadAcid\\23-03-2023'
     # cellDataPlotting(charingData).plotBatteryData()
-    cellDataPlotting(cbAndSoCData).plotCBControlData()
 
-    charingData2 = 'Data\\Cyclon_2.5Ah_LeadAcid\\27-03-2023'
+    charingData2 = 'Data\\Cyclon_2.5Ah_LeadAcid\\27-03-2023\\Charging'
+    cbAndSoCData2 = 'Data\\Cyclon_2.5Ah_LeadAcid\\27-03-2023\\Balancing'
     cellDataPlotting(charingData2).plotBatteryData()
+    cellDataPlotting(cbAndSoCData2).plotCBControlData()
