@@ -205,9 +205,9 @@ class cellDataPlotting:
 
         fig3 = self.changeStyle(fig3, "Time (s)", "Cell SoC (%)", False)
 
-        newnames = {'cellSoC_1': 'Cell 1 SoC', 'cellSoC_2': 'Cell 2 SoC', 'cellSoC_3': 'Cell 3 SoC', 'cellSoC_4': 'Cell 4 SoC', 'cellSoC_5': 'Cell 5 SoC',
-                    'cellSoC_6': 'Cell 6 SoC', 'cellSoC_7': 'Cell 7 SoC', 'cellSoC_8': 'Cell 8 SoC', 'cellSoC_9': 'Cell 9 SoC', 'cellSoC_10': 'Cell 10 SoC',
-                    'cellSoC_11': 'Cell 11 SoC', 'cellSoC_12': 'Cell 12 SoC', 'cellSoC_13': 'Cell 13 SoC', 'cellSoC_14': 'Cell 14 SoC'}
+        newnames = {'cellSoC_1': 'Cell 1', 'cellSoC_2': 'Cell 2', 'cellSoC_3': 'Cell 3', 'cellSoC_4': 'Cell 4', 'cellSoC_5': 'Cell 5',
+                    'cellSoC_6': 'Cell 6', 'cellSoC_7': 'Cell 7', 'cellSoC_8': 'Cell 8', 'cellSoC_9': 'Cell 9', 'cellSoC_10': 'Cell 10',
+                    'cellSoC_11': 'Cell 11', 'cellSoC_12': 'Cell 12', 'cellSoC_13': 'Cell 13', 'cellSoC_14': 'Cell 14'}
         fig3.for_each_trace(lambda t: t.update(name=newnames[t.name]))
         fig3.show()
 
