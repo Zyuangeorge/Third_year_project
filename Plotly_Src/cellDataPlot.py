@@ -12,13 +12,17 @@ sys.path.append('.')
 
 
 class selectedPowerSupplyDataLines(Enum):
-    skiprows = 8328
-    nrows = 3880
+    #skiprows = 8328
+    #nrows = 3880
+    skiprows = 0
+    nrows = 7300
 
 
 class selectedBatteryDataLines(Enum):
-    LOWER = 7216
-    UPPER = 11087
+    #LOWER = 7216
+    #UPPER = 11087
+    LOWER = 0
+    UPPER = 7283
 
 
 class selectedCBDataLines(Enum):
@@ -64,9 +68,11 @@ class cellDataPlotting:
         """Plot multiple battery data"""
         batteryData = self.prepareDataSet()
 
-        batteryData = batteryData[selectedBatteryDataLines.LOWER.value:selectedBatteryDataLines.UPPER.value]
+        batteryData = batteryData[selectedBatteryDataLines.LOWER.value:
+                                  selectedBatteryDataLines.UPPER.value]
 
-        batteryData['Time(s)'] = batteryData['Time(s)'] - batteryData['Time(s)'][selectedBatteryDataLines.LOWER.value]
+        batteryData['Time(s)'] = batteryData['Time(s)'] - \
+            batteryData['Time(s)'][selectedBatteryDataLines.LOWER.value]
 
         fig = make_subplots(rows=2, cols=2)
 
@@ -74,14 +80,14 @@ class cellDataPlotting:
                                  mode='lines',
                                  name='packCurrent'),
                       row=1, col=1)
-        
+
         # Add accurate SoC data
         df = self.getAccurateSoC()
-        
+
         fig.add_trace(go.Scatter(x=df.index, y=df['Accurate SoC'],
                                  mode='lines',
                                  name='Accurate SoC'),
-                                 row=2, col=2)
+                      row=2, col=2)
 
         for batteryNumber in range(14):
             fig.add_trace(go.Scatter(x=batteryData['Time(s)'], y=batteryData['cellVoltage_' + str(batteryNumber + 1)],
@@ -108,41 +114,55 @@ class cellDataPlotting:
         fig.update_yaxes(title_text="Current (mA)", row=1, col=1)
         fig.update_yaxes(title_text="Voltage (mV)", row=1, col=2)
         fig.update_yaxes(title_text="SoC (%)", row=2, col=1)
-        fig.update_yaxes(title_text="Accurate SoC (%)", row=2, col=2) 
+        fig.update_yaxes(title_text="Accurate SoC (%)", row=2, col=2)
         #fig.update_yaxes(title_text="SoH (%)", row=3, col=1)
 
         newnames = {
-                    'packCurrent': 'Current',
-                    'cellVoltage_1': 'Cell 1', 'cellVoltage_2': 'Cell 2', 'cellVoltage_3': 'Cell 3', 'cellVoltage_4': 'Cell 4', 'cellVoltage_5': 'Cell 5',
-                    'cellVoltage_6': 'Cell 6', 'cellVoltage_7': 'Cell 7', 'cellVoltage_8': 'Cell 8', 'cellVoltage_9': 'Cell 9', 'cellVoltage_10': 'Cell 10',
-                    'cellVoltage_11': 'Cell 11', 'cellVoltage_12': 'Cell 12', 'cellVoltage_13': 'Cell 13', 'cellVoltage_14': 'Cell 14',
+            'packCurrent': 'Current',
+            'cellVoltage_1': 'Cell 1', 'cellVoltage_2': 'Cell 2', 'cellVoltage_3': 'Cell 3', 'cellVoltage_4': 'Cell 4', 'cellVoltage_5': 'Cell 5',
+            'cellVoltage_6': 'Cell 6', 'cellVoltage_7': 'Cell 7', 'cellVoltage_8': 'Cell 8', 'cellVoltage_9': 'Cell 9', 'cellVoltage_10': 'Cell 10',
+            'cellVoltage_11': 'Cell 11', 'cellVoltage_12': 'Cell 12', 'cellVoltage_13': 'Cell 13', 'cellVoltage_14': 'Cell 14',
 
-                    'cellSoC_1': 'Cell 1', 'cellSoC_2': 'Cell 2', 'cellSoC_3': 'Cell 3', 'cellSoC_4': 'Cell 4', 'cellSoC_5': 'Cell 5',
-                    'cellSoC_6': 'Cell 6', 'cellSoC_7': 'Cell 7', 'cellSoC_8': 'Cell 8', 'cellSoC_9': 'Cell 9', 'cellSoC_10': 'Cell 10',
-                    'cellSoC_11': 'Cell 11', 'cellSoC_12': 'Cell 12', 'cellSoC_13': 'Cell 13', 'cellSoC_14': 'Cell 14',
+            'cellSoC_1': 'Cell 1', 'cellSoC_2': 'Cell 2', 'cellSoC_3': 'Cell 3', 'cellSoC_4': 'Cell 4', 'cellSoC_5': 'Cell 5',
+            'cellSoC_6': 'Cell 6', 'cellSoC_7': 'Cell 7', 'cellSoC_8': 'Cell 8', 'cellSoC_9': 'Cell 9', 'cellSoC_10': 'Cell 10',
+            'cellSoC_11': 'Cell 11', 'cellSoC_12': 'Cell 12', 'cellSoC_13': 'Cell 13', 'cellSoC_14': 'Cell 14',
 
-                    'Accurate SoC':'Accurate SoC'
-                    #'cellSoH_1': 'Cell 1 SoH', 'cellSoH_2': 'Cell 2 SoH', 'cellSoH_3': 'Cell 3 SoH', 'cellSoH_4': 'Cell 4 SoH', 'cellSoH_5': 'Cell 5 SoH',
-                    #'cellSoH_6': 'Cell 6 SoH', 'cellSoH_7': 'Cell 7 SoH', 'cellSoH_8': 'Cell 8 SoH', 'cellSoH_9': 'Cell 9 SoH', 'cellSoH_10': 'Cell 10 SoH',
-                    #'cellSoH_11': 'Cell 11 SoH', 'cellSoH_12': 'Cell 12 SoH', 'cellSoH_13': 'Cell 13 SoH', 'cellSoH_14': 'Cell 14 SoH',
-                    }
-        
+            'Accurate SoC': 'Accurate SoC'
+            # 'cellSoH_1': 'Cell 1 SoH', 'cellSoH_2': 'Cell 2 SoH', 'cellSoH_3': 'Cell 3 SoH', 'cellSoH_4': 'Cell 4 SoH', 'cellSoH_5': 'Cell 5 SoH',
+            # 'cellSoH_6': 'Cell 6 SoH', 'cellSoH_7': 'Cell 7 SoH', 'cellSoH_8': 'Cell 8 SoH', 'cellSoH_9': 'Cell 9 SoH', 'cellSoH_10': 'Cell 10 SoH',
+            # 'cellSoH_11': 'Cell 11 SoH', 'cellSoH_12': 'Cell 12 SoH', 'cellSoH_13': 'Cell 13 SoH', 'cellSoH_14': 'Cell 14 SoH',
+        }
+
         fig.for_each_trace(lambda t: t.update(name=newnames[t.name]))
 
-        fig.update_traces(selector=dict(name='Cell 1'), marker=dict(color='blue'))
-        fig.update_traces(selector=dict(name='Cell 2'), marker=dict(color='green'))
-        fig.update_traces(selector=dict(name='Cell 3'), marker=dict(color='red'))
-        fig.update_traces(selector=dict(name='Cell 4'), marker=dict(color='purple'))
-        fig.update_traces(selector=dict(name='Cell 5'), marker=dict(color='orange'))
-        fig.update_traces(selector=dict(name='Cell 6'), marker=dict(color='yellow'))
-        fig.update_traces(selector=dict(name='Cell 7'), marker=dict(color='brown'))
-        fig.update_traces(selector=dict(name='Cell 8'), marker=dict(color='pink'))
-        fig.update_traces(selector=dict(name='Cell 9'), marker=dict(color='gray'))
-        fig.update_traces(selector=dict(name='Cell 10'), marker=dict(color='black'))
-        fig.update_traces(selector=dict(name='Cell 11'), marker=dict(color='cyan'))
-        fig.update_traces(selector=dict(name='Cell 12'), marker=dict(color='magenta'))
-        fig.update_traces(selector=dict(name='Cell 13'), marker=dict(color='olive'))
-        fig.update_traces(selector=dict(name='Cell 14'), marker=dict(color='teal'))
+        fig.update_traces(selector=dict(name='Cell 1'),
+                          marker=dict(color='blue'))
+        fig.update_traces(selector=dict(name='Cell 2'),
+                          marker=dict(color='green'))
+        fig.update_traces(selector=dict(name='Cell 3'),
+                          marker=dict(color='red'))
+        fig.update_traces(selector=dict(name='Cell 4'),
+                          marker=dict(color='purple'))
+        fig.update_traces(selector=dict(name='Cell 5'),
+                          marker=dict(color='orange'))
+        fig.update_traces(selector=dict(name='Cell 6'),
+                          marker=dict(color='yellow'))
+        fig.update_traces(selector=dict(name='Cell 7'),
+                          marker=dict(color='brown'))
+        fig.update_traces(selector=dict(name='Cell 8'),
+                          marker=dict(color='pink'))
+        fig.update_traces(selector=dict(name='Cell 9'),
+                          marker=dict(color='gray'))
+        fig.update_traces(selector=dict(name='Cell 10'),
+                          marker=dict(color='black'))
+        fig.update_traces(selector=dict(name='Cell 11'),
+                          marker=dict(color='cyan'))
+        fig.update_traces(selector=dict(name='Cell 12'),
+                          marker=dict(color='magenta'))
+        fig.update_traces(selector=dict(name='Cell 13'),
+                          marker=dict(color='olive'))
+        fig.update_traces(selector=dict(name='Cell 14'),
+                          marker=dict(color='teal'))
 
         fig.update_traces(showlegend=False, row=2, col=1)
 
@@ -150,27 +170,30 @@ class cellDataPlotting:
 
     def getAccurateSoC(self):
 
-        df = pd.read_csv("E:\\Workspace for VSCode\\Third_year_project\\Data\\PowerSupply\\23-3-2023-Charge-9-40.csv", delimiter=";",skiprows=selectedPowerSupplyDataLines.skiprows.value, nrows=selectedPowerSupplyDataLines.nrows.value)
+        df = pd.read_csv("E:\\Workspace for VSCode\\Third_year_project\\Data\\PowerSupply\\23-3-2023-Charge-9-40.csv",
+                         delimiter=";", skiprows=selectedPowerSupplyDataLines.skiprows.value, nrows=selectedPowerSupplyDataLines.nrows.value)
 
         # Convert the 'Time' column to datetime format
         df['Time'] = pd.to_datetime(df['Time'])
 
-        df['I actual'] = df['I actual'].str.replace(',', '.').str.replace('A', '').astype(float)
+        df['I actual'] = df['I actual'].str.replace(
+            ',', '.').str.replace('A', '').astype(float)
 
         df['I actual cumsum'] = df['I actual'].cumsum()
 
-        df['Accurate SoC'] = df.iloc[:, 13].apply(lambda x:x/(2.5*36))
+        df['Accurate SoC'] = df.iloc[:, 13].apply(lambda x: x/(2.5*36))
 
         df['Time(s)'] = df['Time'].map(
             lambda x: x - df.loc[0, 'Time'])
 
         return df
-    
+
     def plotCBControlData(self):
         """Plot CB control signal data"""
         batteryData = self.prepareDataSet()
 
-        batteryData = batteryData[selectedCBDataLines.LOWER.value:selectedCBDataLines.UPPER.value] # [0:5300] is for cell balancing data
+        # [0:5300] is for cell balancing data
+        batteryData = batteryData[selectedCBDataLines.LOWER.value:selectedCBDataLines.UPPER.value]
 
         # Create a separate trace for each signal in a different subplot
         traces = []
@@ -235,8 +258,8 @@ class cellDataPlotting:
 
         for batteryNumber in range(14):
             dataColumn = trendData['cellVoltage_' + str(batteryNumber + 1)]
-            
-            # Filter outlier 
+
+            # Filter outlier
             mean = dataColumn.mean()
             sigma = dataColumn.std()
 
@@ -246,7 +269,8 @@ class cellDataPlotting:
             trendData = trendData.fillna(method='bfill')
 
             # Median filter
-            trendData.loc[:, 'filteredCellVoltage_' + str(batteryNumber + 1)] = trendData.loc[:, 'cellVoltage_' + str(batteryNumber + 1)].rolling(65, center=True).median().values
+            trendData.loc[:, 'filteredCellVoltage_' + str(batteryNumber + 1)] = trendData.loc[:, 'cellVoltage_' + str(
+                batteryNumber + 1)].rolling(65, center=True).median().values
 
             fig4.add_trace(go.Scatter(x=trendData['Time(s)'], y=trendData['filteredCellVoltage_' + str(batteryNumber + 1)],
                                       mode='lines',
@@ -339,5 +363,8 @@ class cellDataPlotting:
 if __name__ == "__main__":
     cbAndSoCData = 'Data\\Cyclon_2.5Ah_LeadAcid\\24-03-2023'
     charingData = 'Data\\Cyclon_2.5Ah_LeadAcid\\23-03-2023'
-    cellDataPlotting(charingData).plotBatteryData()
+    # cellDataPlotting(charingData).plotBatteryData()
     cellDataPlotting(cbAndSoCData).plotCBControlData()
+
+    charingData2 = 'Data\\Cyclon_2.5Ah_LeadAcid\\27-03-2023'
+    cellDataPlotting(charingData2).plotBatteryData()
