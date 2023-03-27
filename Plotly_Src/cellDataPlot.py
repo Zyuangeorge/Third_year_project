@@ -179,7 +179,6 @@ class cellDataPlotting:
                     'cellCB_6': 'Cell 6', 'cellCB_7': 'Cell 7', 'cellCB_8': 'Cell 8', 'cellCB_9': 'Cell 9', 'cellCB_10': 'Cell 10',
                     'cellCB_11': 'Cell 11', 'cellCB_12': 'Cell 12', 'cellCB_13': 'Cell 13', 'cellCB_14': 'Cell 14'}
         fig.for_each_trace(lambda t: t.update(name=newnames[t.name]))
-
         fig.show()
 
         fig2 = go.Figure()
@@ -197,8 +196,23 @@ class cellDataPlotting:
         fig2.for_each_trace(lambda t: t.update(name=newnames[t.name]))
         fig2.show()
 
-        # Filter data distorted by the balancing process
         fig3 = go.Figure()
+
+        for batteryNumber in range(14):
+            fig3.add_trace(go.Scatter(x=batteryData['Time(s)'], y=batteryData['cellSoC_' + str(batteryNumber + 1)],
+                                      mode='lines',
+                                      name='cellSoC_' + str(batteryNumber + 1)))
+
+        fig3 = self.changeStyle(fig3, "Time (s)", "Cell SoC (%)", False)
+
+        newnames = {'cellSoC_1': 'Cell 1 SoC', 'cellSoC_2': 'Cell 2 SoC', 'cellSoC_3': 'Cell 3 SoC', 'cellSoC_4': 'Cell 4 SoC', 'cellSoC_5': 'Cell 5 SoC',
+                    'cellSoC_6': 'Cell 6 SoC', 'cellSoC_7': 'Cell 7 SoC', 'cellSoC_8': 'Cell 8 SoC', 'cellSoC_9': 'Cell 9 SoC', 'cellSoC_10': 'Cell 10 SoC',
+                    'cellSoC_11': 'Cell 11 SoC', 'cellSoC_12': 'Cell 12 SoC', 'cellSoC_13': 'Cell 13 SoC', 'cellSoC_14': 'Cell 14 SoC'}
+        fig3.for_each_trace(lambda t: t.update(name=newnames[t.name]))
+        fig3.show()
+
+        # Filter data distorted by the balancing process
+        fig4 = go.Figure()
         trendData = batteryData
         trendData.loc[batteryData['cellCB_9'] != 0, :] = np.nan
 
@@ -217,17 +231,17 @@ class cellDataPlotting:
             # Median filter
             trendData.loc[:, 'filteredCellVoltage_' + str(batteryNumber + 1)] = trendData.loc[:, 'cellVoltage_' + str(batteryNumber + 1)].rolling(65, center=True).median().values
 
-            fig3.add_trace(go.Scatter(x=trendData['Time(s)'], y=trendData['filteredCellVoltage_' + str(batteryNumber + 1)],
+            fig4.add_trace(go.Scatter(x=trendData['Time(s)'], y=trendData['filteredCellVoltage_' + str(batteryNumber + 1)],
                                       mode='lines',
                                       name='filteredCellVoltage_' + str(batteryNumber + 1)))
 
-        fig3 = self.changeStyle(fig3, "Time (s)", "Cell Voltage (mV)", False)
+        fig4 = self.changeStyle(fig4, "Time (s)", "Cell Voltage (mV)", False)
 
         newnames = {'filteredCellVoltage_1': 'Cell 1', 'filteredCellVoltage_2': 'Cell 2', 'filteredCellVoltage_3': 'Cell 3', 'filteredCellVoltage_4': 'Cell 4', 'filteredCellVoltage_5': 'Cell 5',
                     'filteredCellVoltage_6': 'Cell 6', 'filteredCellVoltage_7': 'Cell 7', 'filteredCellVoltage_8': 'Cell 8', 'filteredCellVoltage_9': 'Cell 9', 'filteredCellVoltage_10': 'Cell 10',
                     'filteredCellVoltage_11': 'Cell 11', 'filteredCellVoltage_12': 'Cell 12', 'filteredCellVoltage_13': 'Cell 13', 'filteredCellVoltage_14': 'Cell 14'}
-        fig3.for_each_trace(lambda t: t.update(name=newnames[t.name]))
-        fig3.show()
+        fig4.for_each_trace(lambda t: t.update(name=newnames[t.name]))
+        fig4.show()
 
     def changeStyle(self, fig, xLabel, yLabel, stackPlot):
         # choose the figure font
