@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 from dash import Dash, dcc, dependencies, html
+import dash_bootstrap_components as dbc
 
 # Expend file path
 sys.path.append('.')
@@ -46,66 +47,69 @@ class DataPlotting():
 
         # Layout setting
         self.app.layout = html.Div([
-            html.H1(
-                children='Data Plotting for Batteries - Zhe',
-                style={
-                    'textAlign': 'left',
-                    'color': self.colours['text'],
-                    'fontSize': 15
-                }
-            ),
-
-            html.Div(children=[
-                html.Label('Batteries Data',
-                           style={
-                               'textAlign': 'left',
-                               'color': self.colours['text']
-                           }),
-                # Battery data type filter
+            # Left side toolbar
+            html.Div([
+                html.H1(
+                    children='Data Plotting for Batteries - Zhe',
+                    style={
+                        'textAlign': 'left',
+                        'color': self.colours['text'],
+                        'fontSize': 15
+                    }
+                ),
+                html.Label('Batteries Data', style={
+                           'color': self.colours['text']}),
                 dcc.Dropdown(
                     id="battery_data",
-                    options=['Capacity', 'Efficiency', 'InternalResistance'],
+                    options=[{'label': val, 'value': val} for val in [
+                        'Capacity', 'Efficiency', 'InternalResistance']],
                     value=['Capacity'],
-                    multi=True),
+                    multi=True
+                ),
 
-                html.Label('Batteries Type',
-                           style={
-                               'textAlign': 'left',
-                               'color': self.colours['text']
-                           }),
-
-                # Battery type filter
+                html.Label('Batteries Type', style={
+                           'color': self.colours['text']}),
                 dcc.Dropdown(
                     id="battery_type",
-                    options=self.batteryData['BatteryType'].unique(),
+                    options=[{'label': val, 'value': val}
+                             for val in self.batteryData['BatteryType'].unique()],
                     value=self.batteryData['BatteryType'].unique(),
-                    multi=True),
+                    multi=True
+                ),
 
-                html.Label('Battery Number',
-                           style={
-                               'textAlign': 'left',
-                               'color': self.colours['text']
-                           }),
-
-                # Battery number filter
+                html.Label('Battery Number', style={
+                           'color': self.colours['text']}),
                 dcc.Checklist(
                     id="battery_number",
-                    options=self.batteryData['BatteryNo'].unique(),
+                    options=[{'label': val, 'value': val}
+                             for val in self.batteryData['BatteryNo'].unique()],
                     value=[1.0],
-                    inline=True),
+                    inline=True
+                ),
 
-                # Trendline selection
                 dcc.Checklist(
                     id='show_trendline',
                     options=[{'label': 'Show Trendline', 'value': 'show'}],
                     value=[]
                 ),
-            ], style={
-                'color': self.colours['text'],
-                'padding': 10,
-                'flex': 1}),
 
-            dcc.Graph(id='battery-graph'),
+            ], style={
+                'width': '15%',
+                'float': 'left',
+                'position': 'fixed',
+                'padding': '10px',
+                'height': '100%',
+                'background-color': self.colours['background']
+            }),
+
+            # Right side graph
+            html.Div([
+                dcc.Graph(id='battery-graph')
+            ], style={
+                'width': '80%',
+                'float': 'right',
+                'height': '100%',
+            })
         ])
 
     def update_graphs(self, battery_data, battery_number, battery_type, show_trendline):
@@ -124,37 +128,86 @@ class DataPlotting():
                       y=yAxis,
                       color=filtered_data['BatteryType'],
                       line_dash=filtered_data['BatteryNo'],
-                      markers=False)
+                      markers=False,
+                      # template='simple_white',
+                      )
 
         # Add trendline
         if show_trendline == ['show']:
             for data in battery_data:
                 fig.add_traces(px.scatter(filtered_data, x=xAxis,
-                            y=data, color=filtered_data['BatteryType'], symbol=filtered_data['BatteryNo'], trendline="lowess").data)
+                                          y=data, color=filtered_data['BatteryType'], symbol=filtered_data['BatteryNo'], trendline="lowess").data)
 
             # Improve visualisation
             fig.update_traces(visible=False, selector=dict(mode="markers"))
 
             for i in range(len(battery_number)*len(battery_data)*len(battery_type)):
                 fig.data[i].update(visible="legendonly")
-            
-            trendLine_2=[]
+
+            trendLine_2 = []
             for k, trace in enumerate(fig.data):
                 if trace.mode is not None and trace.mode == 'lines' and '2.0' in trace.name:
                     trendLine_2.append(k)
             for id in trendLine_2:
-                fig.data[id].update(line={'dash':'dot'})
+                fig.data[id].update(line={'dash': 'dot'})
 
             del trendLine_2
             gc.collect()
 
-        fig.update_layout(xaxis_title="Cycle",
-                          yaxis_title="Nominal Value (%)",
-                          plot_bgcolor=self.colours['background'],
-                          paper_bgcolor=self.colours['background'],
-                          yaxis_range=[50, 120])
+        fig = self.changeStyle(fig, "Cycle", "Nominal Value (%)")
 
         return fig
+
+    def changeStyle(self, fig, xLabel, yLabel):
+        # choose the figure font
+        font_dict = dict(family='Times New Roman',
+                        size=18,
+                        color='black'
+                        )
+
+        # general figure formatting
+        fig.update_layout(font=font_dict,  # font formatting
+                        plot_bgcolor='white',  # background color
+                        yaxis_range=[50, 200],
+                        width=1200,  # figure width
+                        height=750,  # figure height
+                        margin=dict(l=20,t=20,b=10), # set left margin
+                        legend=dict(
+                            title_font_family="Times New Roman",
+                            font=font_dict,
+                            bgcolor="White",
+                            bordercolor="Black",
+                            borderwidth=1
+                        )
+                        )
+
+        fig.update_yaxes(title_text=yLabel,  # axis label
+                        showline=True,  # add line at x=0
+                        linecolor='black',  # line color
+                        linewidth=2.4,  # line size
+                        ticks='outside',  # ticks outside axis
+                        tickfont=font_dict,  # tick label font
+                        mirror='allticks',  # add ticks to top/right axes
+                        tickwidth=2.4,  # tick width
+                        tickcolor='black',  # tick color
+                        gridcolor='lightgray'
+                        )
+
+        fig.update_xaxes(title_text=xLabel,
+                        showline=True,
+                        showticklabels=True,
+                        linecolor='black',
+                        linewidth=2.4,
+                        ticks='outside',
+                        tickfont=font_dict,
+                        mirror='allticks',
+                        tickwidth=2.4,
+                        tickcolor='black',
+                        gridcolor='lightgray'
+                        )
+
+        return fig
+
 
     def autoOpen(self):
         """Handler used to open the graph automatically"""
@@ -282,7 +335,8 @@ class Battery():
 
         time = datetime.now()
         timeInfo = time.strftime("%d-%m-%Y-%H-%M-%S")
-        fileName = outputDir + "/" + str(timeInfo) + "-" + str(self.type) + ".csv"
+        fileName = outputDir + "/" + \
+            str(timeInfo) + "-" + str(self.type) + ".csv"
 
         try:
             self.error = pd.DataFrame(self.error)

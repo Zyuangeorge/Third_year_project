@@ -15,14 +15,16 @@ class selectedPowerSupplyDataLines(Enum):
     #skiprows = 8328 #23th
     #nrows = 3880 #23th
     skiprows = 0 #27th
-    nrows = 7300 #27th
+    #nrows = 7300 #27th
+    nrows = 11954 #28th
 
 
 class selectedBatteryDataLines(Enum):
     #LOWER = 7216
     #UPPER = 11087
     LOWER = 0 #27th
-    UPPER = 7283 #27th
+    #UPPER = 7283 #27th
+    UPPER = 11954 #28th
 
 
 class selectedCBDataLines(Enum):
@@ -172,7 +174,7 @@ class cellDataPlotting:
 
     def getAccurateSoC(self):
 
-        df = pd.read_csv("E:\\Workspace for VSCode\\Third_year_project\\Data\\PowerSupply\\23-3-2023-Charge-9-40.csv",
+        df = pd.read_csv("Data\\PowerSupply\\28-3-2023-Charge.csv",
                          delimiter=";", skiprows=selectedPowerSupplyDataLines.skiprows.value, nrows=selectedPowerSupplyDataLines.nrows.value)
 
         # Convert the 'Time' column to datetime format
@@ -371,5 +373,8 @@ if __name__ == "__main__":
 
     charingData2 = 'Data\\Cyclon_2.5Ah_LeadAcid\\27-03-2023\\Charging'
     cbAndSoCData2 = 'Data\\Cyclon_2.5Ah_LeadAcid\\27-03-2023\\Balancing'
+    #cellDataPlotting(charingData2).plotBatteryData()
+    #cellDataPlotting(cbAndSoCData2).plotCBControlData()
+
+    charingData2 = 'Data\\Cyclon_2.5Ah_LeadAcid\\28-03-2023'
     cellDataPlotting(charingData2).plotBatteryData()
-    cellDataPlotting(cbAndSoCData2).plotCBControlData()
