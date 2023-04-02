@@ -168,7 +168,7 @@ class DataPlotting():
         # general figure formatting
         fig.update_layout(font=font_dict,  # font formatting
                         plot_bgcolor='white',  # background color
-                        yaxis_range=[50, 200],
+                        yaxis_range=[50, 170],
                         width=1200,  # figure width
                         height=750,  # figure height
                         margin=dict(l=20,t=20,b=10), # set left margin
@@ -415,11 +415,13 @@ class Dataset():
                     if rawData.loc[index + 1, 'Amps'] == 0 and rawData.loc[index + 1, 'ES'] == 0:
                         dischargingPoints[0] = rawData.loc[index, 'Amp-hr']
                         dischargingPoints[1] = rawData.loc[index, 'Watt-hr']
-                        # Voltage before switching off
+                        # Voltage before current switching off
                         dischargingPoints[2] = rawData.loc[index, 'Volts']
+                        # Voltage after current switching off
                         dischargingPoints[3] = rawData.loc[index + 1, 'Volts']
-                        # Current before switching off
+                        # Current before current switching off
                         dischargingPoints[4] = rawData.loc[index, 'Amps']
+                        # Current after current switching off
                         dischargingPoints[5] = rawData.loc[index + 1, 'Amps']
             except:
                 # If there is an error in the data, set the value to none
@@ -454,9 +456,11 @@ class Dataset():
                     if rawData.loc[index + 1, 'Amps'] > 0 and rawData.loc[index + 1, 'ES'] == 0:
                         # Voltage before current step
                         chargingPoints[2] = rawData.loc[index, 'Volts']
+                        # Voltage after current step
                         chargingPoints[3] = rawData.loc[index + 1, 'Volts']
                         # Current before current step
                         chargingPoints[4] = rawData.loc[index, 'Amps']
+                        # Current after current step
                         chargingPoints[5] = rawData.loc[index + 1, 'Amps']
             except:
                 chargingPoints[0] == np.nan
