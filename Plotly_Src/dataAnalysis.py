@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 from dash import Dash, dcc, dependencies, html
-import dash_bootstrap_components as dbc
 
 # Expend file path
 sys.path.append('.')
@@ -62,7 +61,7 @@ class DataPlotting():
                 dcc.Dropdown(
                     id="battery_data",
                     options=[{'label': val, 'value': val} for val in [
-                        'Capacity', 'Efficiency', 'InternalResistance']],
+                        'Capacity', 'Efficiency', 'InternalResistance_Discharge','InternalResistance_Charge']],
                     value=['Capacity'],
                     multi=True
                 ),
@@ -94,7 +93,7 @@ class DataPlotting():
                 ),
 
             ], style={
-                'width': '15%',
+                'width': '18%',
                 'float': 'left',
                 'position': 'fixed',
                 'padding': '10px',
@@ -138,11 +137,16 @@ class DataPlotting():
                 fig.add_traces(px.scatter(filtered_data, x=xAxis,
                                           y=data, color=filtered_data['BatteryType'], symbol=filtered_data['BatteryNo'], trendline="lowess").data)
 
+            for i in range(len(battery_number)*len(battery_data)*len(battery_type)):
+                fig.data[i].update(visible=False)
+            
+            trendLineData = fig.data[-len(battery_number)*len(battery_type)*2+1::2]
+
+            for traceData in trendLineData:
+                traceData.update(showlegend=True)
+
             # Improve visualisation
             fig.update_traces(visible=False, selector=dict(mode="markers"))
-
-            for i in range(len(battery_number)*len(battery_data)*len(battery_type)):
-                fig.data[i].update(visible="legendonly")
 
             trendLine_2 = []
             for k, trace in enumerate(fig.data):
@@ -246,12 +250,18 @@ class Battery():
         """Internal resistance data handler"""
         # Calculate the nominal internal resistance of the battery : (Current average IR) / (Initial average IR)
         # IR for battery 1
-        self.internalResistance_1 = (0.5 * (self.rawData[0:self.cycleNumber, 3] + self.rawData[0:self.cycleNumber, 4])) / (
-            0.5 * (self.rawData[0, 3] + self.rawData[0, 4])) * 100.0
+        # Discharge DCIR
+        self.internalResistance_1_D = self.rawData[0:self.cycleNumber, 3] / self.rawData[0, 3] * 100.0
+
+        # Charge DCIR
+        self.internalResistance_1_C = self.rawData[0:self.cycleNumber, 4] / self.rawData[0, 4] * 100.0
 
         # IR for battery 2
-        self.internalResistance_2 = (0.5 * (self.rawData[self.cycleNumber:, 3] + self.rawData[self.cycleNumber:, 4])) / (
-            0.5 * (self.rawData[self.cycleNumber, 3] + self.rawData[self.cycleNumber, 4])) * 100.0
+        # Discharge DCIR
+        self.internalResistance_2_D = self.rawData[self.cycleNumber:, 3] / self.rawData[self.cycleNumber, 3] * 100.0
+        
+        # Charge DCIR
+        self.internalResistance_2_C = self.rawData[self.cycleNumber:, 4] / self.rawData[self.cycleNumber, 4] * 100.0
 
     def returnData(self):
         """Handler for organising the data"""
@@ -259,29 +269,32 @@ class Battery():
         # [0] Cycle number
         # [1] Capacity
         # [2] Efficiency
-        # [3] Internal resistance
-        # [4] Battery number
-        data_1 = np.empty(shape=(self.cycleNumber, 5), dtype=np.float32)
+        # [3] Discharge internal resistance
+        # [4] Charge internal resistance
+        # [5] Battery number
+        data_1 = np.empty(shape=(self.cycleNumber, 6), dtype=np.float32)
         data_1[:, 0] = np.array(list(range(self.cycleNumber)))
         data_1[:, 1] = self.capacity_1
         data_1[:, 2] = self.efficiency_1
-        data_1[:, 3] = self.internalResistance_1
-        data_1[:, 4] = np.full(self.cycleNumber, 1.0)
+        data_1[:, 3] = self.internalResistance_1_D
+        data_1[:, 4] = self.internalResistance_1_C
+        data_1[:, 5] = np.full(self.cycleNumber, 1.0)
 
         data_2 = np.empty(
-            shape=(self.rawData.shape[0] - self.cycleNumber, 5), dtype=np.float32)
+            shape=(self.rawData.shape[0] - self.cycleNumber, 6), dtype=np.float32)
         data_2[:, 0] = np.array(
             list(range(0, self.rawData.shape[0] - self.cycleNumber)))  # Change the start of the cycle number from 1
         data_2[:, 1] = self.capacity_2
         data_2[:, 2] = self.efficiency_2
-        data_2[:, 3] = self.internalResistance_2
-        data_2[:, 4] = np.full(self.rawData.shape[0] - self.cycleNumber, 2.0)
+        data_2[:, 3] = self.internalResistance_2_D
+        data_2[:, 4] = self.internalResistance_2_C
+        data_2[:, 5] = np.full(self.rawData.shape[0] - self.cycleNumber, 2.0)
 
         # Create output dataframe
         # Combine the battery data for 1 and 2 in vertical axis
         data = np.concatenate((data_1, data_2), axis=0)
         colName = ['Cyc#', 'Capacity', 'Efficiency',
-                   'InternalResistance', 'BatteryNo']
+                   'InternalResistance_Discharge', 'InternalResistance_Charge', 'BatteryNo']
         outputData = pd.DataFrame(data=data, columns=colName, dtype=np.float32)
         outputData['BatteryType'] = self.type
 
@@ -296,7 +309,7 @@ class Battery():
                 self.error['DataType'].append("Capacity")
                 self.error['DataValue'].append(outputData.loc[x, 'Capacity'])
 
-            if outputData.loc[x, "Efficiency"] > 110 or outputData.loc[x, "Efficiency"] < 0 or outputData.loc[x, "Capacity"] == np.nan:
+            if outputData.loc[x, "Efficiency"] > 110 or outputData.loc[x, "Efficiency"] < 0 or outputData.loc[x, "Efficiency"] == np.nan:
                 self.error['BatteryType'].append(
                     outputData.loc[x, "BatteryType"])
                 self.error['BatterNumber'].append(
@@ -305,22 +318,33 @@ class Battery():
                 self.error['DataType'].append("Efficiency")
                 self.error['DataValue'].append(outputData.loc[x, 'Efficiency'])
 
-            if outputData.loc[x, "InternalResistance"] > 250 or outputData.loc[x, "InternalResistance"] < 0 or outputData.loc[x, "Capacity"] == np.nan:
+            if outputData.loc[x, "InternalResistance_Discharge"] > 250 or outputData.loc[x, "InternalResistance_Discharge"] < 0 or outputData.loc[x, "InternalResistance_Discharge"] == np.nan:
                 self.error['BatteryType'].append(
                     outputData.loc[x, "BatteryType"])
                 self.error['BatterNumber'].append(
                     outputData.loc[x, "BatteryNo"])
                 self.error['Cycle'].append(outputData.loc[x, 'Cyc#'])
-                self.error['DataType'].append("InternalResistance")
+                self.error['DataType'].append("InternalResistance_Discharge")
                 self.error['DataValue'].append(
-                    outputData.loc[x, 'InternalResistance'])
+                    outputData.loc[x, 'InternalResistance_Discharge'])
+            
+            if outputData.loc[x, "InternalResistance_Charge"] > 250 or outputData.loc[x, "InternalResistance_Charge"] < 0 or outputData.loc[x, "InternalResistance_Charge"] == np.nan:
+                self.error['BatteryType'].append(
+                    outputData.loc[x, "BatteryType"])
+                self.error['BatterNumber'].append(
+                    outputData.loc[x, "BatteryNo"])
+                self.error['Cycle'].append(outputData.loc[x, 'Cyc#'])
+                self.error['DataType'].append("InternalResistance_Charge")
+                self.error['DataValue'].append(
+                    outputData.loc[x, 'InternalResistance_Charge'])
+                
 
         # self.exportErrorLog()
         del self.error
         gc.collect()
 
         del self.rawData, self.cycleNumber, self.type
-        del self.capacity_1, self.capacity_2, self.efficiency_1, self.efficiency_2, self.internalResistance_1, self.internalResistance_2
+        del self.capacity_1, self.capacity_2, self.efficiency_1, self.efficiency_2, self.internalResistance_1_D,self.internalResistance_1_C, self.internalResistance_2_D,self.internalResistance_2_C
         del data_1, data_2, data, colName
         gc.collect()
 
@@ -391,7 +415,7 @@ class Dataset():
         dischargingPoints = np.zeros((6,), dtype=np.float32)
         chargingPoints = np.zeros((6,), dtype=np.float32)
 
-        # Capacity and efficiency data
+        # Output data set
         # Column 0 is capacity data
         # Column 1 is discharging watt-hr data
         # Column 2 is charging watt-hr data
@@ -415,6 +439,7 @@ class Dataset():
                     if rawData.loc[index + 1, 'Amps'] == 0 and rawData.loc[index + 1, 'ES'] == 0:
                         dischargingPoints[0] = rawData.loc[index, 'Amp-hr']
                         dischargingPoints[1] = rawData.loc[index, 'Watt-hr']
+                        # The calculated internal resistance is Ro, calculated from current stop
                         # Voltage before current switching off
                         dischargingPoints[2] = rawData.loc[index, 'Volts']
                         # Voltage after current switching off
@@ -454,6 +479,7 @@ class Dataset():
                 for index in indexList_3:
                     # If next line is the start of charging process
                     if rawData.loc[index + 1, 'Amps'] > 0 and rawData.loc[index + 1, 'ES'] == 0:
+                        # The calculated internal resistance is Ro, calculated from current step
                         # Voltage before current step
                         chargingPoints[2] = rawData.loc[index, 'Volts']
                         # Voltage after current step
