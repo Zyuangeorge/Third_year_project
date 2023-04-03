@@ -6,3 +6,4 @@ S32K_Src/test.c
 S32K_Src/test.exe
 __pycache__/
 Data
+.idea

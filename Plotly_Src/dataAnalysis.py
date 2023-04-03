@@ -44,6 +44,17 @@ class DataPlotting():
             'text': '#000000'
         }
 
+        # Graph Download config
+        self.config = {
+            'toImageButtonOptions': {
+                'format': 'png',  # one of png, svg, jpeg, webp
+                'filename': 'custom_image',
+                'height': 910,
+                'width': 1100,
+                'scale': 6  # Multiply title/legend/axis/canvas sizes by this factor
+            }
+        }
+
         # Layout setting
         self.app.layout = html.Div([
             # Left side toolbar
@@ -61,7 +72,7 @@ class DataPlotting():
                 dcc.Dropdown(
                     id="battery_data",
                     options=[{'label': val, 'value': val} for val in [
-                        'Capacity', 'Efficiency', 'InternalResistance_Discharge','InternalResistance_Charge']],
+                        'Capacity', 'Efficiency', 'InternalResistance_Discharge', 'InternalResistance_Charge']],
                     value=['Capacity'],
                     multi=True
                 ),
@@ -103,7 +114,7 @@ class DataPlotting():
 
             # Right side graph
             html.Div([
-                dcc.Graph(id='battery-graph')
+                dcc.Graph(id='battery-graph', figure=self.config)
             ], style={
                 'width': '80%',
                 'float': 'right',
@@ -139,8 +150,9 @@ class DataPlotting():
 
             for i in range(len(battery_number)*len(battery_data)*len(battery_type)):
                 fig.data[i].update(visible=False)
-            
-            trendLineData = fig.data[-len(battery_number)*len(battery_type)*2+1::2]
+
+            trendLineData = fig.data[-len(battery_number)
+                                     * len(battery_type)*2+1::2]
 
             for traceData in trendLineData:
                 traceData.update(showlegend=True)
@@ -165,53 +177,52 @@ class DataPlotting():
     def changeStyle(self, fig, xLabel, yLabel):
         # choose the figure font
         font_dict = dict(family='Times New Roman',
-                        size=18,
-                        color='black'
-                        )
+                         size=18,
+                         color='black'
+                         )
 
         # general figure formatting
         fig.update_layout(font=font_dict,  # font formatting
-                        plot_bgcolor='white',  # background color
-                        yaxis_range=[50, 170],
-                        width=1200,  # figure width
-                        height=750,  # figure height
-                        margin=dict(l=20,t=20,b=10), # set left margin
-                        legend=dict(
-                            title_font_family="Times New Roman",
-                            font=font_dict,
-                            bgcolor="White",
-                            bordercolor="Black",
-                            borderwidth=1
-                        )
-                        )
+                          plot_bgcolor='white',  # background color
+                          yaxis_range=[50, 170],
+                          width=1200,  # figure width
+                          height=750,  # figure height
+                          margin=dict(l=20, t=20, b=10),  # set left margin
+                          legend=dict(
+                              title_font_family="Times New Roman",
+                              font=font_dict,
+                              bgcolor="White",
+                              bordercolor="Black",
+                              borderwidth=1
+                          )
+                          )
 
         fig.update_yaxes(title_text=yLabel,  # axis label
-                        showline=True,  # add line at x=0
-                        linecolor='black',  # line color
-                        linewidth=2.4,  # line size
-                        ticks='outside',  # ticks outside axis
-                        tickfont=font_dict,  # tick label font
-                        mirror='allticks',  # add ticks to top/right axes
-                        tickwidth=2.4,  # tick width
-                        tickcolor='black',  # tick color
-                        gridcolor='lightgray'
-                        )
+                         showline=True,  # add line at x=0
+                         linecolor='black',  # line color
+                         linewidth=2.4,  # line size
+                         ticks='outside',  # ticks outside axis
+                         tickfont=font_dict,  # tick label font
+                         mirror='allticks',  # add ticks to top/right axes
+                         tickwidth=2.4,  # tick width
+                         tickcolor='black',  # tick color
+                         gridcolor='lightgray'
+                         )
 
         fig.update_xaxes(title_text=xLabel,
-                        showline=True,
-                        showticklabels=True,
-                        linecolor='black',
-                        linewidth=2.4,
-                        ticks='outside',
-                        tickfont=font_dict,
-                        mirror='allticks',
-                        tickwidth=2.4,
-                        tickcolor='black',
-                        gridcolor='lightgray'
-                        )
+                         showline=True,
+                         showticklabels=True,
+                         linecolor='black',
+                         linewidth=2.4,
+                         ticks='outside',
+                         tickfont=font_dict,
+                         mirror='allticks',
+                         tickwidth=2.4,
+                         tickcolor='black',
+                         gridcolor='lightgray'
+                         )
 
         return fig
-
 
     def autoOpen(self):
         """Handler used to open the graph automatically"""
@@ -251,17 +262,21 @@ class Battery():
         # Calculate the nominal internal resistance of the battery : (Current average IR) / (Initial average IR)
         # IR for battery 1
         # Discharge DCIR
-        self.internalResistance_1_D = self.rawData[0:self.cycleNumber, 3] / self.rawData[0, 3] * 100.0
+        self.internalResistance_1_D = self.rawData[0:self.cycleNumber,
+                                                   3] / self.rawData[0, 3] * 100.0
 
         # Charge DCIR
-        self.internalResistance_1_C = self.rawData[0:self.cycleNumber, 4] / self.rawData[0, 4] * 100.0
+        self.internalResistance_1_C = self.rawData[0:self.cycleNumber,
+                                                   4] / self.rawData[0, 4] * 100.0
 
         # IR for battery 2
         # Discharge DCIR
-        self.internalResistance_2_D = self.rawData[self.cycleNumber:, 3] / self.rawData[self.cycleNumber, 3] * 100.0
-        
+        self.internalResistance_2_D = self.rawData[self.cycleNumber:,
+                                                   3] / self.rawData[self.cycleNumber, 3] * 100.0
+
         # Charge DCIR
-        self.internalResistance_2_C = self.rawData[self.cycleNumber:, 4] / self.rawData[self.cycleNumber, 4] * 100.0
+        self.internalResistance_2_C = self.rawData[self.cycleNumber:,
+                                                   4] / self.rawData[self.cycleNumber, 4] * 100.0
 
     def returnData(self):
         """Handler for organising the data"""
@@ -327,7 +342,7 @@ class Battery():
                 self.error['DataType'].append("InternalResistance_Discharge")
                 self.error['DataValue'].append(
                     outputData.loc[x, 'InternalResistance_Discharge'])
-            
+
             if outputData.loc[x, "InternalResistance_Charge"] > 250 or outputData.loc[x, "InternalResistance_Charge"] < 0 or outputData.loc[x, "InternalResistance_Charge"] == np.nan:
                 self.error['BatteryType'].append(
                     outputData.loc[x, "BatteryType"])
@@ -337,14 +352,13 @@ class Battery():
                 self.error['DataType'].append("InternalResistance_Charge")
                 self.error['DataValue'].append(
                     outputData.loc[x, 'InternalResistance_Charge'])
-                
 
         # self.exportErrorLog()
         del self.error
         gc.collect()
 
         del self.rawData, self.cycleNumber, self.type
-        del self.capacity_1, self.capacity_2, self.efficiency_1, self.efficiency_2, self.internalResistance_1_D,self.internalResistance_1_C, self.internalResistance_2_D,self.internalResistance_2_C
+        del self.capacity_1, self.capacity_2, self.efficiency_1, self.efficiency_2, self.internalResistance_1_D, self.internalResistance_1_C, self.internalResistance_2_D, self.internalResistance_2_C
         del data_1, data_2, data, colName
         gc.collect()
 

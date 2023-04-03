@@ -170,7 +170,17 @@ class cellDataPlotting:
 
         fig.update_traces(showlegend=False, row=2, col=1)
 
-        fig.show()
+        config = {
+            'toImageButtonOptions': {
+                'format': 'png',  # one of png, svg, jpeg, webp
+                'filename': 'custom_image',
+                'height': 910,
+                'width': 1100,
+                'scale': 6  # Multiply title/legend/axis/canvas sizes by this factor
+            }
+        }
+
+        fig.show(config=config)
 
     def getAccurateSoC(self):
 
@@ -223,7 +233,17 @@ class cellDataPlotting:
                     'cellCB_6': 'Cell 6', 'cellCB_7': 'Cell 7', 'cellCB_8': 'Cell 8', 'cellCB_9': 'Cell 9', 'cellCB_10': 'Cell 10',
                     'cellCB_11': 'Cell 11', 'cellCB_12': 'Cell 12', 'cellCB_13': 'Cell 13', 'cellCB_14': 'Cell 14'}
         fig.for_each_trace(lambda t: t.update(name=newnames[t.name]))
-        fig.show()
+        config = {
+            'toImageButtonOptions': {
+                'format': 'png',  # one of png, svg, jpeg, webp
+                'filename': 'custom_image',
+                'height': 910,
+                'width': 1100,
+                'scale': 6  # Multiply title/legend/axis/canvas sizes by this factor
+            }
+        }
+
+        fig.show(config=config)
 
         fig2 = go.Figure()
 
@@ -238,7 +258,7 @@ class cellDataPlotting:
                     'cellVoltage_6': 'Cell 6', 'cellVoltage_7': 'Cell 7', 'cellVoltage_8': 'Cell 8', 'cellVoltage_9': 'Cell 9', 'cellVoltage_10': 'Cell 10',
                     'cellVoltage_11': 'Cell 11', 'cellVoltage_12': 'Cell 12', 'cellVoltage_13': 'Cell 13', 'cellVoltage_14': 'Cell 14'}
         fig2.for_each_trace(lambda t: t.update(name=newnames[t.name]))
-        fig2.show()
+        fig2.show(config=config)
 
         fig3 = go.Figure()
 
@@ -253,7 +273,7 @@ class cellDataPlotting:
                     'cellSoC_6': 'Cell 6', 'cellSoC_7': 'Cell 7', 'cellSoC_8': 'Cell 8', 'cellSoC_9': 'Cell 9', 'cellSoC_10': 'Cell 10',
                     'cellSoC_11': 'Cell 11', 'cellSoC_12': 'Cell 12', 'cellSoC_13': 'Cell 13', 'cellSoC_14': 'Cell 14'}
         fig3.for_each_trace(lambda t: t.update(name=newnames[t.name]))
-        fig3.show()
+        fig3.show(config=config)
 
         # Filter data distorted by the balancing process
         fig4 = go.Figure()
@@ -286,7 +306,7 @@ class cellDataPlotting:
                     'filteredCellVoltage_6': 'Cell 6', 'filteredCellVoltage_7': 'Cell 7', 'filteredCellVoltage_8': 'Cell 8', 'filteredCellVoltage_9': 'Cell 9', 'filteredCellVoltage_10': 'Cell 10',
                     'filteredCellVoltage_11': 'Cell 11', 'filteredCellVoltage_12': 'Cell 12', 'filteredCellVoltage_13': 'Cell 13', 'filteredCellVoltage_14': 'Cell 14'}
         fig4.for_each_trace(lambda t: t.update(name=newnames[t.name]))
-        fig4.show()
+        fig4.show(config=config)
 
     def changeStyle(self, fig, xLabel, yLabel, stackPlot):
         # choose the figure font

@@ -15,44 +15,8 @@ class ocvDataPlotting:
 
         data = pd.read_csv(self.fileName, header=2, index_col=0)
 
-        """ data['Amps (mA)'] = data['Amps'].map(lambda x: x * 1000)
-        data['Volts (mV)'] = data['Volts'].map(lambda x: x * 1000)
-
-        fig = make_subplots(rows=2, cols=2, subplot_titles=("Cell Current", 'Cell Voltage', 'Cell Ah', 'Cell Wh'))
-
-        # Update xaxis properties
-        fig.update_xaxes(title_text="Time(s)", row=1, col=1)
-        fig.update_xaxes(title_text="Time(s)", row=1, col=2)
-        fig.update_xaxes(title_text="Time(s)", row=2, col=1)
-        fig.update_xaxes(title_text="Time(s)", row=2, col=2)
-
-        # Update yaxis properties
-        fig.update_yaxes(title_text="Current (mA)", row=1, col=1)
-        fig.update_yaxes(title_text="Voltage (mV)", row=1, col=2)
-        fig.update_yaxes(title_text="Amp-hr (Ah)", row=2, col=1)
-        fig.update_yaxes(title_text="Watt-hr (wh)", row=2, col=2) """
-
-        """ fig.add_trace(go.Scatter(x=data['TestTime'], y=data['Amps (mA)'], 
-                                    mode='lines',
-                                    name='Current (mA)'),
-                                    row=1, col=1)
-
-        fig.add_trace(go.Scatter(x=data['TestTime'], y=data['Volts (mV)'],
-                                mode='lines',
-                                name='Voltages (mV)'),
-                                row=1, col=2)
-
-        fig.add_trace(go.Scatter(x=data['TestTime'], y=data['Amp-hr'], 
-                                mode='lines',
-                                name='Amp-hr (Ah)'),
-                                row=2, col=1)
-        
-        fig.add_trace(go.Scatter(x=data['TestTime'], y=data['Watt-hr'], 
-                                mode='lines',
-                                name='Watt-hr (Wh)'),
-                                row=2, col=2) """
-
         fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig = self.changeStyle(fig)
         
         fig.add_trace(go.Scatter(x=data['TestTime'], y=data['Volts'],
                                 mode='lines',
@@ -62,6 +26,7 @@ class ocvDataPlotting:
                                 mode='lines',
                                 name='Current (A)'), secondary_y=True,)
 
+        
         fig.update_layout(title='Battery SoC-OCV Data', hovermode='x', legend=dict(orientation="h", yanchor="bottom",y=1.02,xanchor="right",x=1))
 
         # Set x-axis title
@@ -71,9 +36,66 @@ class ocvDataPlotting:
         fig.update_yaxes(title_text="Voltages (V)", secondary_y=False)
         fig.update_yaxes(title_text="Current (A)", secondary_y=True)
 
-        fig.show()
+        config = {
+            'toImageButtonOptions': {
+                'format': 'png',  # one of png, svg, jpeg, webp
+                'filename': 'custom_image',
+                'height': 910,
+                'width': 1100,
+                'scale': 6  # Multiply title/legend/axis/canvas sizes by this factor
+            }
+        }
 
+        fig.show(config=config)
+
+    def changeStyle(self, fig):
+        # choose the figure font
+        font_dict = dict(family='Times New Roman',
+                        size=18,
+                        color='black'
+                        )
+
+        # general figure formatting
+        fig.update_layout(font=font_dict,  # font formatting
+                        plot_bgcolor='white',  # background color
+                        width=1200,  # figure width
+                        height=750,  # figure height
+                        #margin=dict(l=20,t=20,b=10), # set left margin
+                        legend=dict(
+                            title_font_family="Times New Roman",
+                            font=font_dict,
+                            bgcolor="White",
+                            bordercolor="Black",
+                            borderwidth=1
+                        )
+                        )
+
+        fig.update_yaxes(
+                        showline=True,  # add line at x=0
+                        linecolor='black',  # line color
+                        linewidth=2.4,  # line size
+                        ticks='outside',  # ticks outside axis
+                        tickfont=font_dict,  # tick label font
+                        mirror='allticks',  # add ticks to top/right axes
+                        tickwidth=2.4,  # tick width
+                        tickcolor='black',  # tick color
+                        gridcolor='lightgray'
+                        )
+
+        fig.update_xaxes(
+                        showline=True,
+                        showticklabels=True,
+                        linecolor='black',
+                        linewidth=2.4,
+                        ticks='outside',
+                        tickfont=font_dict,
+                        mirror='allticks',
+                        tickwidth=2.4,
+                        tickcolor='black',
+                        gridcolor='lightgray'
+                        )
+
+        return fig
+    
 ocvPlot = ocvDataPlotting("./Data/OcvData/CLN_char_25deg - 009.csv")
-ocvPlot_2 = ocvDataPlotting("./Data/OcvData/BAK-2.9-char-25C - 009.csv")
 ocvPlot.plotBatteryData()
-ocvPlot_2.plotBatteryData()
