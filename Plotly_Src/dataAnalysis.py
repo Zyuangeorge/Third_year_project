@@ -114,7 +114,7 @@ class DataPlotting():
 
             # Right side graph
             html.Div([
-                dcc.Graph(id='battery-graph', figure=self.config)
+                dcc.Graph(id='battery-graph', config=self.config)
             ], style={
                 'width': '80%',
                 'float': 'right',

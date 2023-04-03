@@ -31,7 +31,7 @@ class ocvDataPlotting():
                                  mode='lines',
                                  name='Temperature (C)'), secondary_y=False,)
 
-        fig.update_layout(title='Battery Voltage/Current-Time Data', hovermode='x',
+        fig.update_layout(hovermode='x',
                           legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=0.9))
 
         # Set x-axis title

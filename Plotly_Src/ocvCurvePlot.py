@@ -25,9 +25,8 @@ class ocvDataPlotting:
         fig.add_trace(go.Scatter(x=data['TestTime'], y=data['Amps'], 
                                 mode='lines',
                                 name='Current (A)'), secondary_y=True,)
-
         
-        fig.update_layout(title='Battery SoC-OCV Data', hovermode='x', legend=dict(orientation="h", yanchor="bottom",y=1.02,xanchor="right",x=1))
+        fig.update_layout(hovermode='x', legend=dict(orientation="h", yanchor="bottom",y=1.02,xanchor="right",x=1))
 
         # Set x-axis title
         fig.update_xaxes(title_text="Time (hr)")

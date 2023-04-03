@@ -35,9 +35,10 @@ class selectedCBDataLines(Enum):
 
 
 class cellDataPlotting:
-    def __init__(self, folder):
+    def __init__(self, folder, powerFilePath):
 
-        self.folder = folder
+        self.folder = str(folder)
+        self.powerFilePath = str(powerFilePath)
 
     def prepareDataSet(self):
         """Prepare data set for data visualisation"""
@@ -53,7 +54,6 @@ class cellDataPlotting:
 
         batteryData = pd.concat(
             dataList, axis=0, join='outer', ignore_index=True)
-        # batteryData['Time(s)'] = pd.to_datetime(batteryData['Date'], unit='s')
 
         batteryData['Time(s)'] = batteryData['Date'].map(
             lambda x: x - batteryData.loc[0, 'Date'])
@@ -184,7 +184,7 @@ class cellDataPlotting:
 
     def getAccurateSoC(self):
 
-        df = pd.read_csv("Data\\PowerSupply\\28-3-2023-Charge.csv",
+        df = pd.read_csv(self.powerFilePath,
                          delimiter=";", skiprows=selectedPowerSupplyDataLines.skiprows.value, nrows=selectedPowerSupplyDataLines.nrows.value)
 
         # Convert the 'Time' column to datetime format
@@ -221,7 +221,7 @@ class cellDataPlotting:
             traces.append(trace)
 
         fig = make_subplots(
-            rows=14, cols=1, shared_xaxes=True, vertical_spacing=0.02)
+            rows=14, cols=1, shared_xaxes=True)
 
         for i, trace in enumerate(traces):
             fig.add_trace(trace, row=i+1, col=1)
@@ -233,6 +233,7 @@ class cellDataPlotting:
                     'cellCB_6': 'Cell 6', 'cellCB_7': 'Cell 7', 'cellCB_8': 'Cell 8', 'cellCB_9': 'Cell 9', 'cellCB_10': 'Cell 10',
                     'cellCB_11': 'Cell 11', 'cellCB_12': 'Cell 12', 'cellCB_13': 'Cell 13', 'cellCB_14': 'Cell 14'}
         fig.for_each_trace(lambda t: t.update(name=newnames[t.name]))
+
         config = {
             'toImageButtonOptions': {
                 'format': 'png',  # one of png, svg, jpeg, webp
@@ -311,7 +312,7 @@ class cellDataPlotting:
     def changeStyle(self, fig, xLabel, yLabel, stackPlot):
         # choose the figure font
         font_dict = dict(family='Times New Roman',
-                         size=20,
+                         size=14,
                          color='black'
                          )
 
@@ -320,7 +321,7 @@ class cellDataPlotting:
                           plot_bgcolor='white',  # background color
                           # width=850,  # figure width
                           # height=700,  # figure height
-                          # margin=dict(r=20, t=20, b=10)  # remove white space
+                          # margin=dict(r=20, t=10, b=10),  # remove white space
                           legend=dict(
                               title_font_family="Times New Roman",
                               font=font_dict,
@@ -392,9 +393,9 @@ if __name__ == "__main__":
     # cellDataPlotting(charingData).plotBatteryData()
 
     charingData2 = 'Data\\Cyclon_2.5Ah_LeadAcid\\27-03-2023\\Charging'
-    cbAndSoCData2 = 'Data\\Cyclon_2.5Ah_LeadAcid\\27-03-2023\\Balancing'
     #cellDataPlotting(charingData2).plotBatteryData()
-    #cellDataPlotting(cbAndSoCData2).plotCBControlData()
 
-    charingData2 = 'Data\\Cyclon_2.5Ah_LeadAcid\\28-03-2023'
-    cellDataPlotting(charingData2).plotBatteryData()
+    # CB Data
+    cellDataPlotting('Data\\Cyclon_2.5Ah_LeadAcid\\27-03-2023\\Balancing',"Data\\PowerSupply\\27-3-2023-Charge.csv").plotCBControlData()
+    # Charing Data
+    cellDataPlotting('Data\\Cyclon_2.5Ah_LeadAcid\\28-03-2023',"Data\\PowerSupply\\28-3-2023-Charge.csv").plotBatteryData()
