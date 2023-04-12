@@ -1,10 +1,11 @@
 """
-BMS GUI Version 1.2.3
+BMS GUI Version 1.2.4
 Features:
     Add output CB control data
     Add init dialog
     Add close window warning
     Add more comments
+    Update for 7 cells
 
 pipenv Install codes:
 1. Move all the files in one folder

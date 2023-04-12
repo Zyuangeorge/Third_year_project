@@ -127,7 +127,7 @@
            <set>Qt::ImhDigitsOnly</set>
           </property>
           <property name="text">
-           <string>1700</string>
+           <string>2800</string>
           </property>
           <property name="placeholderText">
            <string>Default value 1700mV</string>
@@ -150,7 +150,7 @@
            <set>Qt::ImhDigitsOnly</set>
           </property>
           <property name="text">
-           <string>2500</string>
+           <string>4200</string>
           </property>
           <property name="placeholderText">
            <string>Default value 2500mV</string>

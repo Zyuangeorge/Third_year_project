@@ -76,6 +76,8 @@ class zoomWindow(QDialog):
     """Window for zooming graphs"""
     def __init__(self):
         super().__init__()
+        # use this when using pyinstaller to pack the program
+        #self.setWindowIcon(QIcon(util.get_resource_path(self, "img/sheffield_logo.png")))
         self.setWindowIcon(QIcon("./UI/sheffield_logo.jpg"))
 
         self.canvas = pg.GraphicsLayoutWidget()
