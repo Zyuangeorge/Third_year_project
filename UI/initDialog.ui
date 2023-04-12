@@ -130,7 +130,7 @@
            <string>2800</string>
           </property>
           <property name="placeholderText">
-           <string>Default value 1700mV</string>
+           <string>Default value 2800mV</string>
           </property>
          </widget>
         </item>
@@ -153,7 +153,7 @@
            <string>4200</string>
           </property>
           <property name="placeholderText">
-           <string>Default value 2500mV</string>
+           <string>Default value 4200mV</string>
           </property>
          </widget>
         </item>
