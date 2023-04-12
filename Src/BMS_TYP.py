@@ -830,7 +830,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             realTimeData[58] = timeInfo # Time information
 
             self.outputData = np.append(self.outputData, [realTimeData], axis = 0) # Convert to two dimension and add to output data
-            
+
             if self.outputData.shape[0] > self.outputTimeInterval: # Automatic Recording
                 columnName = [
                             'cellVoltage_1','cellVoltage_2','cellVoltage_3','cellVoltage_4',
@@ -1324,8 +1324,10 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             text = str(radioButton.text())
             if text == "14 Cells":
                 self.cellNumber = 14
+                self.packVoltageThreshold = [i * 14 for i in gui.voltageThreshold]
             elif text == "7 Cells":
-                self.cellNumber  = 7
+                self.cellNumber = 7
+                self.packVoltageThreshold = [i * 7 for i in gui.voltageThreshold]
             else:
                 pass
 
@@ -1568,7 +1570,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             pass
 
         # Close the cb if the voltage difference is less than threshold
-        if self.packData['packVoltageDifference'] <= self.cbThreshold:
+        if self.packData['packVoltageDifference'] <= self.cbThreshold and self.cbStatus == 0:
             self.stopCellBalancing()
         
         # Update cell balancing status

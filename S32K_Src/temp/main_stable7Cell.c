@@ -53,6 +53,10 @@
 #define GREEN_LED_PORT        PTD
 #define GREEN_LED_PIN         16U
 
+/* Relay port */
+#define RELAY_PORT         PTC
+#define RELAY_PIN          8U
+
 /* LPSPI_TX configuration. */
 #define BCC_TX_LPSPI_DELAY_PCS_TO_SCLK         3U  /* 3us (f >= 1.75us) */
 #define BCC_TX_LPSPI_DELAY_SCLK_TO_PCS         1U  /* 1us (g >= 0.60us) */
@@ -65,7 +69,7 @@
 #define LPIT0_CHANNEL_BCCDRV   3U
 
 /* Battery rated capacitance */
-#define RATEDCAPACITANCE    2.5
+#define RATEDCAPACITANCE    2.9
 
 /* The minimum value of OCV */
 #define OCV_MINSOC          0
@@ -81,36 +85,46 @@
 #define KD 1 // Discharging efficiency
 
 /* Current threshold for determining the current direction */
-#define ISENSETHRESHOLD 35821 // In uV is 80000uV
+#define ISENSETHRESHOLD 10000 // In uV
 
 /* Battery minimum and maximum voltages */
-//#define MC33771C_TH_ALL_CT_UV_TH 1600 // 1600 mV
-//#define MC33771C_TH_ALL_CT_OV_TH 2500 // 2500 mV
-
-/*  Number of cells */
-#define BATTERY_NUMBER 14
+#define MC33771C_TH_ALL_CT_UV_TH 2800 // 2800 mV
+#define MC33771C_TH_ALL_CT_OV_TH 4200 // 4200 mV
 
 /* Voltage difference threshold for cell balancing 5 mV */
-//#define VOLTAGE_DIFFERENCE_THRESHOLD 5000
+#define VOLTAGE_DIFFERENCE_THRESHOLD 5000
 
 /* Maximum number of cells under balancing */
-#define MAX_BALANCED_CELL_NUMBER 7 //
+#define MAX_BALANCED_CELL_NUMBER 3 //
 
 /* Rest time between balancing processes in mS */
-#define REST_TIME 3000
+#define REST_TIME 3500
 
 /* Cell balancing time setting in minute */
 #define BALANCE_TIME 1
 
 /* Receive buffer size */
-#define BUFFER_SIZE 18
+#define BUFFER_SIZE 6
 
 /* Cell balancing circuit resistance, calculated from open-circuit resistance/balancing current */
-#define CB_RESISTANCE 37.57
+#define CB_RESISTANCE 37.5
+
+/* SoC calibrate time after cell balancing*/
+#define BALANCEING_SOC_CALIBRATE_TIME -180000
+
+/* Battery cycle life */
+#define CYCLELIFE 1555
 
 /* Lookup table setup */
 //#define LINEAR
 #define POLYNOMIAL
+
+/*  Number of cells */
+#define BATTERY_NUMBER 14 // Don't modify the value changed the setting below
+
+/* Number of cells configuration */
+//#define CELL14
+#define CELL7
 
 /*******************************************************************************
 * Enum definition
@@ -276,7 +290,7 @@ bool sleepMode = false;
 
 /* Timeout value of the lpit */
 int32_t timeout = 0;
-uint32_t balanceTimeout = 0;
+int32_t balanceTimeout = 0;
 
 /* Current direction flag: 0 is discharge, 1 is charge, 2 is open circuit */
 int16_t currentDirectionFlag = 2;
@@ -295,12 +309,11 @@ int32_t isenseVolt;
 uint8_t receivedBuffer[BUFFER_SIZE];
 uint8_t bufferIdx;
 
-uint16_t balancingVoltageThreshold = 5000;
-uint16_t ovThreshold = 2500;
-uint16_t uvThreshold = 1600;
-
 /* Cell balancing control flag. */
 bool cellBalancingFlag = false;
+
+/* SoC update flag, used to reset the SoC value*/
+bool cellBalancingSoCUpdateFlag = false;
 
 /* Final transmitted data */
 /*
@@ -313,9 +326,9 @@ bool cellBalancingFlag = false;
  * [45] EFC: Equivalent Full Cycle
  * [46:59] Cell 1 to 14 CB Control 
  * [60] System status
- * [61] Cell balancing statue
+ * [61] Cell balancing status
  */
-uint32_t transmittedData[61];
+uint32_t transmittedData[62];
 
 /*******************************************************************************
  * Function prototypes
@@ -385,7 +398,6 @@ static bcc_status_t initRegisters(void)
             }
         }
     }
-
     return BCC_STATUS_SUCCESS;
 }
 
@@ -578,11 +590,11 @@ static bcc_status_t initAlgorithmValues(void)
     /* Initialise lookup table settings */
 	#ifdef POLYNOMIAL
         // Polynomial
-		ocvConfig.coefficient_4th = -4.642e-09;
-		ocvConfig.coefficient_3rd = 1.241e-06;
-		ocvConfig.coefficient_2nd = -0.0001123;
-		ocvConfig.coefficient_1st = 0.006514;
-		ocvConfig.constant = 1.871;
+		ocvConfig.coefficient_4th = -6.712e-08;
+		ocvConfig.coefficient_3rd = 1.544e-05;
+		ocvConfig.coefficient_2nd = -0.001193;
+		ocvConfig.coefficient_1st = 0.04342;
+		ocvConfig.constant = 3.025;
 	#else
         // Linear
 		ocvConfig.coefficient_4th = 0;
@@ -592,9 +604,11 @@ static bcc_status_t initAlgorithmValues(void)
 		ocvConfig.constant = 1.95;
 	#endif
 
+	balanceTimeout = 0;
+
 	/* Initialize the OCV-SOC look up table */
 	fillOcvTable(&ocvConfig);
-	balanceTimeout = 0;
+
 	for (i = 0; i < BATTERY_NUMBER; i++){
 		/* Get the initial SOC value */
 		getSOCResult(cellData[i + 1],&soc);
@@ -609,7 +623,17 @@ static bcc_status_t initAlgorithmValues(void)
 
         /* Cet the initial CB control status value */
         AhData.CB_ControlStatus[i] = 0.0;
+
+        /* Set the integrated current value */
+        AhData.integratedCurrent[i] = 0.0;
+        AhData.absIntegratedCurent[i] = 0.0;
 	}
+
+    /* Reset AhData values */
+    AhData.efcCounter = 0;
+
+    /* Reset cell balancing control flag */
+    cellBalancingFlag = false;
 
 	return BCC_STATUS_SUCCESS;
 }
@@ -622,10 +646,32 @@ static bcc_status_t initAlgorithmValues(void)
 static bcc_status_t updateThreshold(void)
 {
 	bcc_status_t error;
+
     error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_ALL_CT_OFFSET,
-            MC33771C_TH_ALL_CT_ALL_CT_OV_TH_MASK, MC33771C_TH_ALL_CT_ALL_CT_OV_TH(BCC_GET_TH_CTX((int32_t)ovThreshold)));
+            MC33771C_TH_ALL_CT_ALL_CT_OV_TH_MASK, MC33771C_TH_ALL_CT_ALL_CT_OV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_OV_TH)));
+#ifdef CELL14
     error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_ALL_CT_OFFSET,
-            MC33771C_TH_ALL_CT_ALL_CT_UV_TH_MASK, MC33771C_TH_ALL_CT_ALL_CT_UV_TH(BCC_GET_TH_CTX((int32_t)uvThreshold)));
+            MC33771C_TH_ALL_CT_ALL_CT_UV_TH_MASK, MC33771C_TH_ALL_CT_ALL_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
+#else
+	 // Set the undervoltage threshold for CT5 to CT11 to 0V
+    error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_CT14_OFFSET, MC33771C_TH_CT14_CT_UV_TH_MASK, MC33771C_TH_CT14_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
+	error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_CT13_OFFSET, MC33771C_TH_CT13_CT_UV_TH_MASK, MC33771C_TH_CT13_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
+	error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_CT12_OFFSET, MC33771C_TH_CT12_CT_UV_TH_MASK, MC33771C_TH_CT12_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
+
+    error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_OV_UV_EN_OFFSET, MC33771C_OV_UV_EN_CT11_OVUV_EN_MASK, MC33771C_OV_UV_EN_CT11_OVUV_EN_DISABLED_ENUM_VAL);
+    error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_OV_UV_EN_OFFSET, MC33771C_OV_UV_EN_CT10_OVUV_EN_MASK, MC33771C_OV_UV_EN_CT10_OVUV_EN_DISABLED_ENUM_VAL);
+    error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_OV_UV_EN_OFFSET, MC33771C_OV_UV_EN_CT9_OVUV_EN_MASK, MC33771C_OV_UV_EN_CT9_OVUV_EN_DISABLED_ENUM_VAL);
+    error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_OV_UV_EN_OFFSET, MC33771C_OV_UV_EN_CT8_OVUV_EN_MASK, MC33771C_OV_UV_EN_CT8_OVUV_EN_DISABLED_ENUM_VAL);
+    error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_OV_UV_EN_OFFSET, MC33771C_OV_UV_EN_CT7_OVUV_EN_MASK, MC33771C_OV_UV_EN_CT7_OVUV_EN_DISABLED_ENUM_VAL);
+    error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_OV_UV_EN_OFFSET, MC33771C_OV_UV_EN_CT6_OVUV_EN_MASK, MC33771C_OV_UV_EN_CT6_OVUV_EN_DISABLED_ENUM_VAL);
+    error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_OV_UV_EN_OFFSET, MC33771C_OV_UV_EN_CT5_OVUV_EN_MASK, MC33771C_OV_UV_EN_CT5_OVUV_EN_DISABLED_ENUM_VAL);
+
+    error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_CT4_OFFSET, MC33771C_TH_CT4_CT_UV_TH_MASK, MC33771C_TH_CT4_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
+	error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_CT3_OFFSET, MC33771C_TH_CT3_CT_UV_TH_MASK, MC33771C_TH_CT3_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
+	error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_CT2_OFFSET, MC33771C_TH_CT2_CT_UV_TH_MASK, MC33771C_TH_CT2_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
+	error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_CT1_OFFSET, MC33771C_TH_CT1_CT_UV_TH_MASK, MC33771C_TH_CT1_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
+#endif
+
     if (error != BCC_STATUS_SUCCESS)
     {
         return error;
@@ -639,19 +685,8 @@ static bcc_status_t updateThreshold(void)
  */
 static status_t initAlgorithm(void)
 {
-    uint8_t i;
     status_t status;
     bcc_status_t bccStatus;
-
-    /* Reset AhData values */
-    AhData.efcCounter = 0;
-    for(i = 0; i < BATTERY_NUMBER; i++){
-        AhData.integratedCurrent[i] = 0.0;
-        AhData.absIntegratedCurent[i] = 0.0;
-    }
-
-    /* Reset cell balancing control flag */
-    cellBalancingFlag = false;
     
     /* Reset cell balancing */
     BCC_CB_Pause(&drvConfig, BCC_CID_DEV1, true);
@@ -691,6 +726,7 @@ static status_t initAlgorithm(void)
         return status;
     }
 
+#ifdef CELL14
     /* Initialize BCC driver configuration structure. */
     drvConfig.drvInstance = 0U;
     drvConfig.commMode = BCC_MODE_SPI;
@@ -698,12 +734,21 @@ static status_t initAlgorithm(void)
     drvConfig.device[0] = BCC_DEVICE_MC33771C;
     drvConfig.cellCnt[0] = 14U;
     drvConfig.loopBack = false;
-
+#else
+    /* Initialize BCC driver configuration structure. */
+    drvConfig.drvInstance = 0U;
+    drvConfig.commMode = BCC_MODE_SPI;
+    drvConfig.devicesCnt = 1U;
+    drvConfig.device[0] = BCC_DEVICE_MC33771C;
+    drvConfig.cellCnt[0] = 7U;
+    drvConfig.loopBack = false;
+#endif
     LPIT_DRV_StartTimerChannels(INST_LPIT1, (1 << LPIT0_CHANNEL_TYPGUI));
 
     PINS_DRV_SetPins(RED_LED_PORT, 1U << RED_LED_PIN);
     PINS_DRV_SetPins(BLUE_LED_PORT, 1U << BLUE_LED_PIN);
     PINS_DRV_SetPins(GREEN_LED_PORT, 1U << GREEN_LED_PIN);
+    PINS_DRV_SetPins(RELAY_PORT, 1U << RELAY_PIN);
 
     bccStatus = BCC_Init(&drvConfig);
     if (bccStatus != BCC_STATUS_SUCCESS)
@@ -758,12 +803,11 @@ static bcc_status_t updateMeasurements(void)
 
     /* You can use bcc_measurements_t enumeration to index array with raw values. */
     /* Useful macros can be found in bcc.h or bcc_MC3377x.h. */
+#ifdef CELL14
     cellData[0]= BCC_GET_STACK_VOLT(measurements[BCC_MSR_STACK_VOLT]);
 	cellData[1]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT1]);
 	cellData[2]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT2]);
-	//cellData[2]= 2000000;
 	cellData[3]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT3]);
-	//cellData[3]= 2000000;
 	cellData[4]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT4]);
 	cellData[5]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT5]);
 	cellData[6]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT6]);
@@ -776,7 +820,24 @@ static bcc_status_t updateMeasurements(void)
 	cellData[13]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT13]);
 	cellData[14]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT14]);
 	cellData[15] = BCC_GET_IC_TEMP_C(measurements[BCC_MSR_ICTEMP]);
-
+#else
+    cellData[0]= BCC_GET_STACK_VOLT(measurements[BCC_MSR_STACK_VOLT]);
+	cellData[1]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT1]);
+	cellData[2]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT2]);
+	cellData[3]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT3]);
+	cellData[4]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT4]);
+	cellData[5]= 3600000;
+	cellData[6]= 3600000;
+	cellData[7]= 3600000;
+	cellData[8]= 3600000;
+	cellData[9]= 3600000;
+	cellData[10]= 3600000;
+	cellData[11]= 3600000;
+	cellData[12]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT12]);
+	cellData[13]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT13]);
+	cellData[14]= BCC_GET_VOLT(measurements[BCC_MSR_CELL_VOLT14]);
+	cellData[15] = BCC_GET_IC_TEMP_C(measurements[BCC_MSR_ICTEMP]);
+#endif
 	/* ISENSE data (current measurement) */
 	cellData[16] = BCC_GET_ISENSE_AMP(DEMO_RSHUNT, measurements[BCC_MSR_ISENSE1], measurements[BCC_MSR_ISENSE2]);
 	isenseVolt = BCC_GET_ISENSE_VOLT(measurements[BCC_MSR_ISENSE1], measurements[BCC_MSR_ISENSE2]);
@@ -832,7 +893,7 @@ static void getCurrentDOD(void)
 
 	for (i = 0; i < BATTERY_NUMBER; i++){
 
-		deltaDOD[i] = AhData.integratedCurrent[i] * 1000 * 1000 / (AhData.SOH[i] * RATEDCAPACITANCE * 3600);
+		deltaDOD[i] = AhData.integratedCurrent[i] * 1000 / (RATEDCAPACITANCE * 3600);
 
         if (currentDirectionFlag == 0){
             AhData.DOD_c[i] = AhData.DOD_0[i] + KD * deltaDOD[i]; // Discharge DOD
@@ -864,8 +925,9 @@ static void updateIntegratedCurrent(int16_t SoC, int8_t cellIndex)
 
 	changedSoC = AhData.SOC_0[cellIndex] - SoC;
 
-	// Integrated current in A*s = changedSoC (in permille) / 1000 * rated capaciatance * SoH (in permille) / 1000 * 3600 (change to As)
-	AhData.integratedCurrent[cellIndex] = changedSoC * 0.001 * AhData.SOH[cellIndex] * 0.001 * RATEDCAPACITANCE * 3600 ;
+	// Integrated current in A*s = changedSoC (in permille) / 1000  * 3600 (change to As)
+	AhData.integratedCurrent[cellIndex] = changedSoC * 0.001 * RATEDCAPACITANCE * 3600;
+	AhData.absIntegratedCurent[cellIndex] = changedSoC * 0.001 * RATEDCAPACITANCE * 3600;
 }
 
 /*!
@@ -896,51 +958,79 @@ void bubbleSort(uint32_t cellVoltage[], uint8_t cellLabel[], uint8_t len)
  */
 static void cellBalancing(void)
 {
-    uint32_t cellVoltage[BATTERY_NUMBER]; // Cell voltages for 14 cells
-    uint8_t cellLabel[BATTERY_NUMBER]; // Cell number label
     uint8_t balancingCellNumber = 0; // Number of cells require balancing
     uint16_t balanceTime = BALANCE_TIME; // Balancing time in minute
-    int16_t SoC; // SoC value for each cellmused to calculate current SoC and update integrated current value
+#ifdef CELL14
+    uint32_t cellVoltage[BATTERY_NUMBER]; // Cell voltages for 14 cells
+    uint8_t cellLabel[BATTERY_NUMBER]; // Cell number label
+#else
+    uint32_t cellVoltage[7];
+    uint8_t cellLabel[7]; // Cell number label
+#endif
+
     uint8_t i;
 
+    cellBalancingSoCUpdateFlag = true;
+
+#ifdef CELL14
     for(i = 0; i < BATTERY_NUMBER; i++){
         cellVoltage[i] = cellData[i + 1];
         cellLabel[i] = i;
-
-        getSOCResult(cellData[i + 1],&SoC); // Get SoC value
-        AhData.SOC_c[i] = SoC;
-        updateIntegratedCurrent(SoC, i);
     }
-
     bubbleSort(cellVoltage, cellLabel, BATTERY_NUMBER);
 
-    if((cellVoltage[BATTERY_NUMBER - 1] - cellVoltage[0]) > balancingVoltageThreshold){
-        BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, true);
-        
-        for(i = BATTERY_NUMBER - 1; i > 0; i--){
-            if((cellVoltage[i] - cellVoltage[0]) > balancingVoltageThreshold){
-                balancingCellNumber++;
-            }
+	if((cellVoltage[BATTERY_NUMBER - 1] - cellVoltage[0]) > VOLTAGE_DIFFERENCE_THRESHOLD){
+		BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, true);
 
-            if((balancingCellNumber <= MAX_BALANCED_CELL_NUMBER) && ((BATTERY_NUMBER - i) <= balancingCellNumber)){
-                BCC_CB_SetIndividual(&drvConfig, BCC_CID_DEV1, cellLabel[i], true, balanceTime);
+		for(i = BATTERY_NUMBER - 1; i > 0; i--){
+			if((cellVoltage[i] - cellVoltage[0]) > VOLTAGE_DIFFERENCE_THRESHOLD){
+				balancingCellNumber++;
+			}
 
-				/*
-				 * Integrated calculation under balancing condition
-				 * Calculated current = Integrated current - Integrated discharge current (60s*discharge current)
-				 * Discharge current is calculated from measurement voltage/37.5ohms
-				*/
-                //AhData.integratedCurrent[cellLabel[i]] = AhData.integratedCurrent[cellLabel[i]] + 60 * cellData[cellLabel[i] + 1] * 0.000001 / CB_RESISTANCE;
-                //AhData.absIntegratedCurent[cellLabel[i]] = AhData.absIntegratedCurent[cellLabel[i]] + 60 * cellData[cellLabel[i] + 1] * 0.000001 / CB_RESISTANCE;
-            }
+			if((balancingCellNumber <= MAX_BALANCED_CELL_NUMBER) && ((BATTERY_NUMBER - i) <= balancingCellNumber)){
+				BCC_CB_SetIndividual(&drvConfig, BCC_CID_DEV1, cellLabel[i], true, balanceTime);
+			}
+		}
+	}
+	else{
+		BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, false);
+	}
+#else
+	cellVoltage[0] = cellData[1];
+	cellVoltage[1] = cellData[2];
+	cellVoltage[2] = cellData[3];
+	cellVoltage[3] = cellData[4];
+	cellVoltage[4] = cellData[12];
+	cellVoltage[5] = cellData[13];
+	cellVoltage[6] = cellData[14];
 
-            //getCurrentDOD();
-		    //getCurrentSOC();
-        }
-    }
-    else{
-    	BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, false);
-    }
+	cellLabel[0] = 0;
+	cellLabel[1] = 1;
+	cellLabel[2] = 2;
+	cellLabel[3] = 3;
+	cellLabel[4] = 11;
+	cellLabel[5] = 12;
+	cellLabel[6] = 13;
+
+    bubbleSort(cellVoltage, cellLabel, 7);
+
+	if((cellVoltage[6] - cellVoltage[0]) > VOLTAGE_DIFFERENCE_THRESHOLD){
+		BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, true);
+
+		for(i = 6; i > 0; i--){
+			if((cellVoltage[i] - cellVoltage[0]) > VOLTAGE_DIFFERENCE_THRESHOLD){
+				balancingCellNumber++;
+			}
+
+			if((balancingCellNumber <= MAX_BALANCED_CELL_NUMBER) && ((7 - i) <= balancingCellNumber)){
+				BCC_CB_SetIndividual(&drvConfig, BCC_CID_DEV1, cellLabel[i], true, balanceTime);
+			}
+		}
+	}
+	else{
+		BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, false);
+	}
+#endif
 }
 
 /*!
@@ -950,6 +1040,7 @@ static void cellBalancingControl(void)
 {
 	uint8_t cellIndex;
 	uint16_t readVal;
+	int16_t SoC;
 
 	// Read cell balancing status registers
 	BCC_Reg_Read(&drvConfig, BCC_CID_DEV1, MC33771C_CB_DRV_STS_OFFSET, 1U, &readVal);
@@ -958,11 +1049,32 @@ static void cellBalancingControl(void)
 		AhData.CB_ControlStatus[cellIndex] = (readVal & (1 << cellIndex)) >> cellIndex;
 	}
 
+	if(balanceTimeout < 0){
+		for(cellIndex = 0; cellIndex < BATTERY_NUMBER; cellIndex++){
+			getSOCResult(cellData[cellIndex + 1],&SoC); // Update SoC value when the balancing is stopped
+			AhData.SOC_c[cellIndex] = SoC;
+			updateIntegratedCurrent(SoC, cellIndex);
+		}
+	}
+
     /*
-     * If the batteries had rested (1s), start the next balancing round
+     * If the batteries had rested, start the next balancing round
     */
 	if(balanceTimeout >= (BALANCE_TIME * 60 * 1000 + REST_TIME)){ // If the balancing process is ended and the battery is rested
 		balanceTimeout = 0; // Reset balance time out to 0
+
+		if((cellBalancingFlag == false) && (cellBalancingSoCUpdateFlag == true)){
+			balanceTimeout = BALANCEING_SOC_CALIBRATE_TIME; // Set two mins rest time
+		}
+
+		if(cellBalancingSoCUpdateFlag == true){
+			for(cellIndex = 0; cellIndex < BATTERY_NUMBER; cellIndex++){
+				getSOCResult(cellData[cellIndex + 1],&SoC); // Update SoC value
+				AhData.SOC_c[cellIndex] = SoC;
+				updateIntegratedCurrent(SoC, cellIndex);
+			}
+			cellBalancingSoCUpdateFlag = false;
+		}
 
 		if(cellBalancingFlag == true){
 			cellBalancing();
@@ -977,9 +1089,9 @@ static void DischargeHandler(void)
 {
     int16_t i;
     int16_t flag;
-
+    BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, false);
     for (i = 0; i < BATTERY_NUMBER; i++){
-        if (cellData[i + 1] <= (uvThreshold + 150) * 1000){ // 150mV margin
+        if (cellData[i + 1] <= (MC33771C_TH_ALL_CT_UV_TH + 5) * 1000){ // 5mV margin
             AhData.SOH[i] = AhData.DOD_c[i]; // DoD is equal to the maximum releasable capacity
             AhData.SOC_c[i] = 0; // When the cell is fully discharged, the SoC is 0, DoD is not 0
             flag = 1;
@@ -1003,9 +1115,9 @@ static void ChargeHandler(void)
 {
     int16_t i;
     int16_t flag;
-
+    BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, false);
     for (i = 0; i < BATTERY_NUMBER; i++){
-        if ((cellData[i + 1] >= (ovThreshold - 100) * 1000) && (-isenseVolt <= (ISENSETHRESHOLD + 50))){ // At the end of CV process (10mV and 50uV margin)
+        if ((cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 5) * 1000) && (-isenseVolt <= ISENSETHRESHOLD)){ // At the end of CV process (10mV margin)
             AhData.SOH[i] = AhData.SOC_c[i] - AhData.DOD_c[i]; // Calibrate SOH for each cell
             AhData.SOC_c[i] = AhData.SOH[i]; // SoC equals to SoH
             AhData.DOD_c[i] = 0; // When the battery is fully charged, the DoD is 0
@@ -1028,13 +1140,28 @@ static void ChargeHandler(void)
  */
 static void OpenCircuitHandler(void)
 {
+	uint8_t cellIndex;
+
 	if (EFCFlag == 0){
         CycleCounter += 1;
         EFCFlag = 1;
+        AhData.efcCounter = AhData.absIntegratedCurent[1] / (2 * RATEDCAPACITANCE*3600);
+
+		// Update the SoH of each cell based on EFC
+		for(cellIndex = 0; cellIndex < BATTERY_NUMBER; cellIndex++){
+			AhData.SOH[cellIndex] = (CYCLELIFE - (AhData.absIntegratedCurent[cellIndex] / (2 * RATEDCAPACITANCE*3600))) / CYCLELIFE * 1000;
+		}
     }
 
-    if (CycleCounter == 4){
-        AhData.efcCounter += AhData.absIntegratedCurent[1] / (2 * RATEDCAPACITANCE*3600);
+    if (CycleCounter == 5){
+    	// Calculate EFC using cell 1 (Assume the battery cells are balanced)
+        AhData.efcCounter = AhData.absIntegratedCurent[1] / (2 * RATEDCAPACITANCE*3600);
+
+        for(cellIndex = 0; cellIndex < BATTERY_NUMBER; cellIndex++){
+        	// Clear integrated current data to avoid over flow.
+        	AhData.absIntegratedCurent[cellIndex] = 0.0;
+        }
+
         CycleCounter = 0;
     }
 
@@ -1050,17 +1177,6 @@ static bmsSystemState FaultHandler(void)
 	uint8_t cellIndex;
 	uint16_t readVal;
 
-//    /*
-//     * Correct the integrated current value
-//     * Corrected integrated current = (60000 - balanceTimeout) / 60000 * balancing current * 60;
-//    */
-//    for(i = 0; i < BATTERY_NUMBER; i++){
-//        if(AhData.CB_ControlStatus[i] == 1){
-//            AhData.integratedCurrent[i] = AhData.integratedCurrent[i] + (60000 - balanceTimeout) * 0.001 * cellData[i + 1] * 0.000001 / CB_RESISTANCE;
-//            AhData.absIntegratedCurent[i] = AhData.absIntegratedCurent[i] + (60000 - balanceTimeout) * 0.001 * cellData[i + 1] * 0.000001 / CB_RESISTANCE;
-//        }
-//    }
-
 	// Turn off cell balancing
 	BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, false);
 
@@ -1071,8 +1187,12 @@ static bmsSystemState FaultHandler(void)
 		AhData.CB_ControlStatus[cellIndex] = (readVal & (1 << cellIndex)) >> cellIndex;
 	}
 
+	// Open relay
+	PINS_DRV_ClearPins(RELAY_PORT, 1U << RELAY_PIN);
+
 	if(PTC->PDIR & (1<<12)){
 		clearFaultRegs();
+		PINS_DRV_SetPins(RELAY_PORT, 1U << RELAY_PIN);
 		for (i = 0; i < 2; i++){
 			faultStatusValue[i] = 0;
 		}
@@ -1133,7 +1253,7 @@ void dataTransmit(bmsSystemState bmsNextState)
 
     transmittedData[60] = bmsNextState;
 
-    //transmittedData[61] = cellBalancingFlag;
+    transmittedData[61] = cellBalancingFlag;
 
     LPUART_DRV_SendData(INST_LPUART1, (uint8_t *)transmittedData, sizeof(transmittedData)); // Transmit the data through UART
 }
@@ -1232,21 +1352,15 @@ void communicateWithPc(bmsSystemState bmsNextState)
 {
     /* Declare a buffer used to store the received data */
 
-    LPUART_DRV_ReceiveData(INST_LPUART1, receivedBuffer, 17U);
+    LPUART_DRV_ReceiveData(INST_LPUART1, receivedBuffer, 5U);
 
     dataTransmit(bmsNextState);
 
-    /* Interpret the command */
-    balancingVoltageThreshold = (command[0] - '0') * 1000 + (command[1] - '0') * 100 + (command[2] - '0') * 10 + (command[3] - '0');
-    ovThreshold = (command[4] - '0') * 1000 + (command[5] - '0') * 100 + (command[6] - '0') * 10 + (command[7] - '0');
-    uvThreshold = (command[8] - '0') * 1000 + (command[9] - '0') * 100 + (command[10] - '0') * 10 + (command[11] - '0');
-
-    if(strncmp((char *)&command[12], "OPEN\t", 5) == 0)
+    if(strcmp((char *)receivedBuffer, "OPEN\t") == 0)
     {
-
         cellBalancingFlag = true;
     }
-    else if(strncmp((char *)&command[12], "OVER\t", 5) == 0)
+    else if(strcmp((char *)receivedBuffer, "OVER\t") == 0)
     {
         cellBalancingFlag = false;
     }
@@ -1290,7 +1404,7 @@ int main(void)
         
           if (PTC->PDIR & (1<<12)){ /* If Pad Data Input = 1 (BTN0 [SW2] pushed) */
         	  CycleCounter = 0; /* Clear EFC counter */
-              EFCFlag = 1; /* Reset EFC flag */
+              EFCFlag = 0; /* Reset EFC flag */
               balanceTimeout = 0;
 
               // Turn off the LED for a short period to represent that the data has cleared
