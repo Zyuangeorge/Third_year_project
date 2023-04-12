@@ -47,7 +47,7 @@ class ocvDataPlotting():
                 'filename': 'custom_image',
                 'height': 910,
                 'width': 1100,
-                'scale': 6  # Multiply title/legend/axis/canvas sizes by this factor
+                'scale': 3  # Multiply title/legend/axis/canvas sizes by this factor
             }
         }
 

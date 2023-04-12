@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1193, 791)
+        MainWindow.resize(1193, 849)
         font = QFont()
         font.setFamilies([u"Arial"])
         MainWindow.setFont(font)
@@ -277,6 +277,24 @@ class Ui_MainWindow(object):
 
 
         self.leftLayout.addWidget(self.loadGroupBox)
+
+        self.cellNumberGroupBox = QGroupBox(self.centralwidget)
+        self.cellNumberGroupBox.setObjectName(u"cellNumberGroupBox")
+        self.horizontalLayout = QHBoxLayout(self.cellNumberGroupBox)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.cellNumberRadioButton_14 = QRadioButton(self.cellNumberGroupBox)
+        self.cellNumberRadioButton_14.setObjectName(u"cellNumberRadioButton_14")
+        self.cellNumberRadioButton_14.setChecked(True)
+
+        self.horizontalLayout.addWidget(self.cellNumberRadioButton_14)
+
+        self.cellNumberRadioButton_7 = QRadioButton(self.cellNumberGroupBox)
+        self.cellNumberRadioButton_7.setObjectName(u"cellNumberRadioButton_7")
+
+        self.horizontalLayout.addWidget(self.cellNumberRadioButton_7)
+
+
+        self.leftLayout.addWidget(self.cellNumberGroupBox)
 
         self.thresholdGroupBox = QGroupBox(self.centralwidget)
         self.thresholdGroupBox.setObjectName(u"thresholdGroupBox")
@@ -1261,7 +1279,10 @@ class Ui_MainWindow(object):
         self.printButton.setText(QCoreApplication.translate("MainWindow", u"Print Data", None))
         self.loadGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Loading", None))
         self.loadingButton.setText(QCoreApplication.translate("MainWindow", u"Load file", None))
-        self.thresholdGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Set thresholds", None))
+        self.cellNumberGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Number Of Cells", None))
+        self.cellNumberRadioButton_14.setText(QCoreApplication.translate("MainWindow", u"14 Cells", None))
+        self.cellNumberRadioButton_7.setText(QCoreApplication.translate("MainWindow", u"7 Cells", None))
+        self.thresholdGroupBox.setTitle(QCoreApplication.translate("MainWindow", u"Set Thresholds", None))
         self.voltageThresholdLabel.setText(QCoreApplication.translate("MainWindow", u"Cell voltage threshold (mV):", None))
         self.voltageMaxLabel.setText(QCoreApplication.translate("MainWindow", u"Maximum:", None))
         self.voltageMiniLabel.setText(QCoreApplication.translate("MainWindow", u"Minimum:", None))

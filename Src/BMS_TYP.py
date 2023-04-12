@@ -138,6 +138,9 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         # Cell balancing threshold
         self.cbThreshold = 9
+        
+        # Number of cells setting
+        self.cellNumber = 14
 
         # Battery type
         self.batteryType = "Default"
@@ -526,6 +529,10 @@ class mainWindow(QMainWindow, Ui_MainWindow):
 
         self.tempMaxLineEdit.textChanged.connect(self.updateThreshold)
         self.tempMiniLineEdit.textChanged.connect(self.updateThreshold)
+
+        # Update cell number
+        self.cellNumberRadioButton_7.toggled.connect(self.cellNumberHandler)
+        self.cellNumberRadioButton_14.toggled.connect(self.cellNumberHandler)
 
         # Link the timer to functions
         self.timer.timeout.connect(self.receiveData)
@@ -1308,6 +1315,19 @@ class mainWindow(QMainWindow, Ui_MainWindow):
         
         gc.collect() """
 
+# ===================Number of cells setting====================
+    def cellNumberHandler(self):
+        radioButton = self.sender()
+
+        if radioButton.isChecked():
+            text = str(radioButton.text())
+            if text == "14 Cells":
+                self.cellNumber = 14
+            elif text == "7 Cells":
+                self.cellNumber  = 7
+            else:
+                pass
+
 # ===================Status display====================
 
     def displayCellStatus(self, batteryNumber):
@@ -1536,7 +1556,15 @@ class mainWindow(QMainWindow, Ui_MainWindow):
                 self.ICData['tempStatus'] = tempStatus.DEFAULT
 
         # Update pack voltage difference
-        self.packData['packVoltageDifference'] = np.ptp(np.array(self.bccData[1:15])) / 1000 # Convert uV to mV
+        if self.cellNumber == 14:
+            self.packData['packVoltageDifference'] = np.ptp(np.array(self.bccData[1:15])) / 1000 # Convert uV to mV
+        elif self.cellNumber == 7:
+            subsetIndices = np.array([1, 2, 3, 4, 12, 13, 14])
+            arr = np.array(self.bccData)
+            subSet = arr[subsetIndices]
+            self.packData['packVoltageDifference'] = np.ptp(np.array(subSet)) / 1000 # Convert uV to mV
+        else:
+            pass
 
         # Close the cb if the voltage difference is less than threshold
         if self.packData['packVoltageDifference'] <= self.cbThreshold:

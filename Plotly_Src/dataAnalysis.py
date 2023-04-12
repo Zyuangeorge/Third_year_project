@@ -184,7 +184,7 @@ class DataPlotting():
         # general figure formatting
         fig.update_layout(font=font_dict,  # font formatting
                           plot_bgcolor='white',  # background color
-                          yaxis_range=[50, 170],
+                          yaxis_range=[50, 140],
                           width=1200,  # figure width
                           height=750,  # figure height
                           margin=dict(l=20, t=20, b=10),  # set left margin
