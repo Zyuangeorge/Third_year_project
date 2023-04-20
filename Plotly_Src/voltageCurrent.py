@@ -32,7 +32,7 @@ class ocvDataPlotting():
                                  name='Temperature (C)'), secondary_y=False,)
 
         fig.update_layout(hovermode='x',
-                          legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=0.9))
+                          legend=dict(orientation="h", yanchor="bottom", y=1.04, xanchor="right", x=0.9))
 
         # Set x-axis title
         fig.update_xaxes(title_text="Time (s)")
@@ -45,8 +45,8 @@ class ocvDataPlotting():
             'toImageButtonOptions': {
                 'format': 'png',  # one of png, svg, jpeg, webp
                 'filename': 'custom_image',
-                'height': 910,
-                'width': 1100,
+                'height': 500,
+                'width': 600,
                 'scale': 3  # Multiply title/legend/axis/canvas sizes by this factor
             }
         }
@@ -56,7 +56,7 @@ class ocvDataPlotting():
     def changeStyle(self, fig):
         # choose the figure font
         font_dict = dict(family='Times New Roman',
-                         size=18,
+                         size=24,
                          color='black'
                          )
 
@@ -65,10 +65,13 @@ class ocvDataPlotting():
                           plot_bgcolor='white',  # background color
                           width=1200,  # figure width
                           height=750,  # figure height
-                          # margin=dict(l=20,t=20,b=10), # set left margin
+                          margin=dict(l=5, t=5, b=5),  # set left margin
                           legend=dict(
                               title_font_family="Times New Roman",
-                              font=font_dict,
+                              font=dict(family='Times New Roman',
+                                        size=19,
+                                        color='black'
+                                        ),
                               bgcolor="White",
                               bordercolor="Black",
                               borderwidth=1
@@ -78,7 +81,7 @@ class ocvDataPlotting():
         fig.update_yaxes(
             showline=True,  # add line at x=0
             linecolor='black',  # line color
-            linewidth=2.4,  # line size
+            linewidth=3,  # line size
             ticks='outside',  # ticks outside axis
             tickfont=font_dict,  # tick label font
             mirror='allticks',  # add ticks to top/right axes
@@ -91,7 +94,7 @@ class ocvDataPlotting():
             showline=True,
             showticklabels=True,
             linecolor='black',
-            linewidth=2.4,
+            linewidth=3,
             ticks='outside',
             tickfont=font_dict,
             mirror='allticks',

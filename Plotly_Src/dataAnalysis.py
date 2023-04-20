@@ -49,9 +49,9 @@ class DataPlotting():
             'toImageButtonOptions': {
                 'format': 'png',  # one of png, svg, jpeg, webp
                 'filename': 'custom_image',
-                'height': 910,
-                'width': 1100,
-                'scale': 6  # Multiply title/legend/axis/canvas sizes by this factor
+                'height': 500,
+                'width': 700,
+                'scale': 3  # Multiply title/legend/axis/canvas sizes by this factor
             }
         }
 
@@ -177,7 +177,7 @@ class DataPlotting():
     def changeStyle(self, fig, xLabel, yLabel):
         # choose the figure font
         font_dict = dict(family='Times New Roman',
-                         size=18,
+                         size=24,
                          color='black'
                          )
 
@@ -187,20 +187,28 @@ class DataPlotting():
                           yaxis_range=[50, 140],
                           width=1200,  # figure width
                           height=750,  # figure height
-                          margin=dict(l=20, t=20, b=10),  # set left margin
+                          margin=dict(l=5, t=5, b=5),  # set left margin
                           legend=dict(
                               title_font_family="Times New Roman",
-                              font=font_dict,
+                              font=dict(family='Times New Roman',
+                                        size=19,
+                                        color='black'
+                                        ),
                               bgcolor="White",
                               bordercolor="Black",
-                              borderwidth=1
+                              borderwidth=1,
+                              orientation="h",
+                              yanchor="bottom",
+                              y=1.02,
+                              xanchor="right",
+                              x=0.9
                           )
                           )
 
         fig.update_yaxes(title_text=yLabel,  # axis label
                          showline=True,  # add line at x=0
                          linecolor='black',  # line color
-                         linewidth=2.4,  # line size
+                         linewidth=3,  # line size
                          ticks='outside',  # ticks outside axis
                          tickfont=font_dict,  # tick label font
                          mirror='allticks',  # add ticks to top/right axes
@@ -213,7 +221,7 @@ class DataPlotting():
                          showline=True,
                          showticklabels=True,
                          linecolor='black',
-                         linewidth=2.4,
+                         linewidth=3,
                          ticks='outside',
                          tickfont=font_dict,
                          mirror='allticks',

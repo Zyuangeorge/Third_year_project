@@ -1570,7 +1570,7 @@ class mainWindow(QMainWindow, Ui_MainWindow):
             pass
 
         # Close the cb if the voltage difference is less than threshold
-        if self.packData['packVoltageDifference'] <= self.cbThreshold and self.cbStatus == 0:
+        if self.packData['packVoltageDifference'] <= self.cbThreshold and all(element == 0 for element in self.CBData):
             self.stopCellBalancing()
         
         # Update cell balancing status
