@@ -447,6 +447,125 @@ class cellDataPlotting:
         }
         fig.show(config=config)
 
+    def plotBatteryDataStateofHealthCapacity(self):
+        """Plot multiple battery data"""
+        batteryData = self.prepareDataSet()
+        accurateSoCData = self.getAccurateSoC()
+
+        batteryData = batteryData[selectedBatteryDataLines.LOWER.value:
+                                  selectedBatteryDataLines.UPPER.value]
+
+        batteryData['Time(s)'] = batteryData['Time(s)'] - \
+            batteryData['Time(s)'][selectedBatteryDataLines.LOWER.value]
+
+        # Plot graph
+        fig = make_subplots(rows=2, cols=2, specs=[[{"secondary_y": True}, {"secondary_y": False}], [
+                            {"secondary_y": False}, {"secondary_y": False}]], vertical_spacing=0.25, horizontal_spacing=0.25)
+
+        fig.add_trace(go.Scatter(x=batteryData['Time(s)'], y=batteryData['cellVoltage_1'],
+                                 mode='lines',
+                                 name='cellVoltage_1'),
+                      row=1, col=1, secondary_y=False)
+        
+        fig.add_trace(go.Scatter(x=batteryData['Time(s)'], y=batteryData['packCurrent'],
+                            mode='lines',
+                            name='packCurrent'),
+                      row=1, col=1, secondary_y=True)
+
+        fig.add_trace(go.Scatter(x=batteryData['Time(s)'], y=batteryData['cellSoH_1'],
+                                 mode='lines',
+                                 name='cellSoH_1'),
+                      row=1, col=2)
+
+        fig.add_trace(go.Scatter(x=batteryData['Time(s)'], y=batteryData['cellSoC_1'],
+                                    mode='lines',
+                                    name='cellSoC_1'),
+                        row=2, col=1)
+        
+        fig.add_trace(go.Scatter(x=accurateSoCData.index, y=accurateSoCData['Accurate SoC'],
+                                 mode='lines',
+                                 name='Accurate SoC'),
+                      row=2, col=2)
+
+        fig = self.changeStyle(fig, 'Time(s)', "Default", False)
+
+        # Update xaxis properties
+        fig.update_xaxes(title_text="Time(s)</br></br>(a)", row=1, col=1)
+        fig.update_xaxes(title_text="Time(s)</br></br>(b)", row=1, col=2)
+        fig.update_xaxes(title_text="Time(s)<br>(c)", row=2, col=1)
+        fig.update_xaxes(title_text="Time(s)<br>(d)", row=2, col=2)
+
+        # Update yaxis properties
+        fig.update_yaxes(title_text="Current (mA)",
+                         row=1, col=1, secondary_y=True)
+        fig.update_yaxes(title_text="Voltage (mV)",
+                         row=1, col=1, secondary_y=False)
+        fig.update_yaxes(title_text="SoH (%)", row=1, col=2)
+        fig.update_yaxes(title_text="SoC (%)", row=2, col=1)
+        fig.update_yaxes(title_text="Accurate SoC (%)", row=2, col=2)
+
+        newNames = {
+            'packCurrent': 'Current',
+            'cellVoltage_1': 'Cell 1 Voltage', 'cellVoltage_2': 'Cell 2', 'cellVoltage_3': 'Cell 3', 'cellVoltage_4': 'Cell 4', 'cellVoltage_5': 'Cell 5',
+            'cellVoltage_6': 'Cell 6', 'cellVoltage_7': 'Cell 7', 'cellVoltage_8': 'Cell 8', 'cellVoltage_9': 'Cell 9', 'cellVoltage_10': 'Cell 10',
+            'cellVoltage_11': 'Cell 11', 'cellVoltage_12': 'Cell 12', 'cellVoltage_13': 'Cell 13', 'cellVoltage_14': 'Cell 14',
+
+            'cellSoH_1': 'Cell 1 SoH', 'cellSoH_2': 'Cell 2 SoH', 'cellSoH_3': 'Cell 3 SoH', 'cellSoH_4': 'Cell 4 SoH', 'cellSoH_5': 'Cell 5 SoH',
+            'cellSoH_6': 'Cell 6 SoH', 'cellSoH_7': 'Cell 7 SoH', 'cellSoH_8': 'Cell 8 SoH', 'cellSoH_9': 'Cell 9 SoH', 'cellSoH_10': 'Cell 10 SoH',
+            'cellSoH_11': 'Cell 11 SoH', 'cellSoH_12': 'Cell 12 SoH', 'cellSoH_13': 'Cell 13 SoH', 'cellSoH_14': 'Cell 14 SoH',
+
+            'cellSoC_1': 'Cell 1', 'cellSoC_2': 'Cell 2', 'cellSoC_3': 'Cell 3', 'cellSoC_4': 'Cell 4', 'cellSoC_5': 'Cell 5',
+            'cellSoC_6': 'Cell 6', 'cellSoC_7': 'Cell 7', 'cellSoC_8': 'Cell 8', 'cellSoC_9': 'Cell 9', 'cellSoC_10': 'Cell 10',
+            'cellSoC_11': 'Cell 11', 'cellSoC_12': 'Cell 12', 'cellSoC_13': 'Cell 13', 'cellSoC_14': 'Cell 14',
+            
+            'Accurate SoC': 'Accurate SoC'
+        }
+
+        fig.for_each_trace(lambda t: t.update(name=newNames[t.name]))
+
+        fig.update_traces(selector=dict(name='Cell 1'),
+                          marker=dict(color='blue'))
+        fig.update_traces(selector=dict(name='Cell 2'),
+                          marker=dict(color='green'))
+        fig.update_traces(selector=dict(name='Cell 3'),
+                          marker=dict(color='red'))
+        fig.update_traces(selector=dict(name='Cell 4'),
+                          marker=dict(color='purple'))
+        fig.update_traces(selector=dict(name='Cell 5'),
+                          marker=dict(color='orange'))
+        fig.update_traces(selector=dict(name='Cell 6'),
+                          marker=dict(color='yellow'))
+        fig.update_traces(selector=dict(name='Cell 7'),
+                          marker=dict(color='brown'))
+        fig.update_traces(selector=dict(name='Cell 8'),
+                          marker=dict(color='pink'))
+        fig.update_traces(selector=dict(name='Cell 9'),
+                          marker=dict(color='gray'))
+        fig.update_traces(selector=dict(name='Cell 10'),
+                          marker=dict(color='black'))
+        fig.update_traces(selector=dict(name='Cell 11'),
+                          marker=dict(color='cyan'))
+        fig.update_traces(selector=dict(name='Cell 12'),
+                          marker=dict(color='magenta'))
+        fig.update_traces(selector=dict(name='Cell 13'),
+                          marker=dict(color='olive'))
+        fig.update_traces(selector=dict(name='Cell 14'),
+                          marker=dict(color='teal'))
+
+        fig.update_layout(hovermode='x',
+                          legend=dict(orientation="h", yanchor="bottom", y=1.06, xanchor="right", x=0.9))
+
+        config = {
+            'toImageButtonOptions': {
+                'format': 'png',  # one of png, svg, jpeg, webp
+                'filename': 'custom_image',
+                'height': 710,
+                'width': 1050,
+                'scale': 3  # Multiply title/legend/axis/canvas sizes by this factor
+            }
+        }
+        fig.show(config=config)
+
     def getAccurateSoC(self):
 
         df = pd.read_csv(self.powerFilePath,
@@ -707,6 +826,9 @@ if __name__ == "__main__":
     # 19/4/2023 (State of health efc test)
     ##cellDataPlotting("Data\\BAK_29_NMC\\18-04-2023\\continuous", "Data\\PowerSupply\\19-4-2023.csv", 2.9, 'cellCB_2').plotBatteryDataStateofHealth("Data\\BAK_29_NMC\\18-04-2023\\SoC\\SoHdata.jpg")
 
+    # 22/4/2023 (State of health capacity test)
+    cellDataPlotting("Data\\BAK_29_NMC\\21-04-2023", "Data\\PowerSupply\\21-4-2023.csv", 2.9, 'cellCB_2').plotBatteryDataStateofHealthCapacity()
+
     """ def changeStyle(fig, xLabel, yLabel):
         # choose the figure font
         font_dict = dict(family='Times New Roman',
@@ -772,22 +894,22 @@ if __name__ == "__main__":
         fig.add_trace(go.Scatter(x=lithiumBatteryData['Time(s)'], y=lithiumBatteryData['cellSoC_' + str(batteryNumber + 1)],
                                  mode='lines',
                                  name='cellSoC_' + str(batteryNumber + 1)),
-                      row=1, col=1)
+                      row=1, col=2)
 
         fig.add_trace(go.Scatter(x=lithiumTrendData['Time(s)'], y=lithiumTrendData['filteredCellVoltage_' + str(batteryNumber + 1)],
                                  mode='lines',
                                  name='filteredCellVoltage_' + str(batteryNumber + 1)),
-                      row=1, col=2)
+                      row=1, col=1)
 
         fig.add_trace(go.Scatter(x=LeadAcidBatteryData['Time(s)'], y=LeadAcidBatteryData['cellSoC_' + str(batteryNumber + 1)],
                                  mode='lines',
                                  name='cellSoC_' + str(batteryNumber + 1)),
-                      row=2, col=1)
+                      row=2, col=2)
 
         fig.add_trace(go.Scatter(x=LeadAcidTrendData['Time(s)'], y=LeadAcidTrendData['filteredCellVoltage_' + str(batteryNumber + 1)],
                                  mode='lines',
                                  name='filteredCellVoltage_' + str(batteryNumber + 1)),
-                      row=2, col=2)
+                      row=2, col=1)
 
     fig = changeStyle(fig, 'Time(s)', "Default")
 
