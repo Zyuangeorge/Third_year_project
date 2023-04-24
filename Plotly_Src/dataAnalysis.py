@@ -197,11 +197,11 @@ class DataPlotting():
                               bgcolor="White",
                               bordercolor="Black",
                               borderwidth=1,
-                              orientation="h",
-                              yanchor="bottom",
-                              y=1.02,
-                              xanchor="right",
-                              x=0.9
+                              #orientation="h",
+                              #yanchor="bottom",
+                              #y=1.02,
+                              #xanchor="right",
+                              #x=0.9
                           )
                           )
 
