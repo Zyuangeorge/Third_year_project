@@ -11,10 +11,11 @@
 ** ###################################################################*/
 /*!
 ** @file main.c
-** @version 0.1.6
+** @version 1.0.0
 ** @brief
-**         Enhanced CC method.
-**         PC, uC communication.
+** 			Used for 7-cell lithium ion battery.
+**         	Enhanced CC method.
+**         	7 cell balancing.
 */
 /*!
 **  @addtogroup main_module main module documentation
@@ -81,14 +82,14 @@
 #define OCV_TABLE_SIZE      (OCV_MAXSOC - OCV_MINSOC + 1) // 1000 sets of data in the lookupTable
 
 /* Operation efficiency */
-#define KC 1 // Charging efficiency
-#define KD 1.15 // Discharging efficiency
+#define KC 1 // Charging tuning
+#define KD 1.15 // Discharging tuning
 
 /* Current threshold for determining the current direction */
 #define ISENSETHRESHOLD 8500 // In uV
 
 /* Battery minimum and maximum voltages */
-#define MC33771C_TH_ALL_CT_UV_TH 2700 // 2700 mV
+#define MC33771C_TH_ALL_CT_UV_TH 2600 // 2600 mV
 #define MC33771C_TH_ALL_CT_OV_TH 4300 // 4300 mV
 
 /* Voltage difference threshold for cell balancing 5 mV */
@@ -110,7 +111,7 @@
 #define BALANCEING_SOC_CALIBRATE_TIME -180000
 
 /* Battery cycle life */
-#define CYCLELIFE 1555 //1555
+#define CYCLELIFE 1555
 
 /* Lookup table setup */
 //#define LINEAR
@@ -293,7 +294,6 @@ int32_t balanceTimeout = 0;
 int16_t currentDirectionFlag = 2;
 
 /* Charging and discharging counter used for EFC Calculation */
-//int16_t CycleCounter = 0;
 int16_t EFCFlag = 0;
 
 /* Fault status */
@@ -365,7 +365,6 @@ static bmsSystemEvent monitorBattery(void);
 
 void communicateWithPc(bmsSystemState bmsNextState);
 void dataTransmit(bmsSystemState bmsNextState);
-static void resetData(void);
 
 static bcc_status_t updateFaultStatus(void);
 static void displayStatus(bmsSystemState bmsNextState);
@@ -610,7 +609,6 @@ static bcc_status_t initAlgorithmValues(void)
 		/* Get the initial SOC value */
 		getSOCResult(cellData[i + 1],&soc);
 		AhData.SOC_0[i] = soc;
-		//AhData.SOC_0[i] = 0;
 		AhData.SOC_c[i] = AhData.SOC_0[i];
 
         AhData.SOH[i] = 1000; // Assume the initial health is 100%
@@ -651,11 +649,10 @@ static bcc_status_t updateThreshold(void)
     error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_ALL_CT_OFFSET,
             MC33771C_TH_ALL_CT_ALL_CT_UV_TH_MASK, MC33771C_TH_ALL_CT_ALL_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
 #else
-	 // Set the undervoltage threshold for CT5 to CT11 to 0V
-    error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_CT14_OFFSET, MC33771C_TH_CT14_CT_UV_TH_MASK, MC33771C_TH_CT14_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
-	error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_CT13_OFFSET, MC33771C_TH_CT13_CT_UV_TH_MASK, MC33771C_TH_CT13_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
-	error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_CT12_OFFSET, MC33771C_TH_CT12_CT_UV_TH_MASK, MC33771C_TH_CT12_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
+    error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_ALL_CT_OFFSET,
+                MC33771C_TH_ALL_CT_ALL_CT_UV_TH_MASK, MC33771C_TH_ALL_CT_ALL_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
 
+	 // Set the undervoltage threshold for CT5 to CT11 to 0V
     error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_OV_UV_EN_OFFSET, MC33771C_OV_UV_EN_CT11_OVUV_EN_MASK, MC33771C_OV_UV_EN_CT11_OVUV_EN_DISABLED_ENUM_VAL);
     error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_OV_UV_EN_OFFSET, MC33771C_OV_UV_EN_CT10_OVUV_EN_MASK, MC33771C_OV_UV_EN_CT10_OVUV_EN_DISABLED_ENUM_VAL);
     error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_OV_UV_EN_OFFSET, MC33771C_OV_UV_EN_CT9_OVUV_EN_MASK, MC33771C_OV_UV_EN_CT9_OVUV_EN_DISABLED_ENUM_VAL);
@@ -663,11 +660,6 @@ static bcc_status_t updateThreshold(void)
     error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_OV_UV_EN_OFFSET, MC33771C_OV_UV_EN_CT7_OVUV_EN_MASK, MC33771C_OV_UV_EN_CT7_OVUV_EN_DISABLED_ENUM_VAL);
     error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_OV_UV_EN_OFFSET, MC33771C_OV_UV_EN_CT6_OVUV_EN_MASK, MC33771C_OV_UV_EN_CT6_OVUV_EN_DISABLED_ENUM_VAL);
     error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_OV_UV_EN_OFFSET, MC33771C_OV_UV_EN_CT5_OVUV_EN_MASK, MC33771C_OV_UV_EN_CT5_OVUV_EN_DISABLED_ENUM_VAL);
-
-    error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_CT4_OFFSET, MC33771C_TH_CT4_CT_UV_TH_MASK, MC33771C_TH_CT4_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
-	error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_CT3_OFFSET, MC33771C_TH_CT3_CT_UV_TH_MASK, MC33771C_TH_CT3_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
-	error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_CT2_OFFSET, MC33771C_TH_CT2_CT_UV_TH_MASK, MC33771C_TH_CT2_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
-	error = BCC_Reg_Update(&drvConfig, BCC_CID_DEV1, MC33771C_TH_CT1_OFFSET, MC33771C_TH_CT1_CT_UV_TH_MASK, MC33771C_TH_CT1_CT_UV_TH(BCC_GET_TH_CTX((int32_t)MC33771C_TH_ALL_CT_UV_TH)));
 #endif
 
     if (error != BCC_STATUS_SUCCESS)
@@ -1095,10 +1087,12 @@ static void DischargeHandler(void)
     int16_t flag;
     BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, false);
     for (i = 0; i < BATTERY_NUMBER; i++){
-        if (cellData[i + 1] <= (MC33771C_TH_ALL_CT_UV_TH + 400) * 1000){ // 100mV margin
-            AhData.SOH[i] = AhData.DOD_c[i]; // DoD is equal to the maximum releasable capacity
-            //AhData.SOH[i] += (AhData.absIntegratedCurent[i] / (2 * RATEDCAPACITANCE*3600)); //Cancel the EFC calculation
-            AhData.SOC_c[i] = 0; // When the cell is fully discharged, the SoC is 0, DoD is not 0
+    	// 200mV margin
+        if (cellData[i + 1] <= (MC33771C_TH_ALL_CT_UV_TH + 200 + 200) * 1000){
+        	// DoD is equal to the maximum releasable capacity
+            AhData.SOH[i] = AhData.DOD_c[i];
+            // When the cell is fully discharged, the SoC is 0, DoD is not 0
+            AhData.SOC_c[i] = 0;
             flag = 1;
         }
         else{
@@ -1106,7 +1100,8 @@ static void DischargeHandler(void)
         }
     }
 
-    if ((flag == 0) && (cellData[0] > (MC33771C_TH_ALL_CT_UV_TH + 402) * 1000 * cellNumber)){ // 2mV margin
+    if ((flag == 0) && (cellData[0] >= (MC33771C_TH_ALL_CT_UV_TH + 200 + 202) * 1000 * cellNumber)){
+    	// 202mV margin
     	integrateCurrent();
 		getCurrentDOD();
 		getCurrentSOC();
@@ -1122,12 +1117,15 @@ static void ChargeHandler(void)
     int16_t flag;
     BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, false);
     for (i = 0; i < BATTERY_NUMBER; i++){
-        if ((cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 300) * 1000) && (-isenseVolt <= ISENSETHRESHOLD + 500)){ // 0.5mV margin between switching states
-            AhData.SOH[i] = AhData.SOC_c[i] - AhData.DOD_c[i]; // Calibrate SOH for each cell
-            //AhData.SOH[i] = AhData.SOC_c[i]; // Calibrate SOH for each cell
-            AhData.SOC_c[i] = AhData.SOH[i]; // SoC equals to SoH
-            //AhData.SOH[i] += (AhData.absIntegratedCurent[i] / (2 * RATEDCAPACITANCE*3600)); // Cancel the EFC calculation
-            AhData.DOD_c[i] = 0; // When the battery is fully charged, the DoD is 0
+    	// 0.5mV margin between switching states
+        if ((cellData[i + 1] >= (MC33771C_TH_ALL_CT_OV_TH - 300) * 1000) && (-isenseVolt <= ISENSETHRESHOLD + 500)){
+        	// Calibrate SOH for each cell
+            AhData.SOH[i] = AhData.SOC_c[i] - AhData.DOD_c[i];
+            // SoC equals to SoH
+            AhData.SOC_c[i] = AhData.SOH[i];
+            // When the battery is fully charged, the DoD is 0
+            AhData.DOD_c[i] = 0;
+
             flag = 1;
         }
         else{
@@ -1135,7 +1133,8 @@ static void ChargeHandler(void)
         }
     }
 
-    if ((flag == 0) && (-isenseVolt > ISENSETHRESHOLD + 2500)){ // 2.5mV margin added between calibration and DoC and SoC calculation
+    // 2.5mV margin added between calibration and DoC and SoC calculation
+    if ((flag == 0) && (-isenseVolt > ISENSETHRESHOLD + 2500)){
     	integrateCurrent();
 		getCurrentDOD();
 		getCurrentSOC();
@@ -1150,7 +1149,6 @@ static void OpenCircuitHandler(void)
 	uint8_t cellIndex;
 
 	if (EFCFlag == 0){
-        //CycleCounter += 1;
         EFCFlag = 1;
         AhData.efcCounter += AhData.absIntegratedCurent[1] / (2 * RATEDCAPACITANCE * 3600);
 
@@ -1160,22 +1158,6 @@ static void OpenCircuitHandler(void)
 			AhData.absIntegratedCurent[cellIndex] = 0.0;
 		}
     }
-
-//    if (CycleCounter == 5){
-//    	// Calculate EFC using cell 1 (Assume the battery cells are balanced)
-//        AhData.efcCounter += AhData.absIntegratedCurent[1] / (2 * RATEDCAPACITANCE * 3600);
-//        // Update the SoH of each cell based on EFC
-//		for(cellIndex = 0; cellIndex < BATTERY_NUMBER; cellIndex++){
-//			AhData.SOH[cellIndex] -=  (AhData.absIntegratedCurent[cellIndex] / (2 * RATEDCAPACITANCE*3600)) / CYCLELIFE * 1000;
-//		}
-//
-//        for(cellIndex = 0; cellIndex < BATTERY_NUMBER; cellIndex++){
-//        	// Clear integrated current data to avoid over flow.
-//        	AhData.absIntegratedCurent[cellIndex] = 0.0;
-//        }
-//
-//        CycleCounter = 0;
-//    }
 
     cellBalancingControl();
 }
@@ -1268,17 +1250,6 @@ void dataTransmit(bmsSystemState bmsNextState)
     transmittedData[61] = cellBalancingFlag;
 
     LPUART_DRV_SendData(INST_LPUART1, (uint8_t *)transmittedData, sizeof(transmittedData)); // Transmit the data through UART
-}
-
-/*
- * @brief Function used to reset data
- */
-static void resetData(void){
-    int16_t i;
-
-    for (i = 0; i < BATTERY_NUMBER; i++){
-        AhData.DOD_c[i] = AhData.DOD_0[i];
-    }
 }
 
 /*!
@@ -1415,7 +1386,6 @@ int main(void)
           initTimeout(196);
         
           if (PTC->PDIR & (1<<12)){ /* If Pad Data Input = 1 (BTN0 [SW2] pushed) */
-        	  //CycleCounter = 0; /* Clear EFC counter */
               EFCFlag = 0; /* Reset EFC flag */
               balanceTimeout = 0;
 
@@ -1538,7 +1508,7 @@ int main(void)
                 }
 
                 communicateWithPc(bmsNextState);
-                resetData();
+                //resetData();
           }
       }
   }
