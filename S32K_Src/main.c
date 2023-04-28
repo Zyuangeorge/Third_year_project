@@ -312,6 +312,10 @@ bool cellBalancingFlag = false;
 /* SoC update flag, used to reset the SoC value*/
 bool cellBalancingSoCUpdateFlag = false;
 
+/* Charge and discharge calibration flag */
+bool chargeCaliFlag = false;
+bool dischargeCaliFlag = false;
+
 /* Final transmitted data */
 /*
  * [0] Pack voltage
@@ -1083,8 +1087,7 @@ static void DischargeHandler(void)
 #else
 	int8_t cellNumber = 14;
 #endif
-    int16_t i;
-    int16_t flag;
+    int8_t i;
     BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, false);
     for (i = 0; i < BATTERY_NUMBER; i++){
     	// 200mV margin
@@ -1093,14 +1096,14 @@ static void DischargeHandler(void)
             AhData.SOH[i] = AhData.DOD_c[i];
             // When the cell is fully discharged, the SoC is 0, DoD is not 0
             AhData.SOC_c[i] = 0;
-            flag = 1;
+            dischargeCaliFlag = true;
         }
         else{
-        	flag = 0;
+        	dischargeCaliFlag = false;
         }
     }
 
-    if ((flag == 0) && (cellData[0] >= (MC33771C_TH_ALL_CT_UV_TH + 200 + 202) * 1000 * cellNumber)){
+    if ((dischargeCaliFlag == false) && (cellData[0] >= (MC33771C_TH_ALL_CT_UV_TH + 200 + 202) * 1000 * cellNumber)){
     	// 202mV margin
     	integrateCurrent();
 		getCurrentDOD();
@@ -1113,8 +1116,7 @@ static void DischargeHandler(void)
  */
 static void ChargeHandler(void)
 {
-    int16_t i;
-    int16_t flag;
+    int8_t i;
     BCC_CB_Enable(&drvConfig, BCC_CID_DEV1, false);
     for (i = 0; i < BATTERY_NUMBER; i++){
     	// 0.5mV margin between switching states
@@ -1126,15 +1128,15 @@ static void ChargeHandler(void)
             // When the battery is fully charged, the DoD is 0
             AhData.DOD_c[i] = 0;
 
-            flag = 1;
+            chargeCaliFlag = true;
         }
         else{
-        	flag = 0;
+        	chargeCaliFlag = false;
         }
     }
 
     // 2.5mV margin added between calibration and DoC and SoC calculation
-    if ((flag == 0) && (-isenseVolt > ISENSETHRESHOLD + 2500)){
+    if ((chargeCaliFlag == false) && (-isenseVolt > ISENSETHRESHOLD + 2500)){
     	integrateCurrent();
 		getCurrentDOD();
 		getCurrentSOC();
@@ -1152,11 +1154,14 @@ static void OpenCircuitHandler(void)
         EFCFlag = 1;
         AhData.efcCounter += AhData.absIntegratedCurent[1] / (2 * RATEDCAPACITANCE * 3600);
 
-		// Update the SoH of each cell based on EFC
-		for(cellIndex = 0; cellIndex < BATTERY_NUMBER; cellIndex++){
-			AhData.SOH[cellIndex] -= (AhData.absIntegratedCurent[cellIndex] / (2 * RATEDCAPACITANCE*3600)) / CYCLELIFE * 1000;
-			AhData.absIntegratedCurent[cellIndex] = 0.0;
-		}
+        // Use EFC-based method only when the maximum capacity method is not used
+        if ((dischargeCaliFlag == false) && (chargeCaliFlag == false)){
+        	// Update the SoH of each cell based on EFC
+			for(cellIndex = 0; cellIndex < BATTERY_NUMBER; cellIndex++){
+				AhData.SOH[cellIndex] -= (AhData.absIntegratedCurent[cellIndex] / (2 * RATEDCAPACITANCE*3600)) / CYCLELIFE * 1000;
+				AhData.absIntegratedCurent[cellIndex] = 0.0;
+			}
+        }
     }
 
     cellBalancingControl();
